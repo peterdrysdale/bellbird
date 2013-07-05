@@ -1,0 +1,40 @@
+PROJECT_VERSION = 0.1.7
+ 
+PROJECT_SHLIB_VERSION = 1
+
+TARGET_OS    = linux-gnu
+TARGET_CPU   = i386
+HOST_OS    = linux-gnu
+HOST_CPU   = i386
+
+CC       = gcc
+#CFLAGS   = -pg -fprofile-arcs -g -Wall
+#CFLAGS   = -g -Wall
+CFLAGS   = -O2 -Wall -D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4
+#CFLAGS   = -pg -g -O2 -Wall -D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4
+CPPFLAGS = 
+SHAREDLIBFLAGS  = 
+LDFLAGS  = 
+
+AR       = ar
+RANLIB   = ranlib
+INSTALL  = /usr/bin/install -c
+
+AUDIODRIVER = alsa
+AUDIODEFS   = -DCST_AUDIO_ALSA
+AUDIOLIBS   = -lasound
+
+LEXDEFS = 
+
+# The list of which languages, lexicons and voices have to be included 
+#  The base languages, lexicons and voices
+LEXES += cmulex
+LANGS += usenglish
+
+prefix        = /usr/local
+exec_prefix   = ${prefix}
+EXEEXT        =
+INSTALLBINDIR = ${exec_prefix}/bin
+INSTALLLIBDIR = ${exec_prefix}/lib
+INSTALLINCDIR = ${prefix}/include/bellbird
+

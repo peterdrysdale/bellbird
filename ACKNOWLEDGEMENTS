@@ -1,0 +1,77 @@
+Bellbird contains code from a number of projects. The largest
+component of code orginated from:
+
+         Flite for Android's version of:
+         Flite: a small run-time speech synthesis engine
+                      version 1.5.6-current
+
+Bellbird also contains code from:
+-hts_engine 1.07 (Dec 2012)
+-flite+hts 1.04 (Dec 2012)
+-festival 1.96 hts_engine module for using nitech voices
+
+We would like to acknowledge the work of the projects on which bellbird's
+source was based without which bellbird would not be possible. In numerous
+cases changes in bellbird are slight compared to the original projects which
+performed the "heavy lifting". The largest acknowledgement goes to Prof. Alan
+W. Black, the key author of flite.
+
+The direct contributors to bellbird have included:
+Peter Drysdale
+
+
+We also include acknowledgements from flite which are relevant to Bellbird:
+
+The initial development of flite was primarily done by awb while
+travelling, perhaps the name is doubly appropriate as a substantial
+amount of the coding was done over 30,000ft).  During most of that
+time awb was funded by the Language Technonologies Institute at
+Carnegie Mellon University.
+
+Kevin A. Lenzo was involved in the design, conversion techniques and
+representions for the voice distributed with flite.
+
+Other contributions are:
+
+Henry Spencer
+   For the regex code
+University of Edinburgh
+   for releasing Festival for free, making a companion runtime synthesizer
+   a practical project, much of the design of flite relies on the 
+   architecture decisions made in the Festival Speech Synthesis Systems and
+   the Edinburgh Speech Tools.
+   The duration cart tree and intonation (accent and F0) models were
+   derived from the models in the Festival distribution. which in turn
+   were trained from the Boston University FM Radio Data Corpus.
+Carnegie Mellon University
+   The included lexicon is derived from CMULEX and the letter to sound
+   rules are constructed using the Lenzo and Black techniques for
+   building LTS decision graphs.
+Nagoya Institute of Technology
+   The mlsa code derives from HTS (following a long chain)
+Tomoki Toda
+   The mlsa and mlpg support came view Tomoki's support for voice convertion
+   in FestVox which in turn (some of which) comes from NITECH's HTS.
+Marcela Charfuelan (DFKI)
+   For the mixed-excitation techniques.  These originally came from NITECH
+   but we understood the technqiues from Marcela's Open Mary Java code and
+   implemented them in our optimized version of MLSA.
+David Huggins-Daines (dhd@cepstral.com) 
+   porting to multiple platforms, substantial code tidy up.
+Cepstral, LLC (http://cepstral.com)
+   For supporting DHD to spend time (in 2001) on flite and passing
+   back the important early fixes and enhancements.
+Willie Walker <william.walker@sun.com> and the rest of the Sun Speech Group
+   lots of low level bugs (and fixes).
+Mario Lang:
+   causing the support of shared libraries to happen
+Eric House (fixin@peak.org)
+   who provided examples of how to do 68K Call Backs for system functions
+Lukas Loehrer <loehrerl@gmx.net> Feb 2006
+   alsa support (default if available)
+Udhyakumar N
+   For making the mixed excitation code work, and show its value
+Alok Parlikar
+   cg voice dumping (and loading)
+Gopala Anumanchipalli
+   spanf0 support
