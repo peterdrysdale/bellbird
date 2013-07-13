@@ -1,0 +1,6 @@
+config/config
+bin
+build
+config.log
+config.status
+*.o
