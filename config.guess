@@ -2,7 +2,7 @@
 # Attempt to guess a canonical system name.
 #   Copyright 1992-2013 Free Software Foundation, Inc.
 
-timestamp='2013-05-16'
+timestamp='2013-06-10'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -995,6 +995,12 @@ EOF
     ppc:Linux:*:*)
 	echo powerpc-unknown-linux-${LIBC}
 	exit ;;
+    ppc64le:Linux:*:*)
+	echo powerpc64le-unknown-linux-${LIBC}
+	exit ;;
+    ppcle:Linux:*:*)
+	echo powerpcle-unknown-linux-${LIBC}
+	exit ;;
     s390:Linux:*:* | s390x:Linux:*:*)
 	echo ${UNAME_MACHINE}-ibm-linux-${LIBC}
 	exit ;;
@@ -1550,3 +1556,4 @@ exit 1
 # time-stamp-format: "%:y-%02m-%02d"
 # time-stamp-end: "'"
 # End:
+
