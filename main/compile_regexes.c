@@ -81,7 +81,7 @@ static void regex_to_C(const char *name, const cst_regex *rgx)
     if (rgx->regmust == NULL)
         printf("NULL, ");
     else
-        printf("%s_rxprog + %d, ", name, rgx->regmust - rgx->program);
+        printf("%s_rxprog + %ld, ", name, rgx->regmust - rgx->program);
     printf("%d, ",rgx->regmlen);
     printf("%d,\n   ",rgx->regsize);
     printf("(char *)%s_rxprog\n",name);
