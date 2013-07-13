@@ -5,7 +5,7 @@
 ###########################################################################
 TOP=../..
 DIRNAME=src/nitechvoice
-H = nitech_hidden 
+H = nitech_hidden.h
 
 SRCS = nitech_mlpg.c nitech_model.c nitech_tree.c nitech_vocoder.c nitech_engine.c
 
