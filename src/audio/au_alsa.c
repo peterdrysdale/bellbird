@@ -47,6 +47,8 @@
 /*  (apparent?) memory leaks                                             */
 /*************************************************************************/
 
+#ifdef CST_AUDIO_ALSA
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -335,3 +337,5 @@ if (result < 0)
   }
   return result;
 }
+
+#endif // CST_AUDIO_ALSA

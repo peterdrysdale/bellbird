@@ -1,116 +1,38 @@
-dnl Process this file with autoconf to produce a configure script.
-dnl This is a temporary configure.ac script for bellbird.
-dnl See COPYING file for information on licenses.
-dnl This is a significantly modified and cut down version of configure.in
-dnl which appears in the flite package.
-dnl The copyright notice on the original script was:
-dnl########################################################################
-dnl                                                                      ##
-dnl                 Language Technologies Institute                      ##
-dnl                    Carnegie Mellon University                        ##
-dnl                     Copyright (c) 1999-2008                          ##
-dnl                       All Rights Reserved.                           ##
-dnl                                                                      ##
-dnl Permission is hereby granted, free of charge, to use and distribute  ##
-dnl this software and its documentation without restriction, including   ##
-dnl without limitation the rights to use, copy, modify, merge, publish,  ##
-dnl distribute, sublicense, and/or sell copies of this work, and to      ##
-dnl permit persons to whom this work is furnished to do so, subject to   ##
-dnl the following conditions:                                            ##
-dnl  1. The code must retain the above copyright notice, this list of    ##
-dnl     conditions and the following disclaimer.                         ##
-dnl  2. Any modifications must be clearly marked as such.                ##
-dnl  3. Original authors' names are not deleted.                         ##
-dnl  4. The authors' names are not used to endorse or promote products   ##
-dnl     derived from this software without specific prior written        ##
-dnl     permission.                                                      ##
-dnl                                                                      ##
-dnl CARNEGIE MELLON UNIVERSITY AND THE CONTRIBUTORS TO THIS WORK         ##
-dnl DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING      ##
-dnl ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT   ##
-dnl SHALL CARNEGIE MELLON UNIVERSITY NOR THE CONTRIBUTORS BE LIABLE      ##
-dnl FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    ##
-dnl WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   ##
-dnl AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          ##
-dnl ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       ##
-dnl THIS SOFTWARE.                                                       ##
-dnl                                                                      ##
-dnl########################################################################
+AC_PREREQ([2.62])
+AC_INIT([bellbird],[0.1])
+AC_CANONICAL_TARGET
+AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE([-Wall foreign])
+LT_PREREQ([2.2])
+LT_INIT
 
-AC_INIT()
+dnl This flag accepts an argument of the form `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets current to 3, revision to 12, and age to 1.
 
-AC_CANONICAL_SYSTEM
-AC_PROG_CC
-AC_PROG_RANLIB
-AC_PROG_INSTALL
-AC_CHECK_TOOL(AR, ar)
-AC_C_BIGENDIAN
+dnl If either revision or age are omitted, they default to 0. Also note that age must be less than or equal to the current interface number.
 
-if test "x$GCC" = "xyes"; then
-	CFLAGS="$CFLAGS -Wall -D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4"
-fi
-AC_ARG_ENABLE( shared, 
-               [  --disable-shared     without shared library support],
-	       [case "${enableval}" in
-                 yes) shared=true ;;
-                 no) shared=false ;;
-                 *) AC_MSG_ERROR(bad value ${enableval} for shared options) ;;
-                 esac],
-               [shared=false])
+dnl Here are a set of rules to help you update your library version information:
 
-case "$target_cpu" in
-     i386|i486|i586|i686)
-	TARGET_CPU=i386
-     ;;
-     *)
-        TARGET_CPU=$target_cpu
-     ;;
-esac     
-TARGET_OS=$target_os
+dnl   Start with version information of `0:0:0' for each libtool library.
+dnl   Update the version information only immediately before a public 
+dnl      release of your software. More frequent updates are unnecessary, 
+dnl      and only guarantee that the current interface number gets 
+dnl      larger faster.
+dnl   If the library source code has changed at all since the last update, 
+dnl      then increment revision (`c:r:a' becomes `c:r+1:a').
+dnl   If any interfaces have been added, removed, or changed since the 
+dnl      last update, increment current, and set revision to 0.
+dnl   If any interfaces have been added since the last public release,
+dnl      then increment age.
+dnl   If any interfaces have been removed since the last public release,
+dnl      then set age to 0. 
 
-AC_SUBST(TARGET_OS)
-AC_SUBST(TARGET_CPU)
+LIBBELLBIRD_VERSION="0:0:0"
+AC_SUBST(LIBBELLBIRD_VERSION)
+LIBBELLBIRD_CMULEX_VERSION="0:0:0"
+AC_SUBST(LIBBELLBIRD_CMULEX_VERSION)
+LIBBELLBIRD_USENGLISH_VERSION="0:0:0"
+AC_SUBST(LIBBELLBIRD_USENGLISH_VERSION)
 
-AC_SUBST(LEXDEFS)
-
-case "$host_cpu" in
-     i386|i486|i586|i686)
-	HOST_CPU=i386
-     ;;
-     *)
-        HOST_CPU=$host_cpu
-     ;;
-esac     
-HOST_OS=$host_os
-
-AC_SUBST(HOST_OS)
-AC_SUBST(HOST_CPU)
-
-SHAREDLIBFLAGS=
-withpic=false
-AC_ARG_WITH( pic, [  --with-pic           with pic ],
-        withpic=$with_pic )
-if test "x$with_pic" = "xyes"; then
-   case "$target_os" in
-	linux*)
-		CFLAGS="$CFLAGS -fPIC"
-        ;;
-	*)
-		CFLAGS="$CFLAGS -fPIC"
-	;;
-   esac
-fi
-
-if test "$shared" = true; then
-   case "$target_os" in
-	linux*|k*bsd*-gnu|gnu*)
-		SHAREDLIBFLAGS="-fPIC"
-        ;;
-	*)
-	;;
-   esac
-fi
-AC_SUBST(SHAREDLIBFLAGS)
 
 dnl Does this compiler support initialization of unions
 AC_TRY_COMPILE([#include <stdio.h>],
@@ -125,12 +47,15 @@ fi
 dnl determine audio type or use none if none supported on this platform
 AUDIODRIVER=none
 
-# Seems the alsa code I have breaks on earlier versions
+# Seems the alsa code I have breaks on versions earlier than 1.0.11
 # I'm not sure what the threshold version is, but made this depend on
 # the one I know -- you can still specific --with-audio=alsa
 AC_TRY_COMPILE([#include <alsa/version.h>],
                [int j=
-                #if SND_LIB_SUBMINOR >= 11
+                #if ( (SND_LIB_MAJOR == 1) && (SND_LIB_MINOR == 0) && \
+                      (SND_LIB_SUBMINOR >= 11) ) || \
+                    (SND_LIB_MAJOR > 1) || \
+                    ( (SND_LIB_MAJOR == 1) && (SND_LIB_MINOR > 0))
                 3;
                 #endif],
               [AUDIODRIVER="alsa"
@@ -161,5 +86,23 @@ AC_SUBST(AUDIODRIVER)
 AC_SUBST(AUDIODEFS)
 AC_SUBST(AUDIOLIBS)
 
-AC_CONFIG_FILES(config/config)
+AC_CONFIG_FILES([src/regex/Makefile
+      src/commonsynth/Makefile
+      src/Makefile
+      src/hrg/Makefile
+      src/speech/Makefile
+      src/utils/Makefile
+      src/hts/Makefile
+      src/nitechvoice/Makefile
+      src/cg/Makefile
+      src/audio/Makefile
+      src/stats/Makefile
+      src/synth/Makefile
+      src/lexicon/Makefile
+      Makefile
+      include/Makefile
+      lang/Makefile
+      lang/cmulex/Makefile
+      lang/usenglish/Makefile
+      main/Makefile])
 AC_OUTPUT
