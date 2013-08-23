@@ -10,7 +10,7 @@ It does not support other systems since no test hardware is available
 to the current developers. If developers wish to join, other systems
 could be supported.
 
-# Quick Usage Examples
+## Quick Usage Examples
 
 Here are some permutations of usage examples.
 
@@ -38,7 +38,7 @@ preferred and installed encoder).
 This will read inputtext and send it to `STDOUT` where it can be grabbed by `lame` (if that is your
 preferred and installed encoder).
 
-# Copying
+## Copying
 
 Bellbird is open source software.
 Is contains code from a number of projects including flite, hts_engine,
@@ -48,7 +48,7 @@ flite license. Bellbird uses the same license to allow the exchange of
 code. Bellbird has benefitted extraordinarily from the
 ability to use other projects code for creating the remix known as bellbird.
 
-# Acknowledgements
+## Acknowledgements
 
 This remix version was branched from Flite for Android's version of:
          Flite: a small run-time speech synthesis engine
@@ -68,7 +68,7 @@ best for the these other projects and look forward to their continued vitality.
 Any deficiencies in Bellbird are solely the responsibility of Bellbird's
 authors.
 
-# Building and Installation
+## Building and Installation
 
 Bellbird contains the following build prerequisites:
 Gnu Make
@@ -96,7 +96,7 @@ will install all the files in `/usr/local/bin`, `/usr/local/lib` etc.
 You can specify an installation prefix other than `/usr/local` using
 `--prefix`, for instance `--prefix=$HOME`.
 
-# Voice loading
+## Voice loading
 
 Bellbird voices are all dynamically loaded at bellbird startup.
 Bellbird support three voices types at the current time.
@@ -115,7 +115,7 @@ mapped flite voices. Bellbird is not targetted for embedded work. Bellbird recom
 the Flite library for such applications.
 
 
-# Rationale for Bellbird's development
+## Rationale for Bellbird's development
 
 Bellbird is not intended as a fork of flite, flite+hts or festival, in the sense
 that we do NOT wish to compete with these worthwhile projects. This is the
@@ -151,7 +151,7 @@ flite or hts_engine should be sent to those projects first and in preference.
 How much Bellbird develops depends on if other people find it useful and provide feedback
 to Bellbird.
 
-# APIs
+## APIs
 
 Bellbird at this time is not yet expected to be embedded into
 other applications. Bellbird recommends programmers consider
