@@ -1,10 +1,15 @@
 AC_PREREQ([2.62])
-AC_INIT([bellbird],[0.1])
+AC_INIT([bellbird], dnl Package name
+        [0.1.7-unstable], dnl Package version
+        [https://github.com/peterdrysdale/bellbird/issues] dnl Report bug address
+       )
 AC_CANONICAL_TARGET
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign])
+AC_CONFIG_HEADERS([include/config.h])
 LT_PREREQ([2.2])
 LT_INIT
+AC_PROG_CC
 
 dnl This flag accepts an argument of the form `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets current to 3, revision to 12, and age to 1.
 
@@ -35,13 +40,16 @@ AC_SUBST(LIBBELLBIRD_USENGLISH_VERSION)
 
 
 dnl Does this compiler support initialization of unions
-AC_TRY_COMPILE([#include <stdio.h>],
-               [ struct a { union { float b; int c; } d; };
-                 const struct a e = { .d={ .b=3.14 } }; ],
-               [unioninit=yes],
-               [unioninit=no])
+AC_MSG_CHECKING([if compiler supports initialization of unions])
+AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([[#include <stdio.h>]],
+        [[struct a { union { float b; int c; } d; };
+          const struct a e = { .d={ .b=3.14 } }; ]])],
+    [unioninit=yes],
+    [unioninit=no])
+AC_MSG_RESULT([$unioninit])
 if test "$unioninit" = no; then
-   AC_DEFINE(NO_UNION_INITIALIZATION)
+   AC_DEFINE([NO_UNION_INITIALIZATION], [], [Whether unions can be initialized])
 fi
 
 dnl determine audio type or use none if none supported on this platform
@@ -50,40 +58,46 @@ AUDIODRIVER=none
 # Seems the alsa code I have breaks on versions earlier than 1.0.11
 # I'm not sure what the threshold version is, but made this depend on
 # the one I know -- you can still specific --with-audio=alsa
-AC_TRY_COMPILE([#include <alsa/version.h>],
-               [int j=
-                #if ( (SND_LIB_MAJOR == 1) && (SND_LIB_MINOR == 0) && \
-                      (SND_LIB_SUBMINOR >= 11) ) || \
-                    (SND_LIB_MAJOR > 1) || \
-                    ( (SND_LIB_MAJOR == 1) && (SND_LIB_MINOR > 0))
-                3;
-                #endif],
-              [AUDIODRIVER="alsa"
-	       AUDIODEFS=-DCST_AUDIO_ALSA
-               AUDIOLIBS=-lasound])
+AC_MSG_CHECKING([whether ALSA version is new enough])
+AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM([[#include <alsa/version.h>]],
+         [[
+            #if !( ((SND_LIB_MAJOR == 1) && (SND_LIB_MINOR == 0) && (SND_LIB_SUBMINOR >= 11) ) || \
+                   (SND_LIB_MAJOR > 1) || \
+                   ((SND_LIB_MAJOR == 1) && (SND_LIB_MINOR > 0)) )
+            #error too old
+            #endif
+         ]])],
+         [AUDIODRIVER="alsa"
+          AUDIOLIBS=-lasound],
+         )
+
+if test "$AUDIODRIVER" = "alsa"; then
+   AC_MSG_RESULT([yes])
+else
+   AC_MSG_RESULT([no])
+fi
 
 dnl allow the user to override the one detected above
 AC_ARG_WITH( audio,
 	[  --with-audio          with specific audio support (none alsa) ],
         AUDIODRIVER=$with_audio
-	AUDIODEFS="" )
+	)
 
-if test "x$AUDIODEFS" = x; then
-    case "$AUDIODRIVER" in
-	alsa)
-            AUDIODRIVER="alsa"
-	    AUDIODEFS=-DCST_AUDIO_ALSA
-            AUDIOLIBS=-lasound
-	    ;;
-	none)
-            AUDIODRIVER="none"
-	    AUDIODEFS=-DCST_AUDIO_NONE
-            AUDIOLIBS=
-	    ;;
-    esac
-fi
+case "$AUDIODRIVER" in
+    alsa)
+        AUDIODRIVER="alsa"
+        AC_DEFINE([CST_AUDIO_ALSA], [], [Use ALSA sound driver])
+        AUDIOLIBS=-lasound
+	;;
+    none)
+        AUDIODRIVER="none"
+        AC_DEFINE([CST_AUDIO_NONE], [], [Don't use a sound driver])
+        AUDIOLIBS=
+	;;
+esac
+
 AC_SUBST(AUDIODRIVER)
-AC_SUBST(AUDIODEFS)
 AC_SUBST(AUDIOLIBS)
 
 AC_CONFIG_FILES([src/regex/Makefile

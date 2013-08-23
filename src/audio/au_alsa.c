@@ -47,6 +47,10 @@
 /*  (apparent?) memory leaks                                             */
 /*************************************************************************/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef CST_AUDIO_ALSA
 
 #include <stdlib.h>

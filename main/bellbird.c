@@ -96,14 +96,18 @@
 #include "bell_driver.h"
 #include "../lang/cmulex/cmu_lex.h"
 
+#ifdef HAVE_CONFIG_H
+  #include "config.h"
+#endif
+
 /* Its not very appropriate that these are declared here */
 void usenglish_init(cst_voice *v);
 cst_lexicon *cmu_lex_init(void);
 
 static void bellbird_version()
 {
-    printf("  Copyright (c) 1999-2012. Details of copyright may be seen in COPYING file\n");
-    printf("  version: bellbird-0.1.7-unstable July 2013 \n");
+    printf("  Copyright (c) 1999-2013. Details of copyright may be seen in COPYING file\n");
+    printf("  version: %s \n", PACKAGE_STRING);
 }
 
 static void bellbird_usage()

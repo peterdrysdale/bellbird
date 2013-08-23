@@ -117,6 +117,10 @@
 
 #include "cst_val_defs.h"
 
+#ifdef HAVE_CONFIG_H
+   #include "config.h" /* defines NO_UNION_INITIALIZATION */
+#endif
+
 /* There is built-in int to string conversions here for numbers   */
 /* up to 20, note if you make this bigger you have to hand change */
 /* other things too                                               */

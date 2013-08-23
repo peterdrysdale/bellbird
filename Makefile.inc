@@ -1,2 +1,1 @@
-AM_CFLAGS = 
-
+AM_CFLAGS = -I$(top_srcdir)/include

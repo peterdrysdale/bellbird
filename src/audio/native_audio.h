@@ -41,6 +41,10 @@
 #ifndef _NATIVE_AUDIO_H__
 #define _NATIVE_AUDIO_H__
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef CST_AUDIO_ALSA
 
 #define AUDIO_OPEN_NATIVE audio_open_alsa

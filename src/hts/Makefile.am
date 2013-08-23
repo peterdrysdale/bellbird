@@ -1,3 +1,5 @@
+include $(top_srcdir)/Makefile.inc
+
 noinst_HEADERS = HTS_hidden.h
 
 noinst_LTLIBRARIES = libbellbird_src_hts.la

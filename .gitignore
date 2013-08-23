@@ -12,3 +12,6 @@ Makefile.in
 missing
 *.o
 m4/
+config.guess
+config.sub
+configure
