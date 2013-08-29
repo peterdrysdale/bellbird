@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = include src lang/cmulex . lang/usenglish main
-EXTRA_DIST = README ACKNOWLEDGEMENTS COPYING README.md poembellbirds.txt
+EXTRA_DIST = ACKNOWLEDGEMENTS COPYING Makefile.inc README.md poembellbirds.txt
 
 lib_LTLIBRARIES = libbellbird.la
 
