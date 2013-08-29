@@ -6,9 +6,10 @@ AC_INIT([bellbird], dnl Package name
 AC_CANONICAL_TARGET
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign])
+AM_SILENT_RULES([yes])
 AC_CONFIG_HEADERS([include/config.h])
 LT_PREREQ([2.2])
-LT_INIT
+LT_INIT([disable-static, disable-shared])
 AC_PROG_CC
 
 dnl This flag accepts an argument of the form `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets current to 3, revision to 12, and age to 1.
@@ -115,7 +116,6 @@ AC_CONFIG_FILES([src/regex/Makefile
       src/lexicon/Makefile
       Makefile
       include/Makefile
-      lang/Makefile
       lang/cmulex/Makefile
       lang/usenglish/Makefile
       main/Makefile])

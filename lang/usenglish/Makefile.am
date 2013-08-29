@@ -16,6 +16,8 @@ libbellbird_usenglish_la_SOURCES = us_int_accent_cart.c us_int_tone_cart.c us_f0
        us_gpos.c us_text.c us_expand.c \
        us_nums_cart.c us_aswd.c usenglish.c us_pos_cart.c
 
+libbellbird_usenglish_la_LIBADD = $(top_builddir)/libbellbird.la
+
 dist_bin_SCRIPTS = make_us_regexes
 EXTRA_DIST = us_pos.tree
 
