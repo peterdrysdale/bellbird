@@ -76,7 +76,7 @@
 #include "cst_cg.h"
 #include "cst_mlsa.h"
 
-#include "../commonsynth/mlsafunc.c"
+#include "mlsafunc.c"
 
 /* mc2b : transform mel-cepstrum to MLSA digital fillter coefficients */
 static void mc2b (double *mc, double *b, int m, double a)

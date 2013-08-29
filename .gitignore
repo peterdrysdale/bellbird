@@ -1,0 +1,17 @@
+*~
+aclocal.m4
+autom4te.cache
+config.log
+config.status
+configure.ac
+depcomp
+.deps
+install-sh
+ltmain.sh
+Makefile.in
+missing
+*.o
+m4/
+config.guess
+config.sub
+configure

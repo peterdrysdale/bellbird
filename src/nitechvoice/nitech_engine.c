@@ -60,7 +60,7 @@
 #include "cst_utt_utils.h"
 #include "cst_utterance.h"
 #include "cst_wave.h"
-#include "nitech_engine.h"
+#include "nitech_hidden.h"
 #include "HTS_misc.h"
 #include "bell_file.h"
 
