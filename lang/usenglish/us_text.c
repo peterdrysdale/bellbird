@@ -620,11 +620,25 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 		       cons_val(string_val("'s"),0));
 	cst_free(aaa);
     }
-    else if ((p=(cst_strrchr(name,'\''))))
+    else if ((p=cst_strrchr(name,'\''))
+            || ( (p=cst_strrchr(name,'\xe2'))
+                  && *(p+1)!='\0' && *(p+1)=='\x80'
+                  && *(p+2)!='\0' && *(p+2)=='\x99' )
+            )  /* test for ASCII apostrophe or UTF-8 directional apostrophe hex e28099 */
+               /* note: latter test exploits short-circuiting of && operator           */
     {
 	static const char *pc[] = { "'s", "'ll", "'ve", "'d", NULL };
 
-	bbb = cst_downcase(p);
+        if (p[0]=='\xe2')
+        {
+            ccc = p+2;
+            ccc[0]='\''; /* Remap UTF-8 directional apostrophe for common logic */
+        }
+        else
+        {
+            ccc = p;
+        }
+	bbb = cst_downcase(ccc);
 	if (cst_member_string(bbb, pc))
 	{
 	    aaa = cst_strdup(name);
@@ -644,7 +658,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 	else
 	{
 	    aaa = cst_strdup(name);
-	    strcpy(&aaa[cst_strlen(name)-cst_strlen(p)],p+1);
+	    strcpy(&aaa[cst_strlen(name)-cst_strlen(p)],ccc+1);
 	    r = us_tokentowords_one(token,aaa);
 	    cst_free(aaa);
 	}
