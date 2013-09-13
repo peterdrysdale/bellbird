@@ -57,11 +57,6 @@ const cst_string * const cst_ts_default_postpunctuationsymbols = "\"'`.,:;!?(){}
 
 static cst_string ts_getc(cst_tokenstream *ts);
 
-cst_string private_ts_getc(cst_tokenstream *ts)
-{
-    return ts_getc(ts);
-}
-
 static void set_charclass_table(cst_tokenstream *ts)
 {
     int i;
@@ -194,48 +189,6 @@ cst_tokenstream *ts_open_string(const cst_string *string,
     return ts;
 }
 
-cst_tokenstream *ts_open_generic(const char *filename,
-                                 const cst_string *whitespacesymbols,
-                                 const cst_string *singlecharsymbols,
-                                 const cst_string *prepunctsymbols,
-                                 const cst_string *postpunctsymbols,
-                                 void *streamtype_data,
-                                 int (*open)(cst_tokenstream *ts,
-                                             const char *filename),
-                                 void (*close)(cst_tokenstream *ts),
-                                 int (*eof)(cst_tokenstream *ts),
-                                 int (*seek)(cst_tokenstream *ts, int pos),
-                                 int (*tell)(cst_tokenstream *ts),
-                                 int (*size)(cst_tokenstream *ts),
-                                 int (*getc)(cst_tokenstream *ts))
-{   /* Its a generic token stream where user has specified the low level */
-    /* file/stream access functions                                      */
-    cst_tokenstream *ts = new_tokenstream(whitespacesymbols,
-					  singlecharsymbols,
-					  prepunctsymbols,
-					  postpunctsymbols);
-
-    ts->streamtype_data = streamtype_data;
-    ts->open = open;
-    ts->close = close;
-    ts->eof = eof;
-    ts->seek = seek;
-    ts->tell = tell;
-    ts->size = size;
-    ts->getc = getc;
-
-    if ((ts->open)(ts,filename) != 0)
-    {
-        (ts->getc)(ts);
-        return ts;
-    }
-    else
-    {
-	delete_tokenstream(ts);
-	return NULL;
-    }
-}
-
 void ts_close(cst_tokenstream *ts)
 {
     if (ts->fd != NULL)
@@ -249,8 +202,6 @@ void ts_close(cst_tokenstream *ts)
         cst_free(ts->string_buffer);
 	ts->string_buffer = NULL;
     }
-    if (ts->open)
-        (ts->close)(ts);
     delete_tokenstream(ts);
 }
 
@@ -343,8 +294,6 @@ int ts_set_stream_pos(cst_tokenstream *ts, int pos)
         else
             new_pos = pos;
     }
-    else if (ts->open)
-        new_pos = (ts->seek)(ts,pos);
     else
         new_pos = pos;  /* not sure it can get here */
     ts->file_pos = new_pos;
@@ -355,10 +304,7 @@ int ts_set_stream_pos(cst_tokenstream *ts, int pos)
 
 int ts_get_stream_pos(cst_tokenstream *ts)
 {
-    if (ts->open)
-        return (ts->tell)(ts);
-    else
-        return ts->file_pos;
+    return ts->file_pos;
 }
 
 static cst_string ts_getc(cst_tokenstream *ts)
@@ -374,8 +320,6 @@ static cst_string ts_getc(cst_tokenstream *ts)
 	else
 	    ts->current_char = ts->string_buffer[ts->file_pos];
     }
-    else if (ts->open)
-        ts->current_char = (ts->getc)(ts);
     
     if (ts->current_char != TS_EOF)
 	ts->file_pos++;
@@ -497,20 +441,4 @@ const cst_string *ts_get(cst_tokenstream *ts)
         get_token_postpunctuation(ts);
 
     return ts->token;
-}
-
-int ts_read(void *buff, int size, int num, cst_tokenstream *ts)
-{
-    /* people should complain about the speed here */
-    /* people will complain about EOF as end of file */
-    int i,j,p;
-    cst_string *cbuff;
-
-    cbuff = (cst_string *)buff;
-
-    for (p=i=0; i < num; i++)
-	for (j=0; j < size; j++,p++)
-	    cbuff[p] = ts_getc(ts);
-
-    return i;
 }
