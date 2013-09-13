@@ -16,6 +16,7 @@ SET( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts )
 
 option( ENABLE_ALSA "Build with ALSA support" ON )
 option( ENABLE_O2 "Build with -O2 optimization" ON )
+option( ENABLE_WALL "Build with -Wall warnings" ON )
 
 if( ENABLE_ALSA )
     ADD_DEFINITIONS (-DCST_AUDIO_ALSA)
@@ -24,6 +25,10 @@ endif( ENABLE_ALSA )
 if( ENABLE_O2 )
     SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 endif( ENABLE_O2 )
+
+if( ENABLE_WALL )
+    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+endif( ENABLE_WALL)
 
 # Look for dependencies
 if( ENABLE_ALSA )
