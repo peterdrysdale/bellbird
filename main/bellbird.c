@@ -419,7 +419,7 @@ int main(int argc, char **argv)
                durs = flite_file_to_speech(texttoread,voice,outtype);
        }
 
-       if (debug_durs) printf("Durs was %f at end of run",durs);
+       if (debug_durs && (durs != 0.0)) printf("Durs was %f at end of run",durs);
 
     } /* end of voice_type==CLUSTERGENMODE */
 

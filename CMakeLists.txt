@@ -54,7 +54,6 @@ SET(SRC_LIBBELLBIRD
     src/commonsynth/bell_driver.c
     src/hrg/cst_ffeature.c
     src/hrg/cst_item.c
-    src/hrg/cst_rel_io.c
     src/hrg/cst_relation.c
     src/hrg/cst_utterance.c
     src/hts/HTS_engine.c

@@ -70,7 +70,4 @@ const char *relation_name(cst_relation *r);
 cst_item *relation_append(cst_relation *r,cst_item *i);
 cst_item *relation_prepend(cst_relation *r,cst_item *i);
 
-int relation_load(cst_relation *r, const char *filename);
-int relation_save(cst_relation *r, const char *filename);
-
 #endif
