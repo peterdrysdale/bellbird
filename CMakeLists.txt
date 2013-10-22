@@ -75,7 +75,6 @@ SET(SRC_LIBBELLBIRD
     src/regex/regexp.c
     src/regex/regsub.c
     src/speech/cst_track.c
-    src/speech/cst_track_io.c
     src/speech/cst_wave.c
     src/speech/cst_wave_io.c
     src/stats/cst_cart.c
