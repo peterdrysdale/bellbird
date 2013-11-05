@@ -78,7 +78,6 @@ SET(SRC_LIBBELLBIRD
     src/speech/cst_wave.c
     src/speech/cst_wave_io.c
     src/stats/cst_cart.c
-    src/stats/cst_viterbi.c
     src/synth/cst_ffeatures.c
     src/synth/cst_phoneset.c
     src/synth/cst_ssml.c
