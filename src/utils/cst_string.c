@@ -1,4 +1,10 @@
 /*************************************************************************/
+/*                This code has been modified for Bellbird.              */
+/*                See COPYING for more copyright details.                */
+/*                The unmodified source code copyright notice            */
+/*                is included below.                                     */
+/*************************************************************************/
+/*************************************************************************/
 /*                                                                       */
 /*                  Language Technologies Institute                      */
 /*                     Carnegie Mellon University                        */
@@ -81,19 +87,6 @@ char *cst_substr(const char *str,int start, int length)
 	nstr[length] = '\0';
     }
     return nstr;
-}
-
-char *cst_string_before(const char *s,const char *c)
-{
-    char *p;
-    char *q;
-
-    p = (char *)cst_strstr(s,c);
-    if (p == NULL) 
-	return NULL;
-    q = (char *)cst_strdup((cst_string *)s);
-    q[cst_strlen(s)-cst_strlen(p)] = '\0';
-    return q;
 }
 
 cst_string *cst_downcase(const cst_string *str)

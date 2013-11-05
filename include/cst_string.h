@@ -64,8 +64,6 @@ cst_string *cst_strrchr(const cst_string *str, int c);
 int cst_member_string(const char *str, const char * const *slist);
 char *cst_substr(const char *str,int start, int length);
 
-char *cst_string_before(const char *s,const char *c);
-
 cst_string *cst_downcase(const cst_string *str);
 cst_string *cst_upcase(const cst_string *str);
 
