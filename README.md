@@ -127,12 +127,13 @@ for maintaining the Debian package of festival. It was used originally to test
 ideas and his understanding of festival to allow him to maintain the Debian
 packaging for festival. Originating as a toy program it had no clear design goals.
 
-The preferred features for bellbird were:
+The preferred features for bellbird are:
  1. dynamic (only) loading of clustergen, hts and nitech voices,
  2. input and output allowed via STDIN and STDOUT,
  3. ability to be compiled with warn on error,
  4. only one load of nitech voices per execution,
- 5. rapid full tree rebuilds.
+ 5. UTF-8 directional apostrophe support for contraction type words,
+ 6. rapid full tree rebuilds.
 
 The last feature was largely to enable quick tests of understanding of speech synthesis.
 This has had the side effect that bellbird has many less features than festival and flite 
