@@ -61,6 +61,5 @@
 /* WinCE sometimes doesn't have stdio, so this is a wrapper for
    fprintf(stderr, ...) */
 int cst_errmsg(const char *fmt, ...);
-#define cst_dbgmsg cst_errmsg
 
 #endif

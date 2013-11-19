@@ -59,7 +59,7 @@ CST_VAL_REGISTER_FUNCPTR(breakfunc,cst_breakfunc)
 #endif
 
 #if SYNTH_MODULES_DEBUG > 0
-#define DPRINTF(l,x) if (SYNTH_MODULES_DEBUG > l) cst_dbgmsg x
+#define DPRINTF(l,x) if (SYNTH_MODULES_DEBUG > l) cst_errmsg x
 #else
 #define DPRINTF(l,x)
 #endif
