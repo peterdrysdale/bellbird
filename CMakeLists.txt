@@ -95,7 +95,6 @@ SET(SRC_LIBBELLBIRD
     src/utils/cst_val.c
     src/utils/cst_val_const.c
     src/utils/cst_val_user.c
-    src/utils/cst_wchar.c
 )
 
 SET(SRC_LIBBELLBIRD_USENGLISH
