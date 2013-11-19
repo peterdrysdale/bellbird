@@ -88,7 +88,6 @@ int cst_wave_load_riff(cst_wave *w, const char *filename);
 int cst_wave_load_riff_fd(cst_wave *w, cst_file fd);
 
 void cst_wave_resize(cst_wave *w,int samples, int num_channels);
-void cst_wave_rescale(cst_wave *w, int factor);
 
 CST_VAL_USER_TYPE_DCLS(wave,cst_wave)
 
