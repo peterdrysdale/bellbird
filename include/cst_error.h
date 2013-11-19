@@ -48,15 +48,7 @@
 
 #include <stdlib.h>
 
-#ifdef DIE_ON_ERROR
-
-#  define cst_error() abort()
-
-#else
-
-# define cst_error() exit(-1)
-
-#endif
+# define cst_error() exit(1)
 
 /* WinCE sometimes doesn't have stdio, so this is a wrapper for
    fprintf(stderr, ...) */
