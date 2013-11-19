@@ -71,14 +71,6 @@ void delete_track(cst_track *w)
     return;
 }
 
-float track_frame_shift(cst_track *t, int frame)
-{
-    if (frame == 0)
-	return t->times[frame];
-    else
-	return t->times[frame]-t->times[frame-1];
-}
-
 void cst_track_resize(cst_track *t,int num_frames, int num_channels)
 {
     float *n_times;
@@ -110,24 +102,4 @@ void cst_track_resize(cst_track *t,int num_frames, int num_channels)
     t->times = n_times;
     t->num_frames = num_frames;
     t->num_channels = num_channels;
-}
-
-cst_track *cst_track_copy(const cst_track *t)
-{
-    cst_track *t2;
-    int i;
-
-    t2 = new_track();
-    t2->times = cst_alloc(float,t->num_frames);
-    memmove(t2->times,t->times, (sizeof(float)*t->num_frames));
-    t2->num_frames = t->num_frames;
-    t2->num_channels = t->num_channels;
-    t2->frames = cst_alloc(float *,t->num_frames);
-    for (i=0; i<t2->num_frames; i++)
-    {
-        t2->frames[i] = cst_alloc(float,t2->num_channels);
-        memmove(t2->frames[i],t->frames[i], sizeof(float)*t2->num_channels);
-    }
-
-    return t2;
 }

@@ -59,9 +59,7 @@ typedef struct  cst_track_struct {
 cst_track *new_track();
 void delete_track(cst_track *val);
 
-float track_frame_shift(cst_track *t, int frame);
 void cst_track_resize(cst_track *t,int num_frames, int num_channels);
-cst_track *cst_track_copy(const cst_track *t);
 
 CST_VAL_USER_TYPE_DCLS(track,cst_track)
 
