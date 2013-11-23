@@ -107,17 +107,3 @@ cst_item *relation_append(cst_relation *r, cst_item *i)
     r->tail = ni;
     return ni;
 }
-
-cst_item *relation_prepend(cst_relation *r, cst_item *i)
-{
-    cst_item *ni = new_item_relation(r,i);
-    
-    if (r->tail == NULL)
-	r->tail = ni;
-
-    ni->n = r->head;
-    if (r->head)
-	r->head->p = ni;
-    r->head = ni;
-    return ni;
-}
