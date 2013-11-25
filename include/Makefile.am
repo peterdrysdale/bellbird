@@ -5,7 +5,7 @@ FLITEHEADERS = cst_alloc.h cst_audio.h \
 	cst_cart.h cst_cg.h cst_endian.h \
 	cst_error.h cst_features.h cst_ffeatures.h \
 	cst_file.h cst_item.h \
-	cst_lexicon.h cst_lts.h cst_lts_rewrites.h \
+	cst_lexicon.h cst_lts.h \
 	cst_phoneset.h cst_regex.h \
 	cst_relation.h cst_string.h cst_synth.h \
 	cst_tokenstream.h cst_track.h \

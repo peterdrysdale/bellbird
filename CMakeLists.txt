@@ -65,7 +65,6 @@ SET(SRC_LIBBELLBIRD
     src/hts/HTS_vocoder.c
     src/lexicon/cst_lexicon.c
     src/lexicon/cst_lts.c
-    src/lexicon/cst_lts_rewrites.c
     src/nitechvoice/nitech_engine.c
     src/nitechvoice/nitech_mlpg.c
     src/nitechvoice/nitech_model.c
