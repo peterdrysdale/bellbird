@@ -82,11 +82,8 @@ static void regex_to_C(const char *name, const cst_regex *rgx)
         printf("NULL, ");
     else
 
-#if defined(_LP64_)
-        printf("%s_rxprog + %ld, ", name, rgx->regmust - rgx->program);
-#else
-        printf("%s_rxprog + %d , ", name, rgx->regmust - rgx->program);
-#endif
+    printf("%s_rxprog + %td, ", name, rgx->regmust - rgx->program);
+
 
     printf("%d, ",rgx->regmlen);
     printf("%d,\n   ",rgx->regsize);
