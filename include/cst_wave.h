@@ -77,6 +77,9 @@ void delete_wave(cst_wave *val);
 #define cst_wave_set_num_samples(w,s) w->num_samples=s
 #define cst_wave_set_sample_rate(w,s) w->sample_rate=s
 
+#define BELL_IO_SUCCESS  0
+#define BELL_IO_ERROR   -1
+
 int cst_wave_save_riff(cst_wave *w, const char *filename);
 int cst_wave_append_riff(cst_wave *w,const char *filename);
 

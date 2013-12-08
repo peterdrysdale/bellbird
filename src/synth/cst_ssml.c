@@ -67,6 +67,7 @@
 #include "cst_synth.h"
 #include "cst_tokenstream.h"
 #include "flite.h"
+#include "bell_file.h"
 
 static const char *ssml_singlecharsymbols_general = "<>&/\";";
 static const char *ssml_singlecharsymbols_inattr = "=>;/\"";
@@ -151,7 +152,7 @@ static cst_utterance *ssml_apply_tag(const char *tag,
         {
             wavefilename = feat_string(attributes,"_val0");
             wave = new_wave();
-            if (cst_wave_load_riff(wave,wavefilename) == CST_OK_FORMAT)
+            if (cst_wave_load_riff(wave,wavefilename) == BELL_IO_SUCCESS)
             {
                 if (cst_streq("start",feat_string(attributes,"_type")))
                 {

@@ -46,7 +46,6 @@
 #ifndef _CST_FILE_H__
 #define _CST_FILE_H__
 
-#define CST_WRONG_FORMAT -2
 #define CST_ERROR_FORMAT -1
 #define CST_OK_FORMAT     0
 
