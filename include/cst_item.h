@@ -69,7 +69,7 @@ struct cst_item_struct {
 
 /* Constructor functions */
 cst_item *new_item_relation(cst_relation *r,cst_item *i);
-cst_item_contents *new_item_contents(cst_item *i);
+cst_item_contents *new_item_contents(void);
 
 /* Remove this item from this references */
 void delete_item(cst_item *item);

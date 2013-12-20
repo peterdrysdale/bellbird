@@ -1,4 +1,10 @@
 /*************************************************************************/
+/*                This code has been modified for Bellbird.              */
+/*                See COPYING for more copyright details.                */
+/*                The unmodified source code copyright notice            */
+/*                is included below.                                     */
+/*************************************************************************/
+/*************************************************************************/
 /*                                                                       */
 /*                  Language Technologies Institute                      */
 /*                     Carnegie Mellon University                        */
@@ -49,7 +55,7 @@
 int cst_cg_read_header(cst_file fd);
 
 cst_cg_db* cst_cg_load_db(cst_file fd);
-void cst_cg_free_db(cst_file fd,cst_cg_db*);
+void cst_cg_free_db(cst_cg_db*);
 
 char *cst_read_string(cst_file fd);
 void* cst_read_padded(cst_file fd, int*nb); 

@@ -122,7 +122,7 @@ cst_voice *cst_cg_load_voice(const char *filename,
     if (lex == NULL)
     {   /* Language is not supported */
 	/* Delete allocated memory in cg_db */
-	cst_cg_free_db(vd,cg_db);
+	cst_cg_free_db(cg_db);
 	bell_fclose(vd);
 	return NULL;	
     }

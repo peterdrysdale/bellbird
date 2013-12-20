@@ -67,7 +67,7 @@ static cst_utterance *no_wave_synth(cst_utterance *u)
     return u;
 }
 
-static cst_voice *register_cmu_us_no_wave(const char *voxdir)
+static cst_voice *register_cmu_us_no_wave(void)
 {
     cst_voice *v = new_voice();
     cst_lexicon *lex;
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 	exit(-1);
     }
     
-    v = register_cmu_us_no_wave(NULL);
+    v = register_cmu_us_no_wave();
 
     u = new_utterance();
     utt_set_input_text(u,text);

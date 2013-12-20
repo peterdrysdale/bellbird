@@ -72,7 +72,7 @@ void item_contents_set(cst_item *current, cst_item *i)
     cst_item_contents *c = 0;
     cst_item *nn_item;
     if (i == 0)
-	c = new_item_contents(current);
+	c = new_item_contents();
     else
 	c = i->contents;
     if (c != current->contents)
@@ -146,7 +146,7 @@ void item_unref_contents(cst_item *item)
     }
 }
 
-cst_item_contents *new_item_contents(cst_item *i)
+cst_item_contents *new_item_contents(void)
 {
     cst_item_contents *ic;
 

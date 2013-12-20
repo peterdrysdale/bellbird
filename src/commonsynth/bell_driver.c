@@ -91,8 +91,7 @@ static void bell_hts_copyto_wave(HTS_Engine * engine,cst_utterance * utt)
     return;
 }
 
-static void Flite_HTS_Engine_create_label(HTS_Engine * engine,
-                    cst_item * item, char *label)
+static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
 {
    char * seg_pp;
    char * seg_p;
@@ -261,7 +260,7 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
                 label_data = cst_alloc(char *,label_size);
                 for (i = 0, s = relation_head(utt_relation(utt, "Segment")); s; s = item_next(s), i++) {
                     label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
-                    Flite_HTS_Engine_create_label(engine, s, label_data[i]);
+                    Flite_HTS_Engine_create_label(s, label_data[i]);
                 }
                 if (voice_type==HTSMODE)
                 {
