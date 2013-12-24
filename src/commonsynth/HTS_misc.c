@@ -61,9 +61,9 @@
 
 HTS_MISC_C_START;
 
-#include <stdlib.h>             /* for exit(),calloc(),free() */
+#include <stdlib.h>             /* for free() */
 #include <stdarg.h>             /* for va_list */
-#include <string.h>             /* for strcpy(),strlen() */
+#include <string.h>             /* for strcpy() */
 
 #include "cst_alloc.h"
 #include "cst_error.h"

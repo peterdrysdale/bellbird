@@ -54,7 +54,6 @@ CST_VAL_REGISTER_TYPE(wave,cst_wave)
 cst_wave *new_wave()
 {
     cst_wave *w = cst_alloc(struct cst_wave_struct,1);
-    w->type = NULL;
     w->num_samples = 0;
     w->samples = NULL;
     return w;

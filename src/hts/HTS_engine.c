@@ -62,7 +62,7 @@
 HTS_ENGINE_C_START;
 
 #include <stdlib.h>             /* for atof() */
-#include <string.h>             /* for strcpy() */
+#include <string.h>             /* for strlen(), strstr() */
 #include <math.h>               /* for pow() */
 
 #include "cst_alloc.h"

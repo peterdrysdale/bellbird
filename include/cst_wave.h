@@ -50,7 +50,6 @@
 #include "cst_val.h"
 
 typedef struct  cst_wave_struct {
-    const char *type;
     int sample_rate;
     int num_samples;
     int num_channels;
