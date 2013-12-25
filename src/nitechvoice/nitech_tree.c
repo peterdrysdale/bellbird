@@ -125,7 +125,7 @@ int SearchTree (char *str, Node *node)
    return -1;
 }
 
-void LoadQuestions(HTS_File *fp, Question *q, Mtype type)
+void LoadQuestions(HTS_File *fp, Question *q)
 {
    char buf[1024];
 
@@ -283,7 +283,7 @@ void LoadTreesFile(TreeSet *ts, Mtype type)
       HTS_get_pattern_token(hfp, buf);
       if ( cst_streq(buf,"QS") )
       {
-         LoadQuestions(hfp, q, type);
+         LoadQuestions(hfp, q);
          q->next = cst_alloc(Question,1);
          q = ts->qtail[type] = q->next;
          q->next = NULL;

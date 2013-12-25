@@ -157,7 +157,7 @@ static void xmlpgparafree(MLPGPARA param)
     return;
 }
 
-static double get_like_pdfseq_vit(int dim, int dim2, int dnum, int clsnum,
+static double get_like_pdfseq_vit(int dim, int dim2, int dnum,
                                   MLPGPARA param, 
                                   float **model, 
                                   int dia_flag)
@@ -894,7 +894,7 @@ cst_track *mlpg(const cst_track *param_track, cst_cg_db *cg_db)
     get_dltmat(param->stm, &pst.dw, 1, param->dltm);
 
     //like = 
-    get_like_pdfseq_vit(dim, dim_st, nframes, nframes, param,
+    get_like_pdfseq_vit(dim, dim_st, nframes, param,
 			param_track->frames, TRUE);
 
     /* vlike = get_like_gv(dim2, dnum, param); */

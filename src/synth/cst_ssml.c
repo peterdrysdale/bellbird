@@ -130,8 +130,7 @@ static cst_features *ssml_get_attributes(cst_tokenstream *ts)
 static cst_utterance *ssml_apply_tag(const char *tag,
                                      cst_features *attributes,
                                      cst_utterance *u,
-                                     cst_features *word_feats,
-                                     cst_features *feats)
+                                     cst_features *word_feats)
 {
     const char *wavefilename;
     cst_wave *wave;
@@ -317,7 +316,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             else
                 attributes = ssml_get_attributes(ts);
             token = ts_get(ts);  /* skip ">" */
-	    if (ssml_apply_tag(tag,attributes,utt,ssml_word_feats,ssml_feats))
+	    if (ssml_apply_tag(tag,attributes,utt,ssml_word_feats))
                 ssml_eou = 0;
             else
                 ssml_eou = 1;

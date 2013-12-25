@@ -164,7 +164,7 @@ typedef struct MLPGPARA_STRUCT {
 
 static MLPGPARA xmlpgpara_init(int dim, int dim2, int dnum, int clsnum);
 static void xmlpgparafree(MLPGPARA param);
-static double get_like_pdfseq_vit(int dim, int dim2, int dnum, int clsnum,
+static double get_like_pdfseq_vit(int dim, int dim2, int dnum,
                                   MLPGPARA param, 
                                   float **model, 
                                   int dia_flag);
