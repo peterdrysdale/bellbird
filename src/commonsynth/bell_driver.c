@@ -276,9 +276,9 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
                                               label_data, label_size);
                 }
                 for (i = 0; i < label_size; i++){
-                    free(label_data[i]);
+                    cst_free(label_data[i]);
                 }
-                free(label_data);
+                cst_free(label_data);
                 label_size=0;
    /* hts specific code ends here */
                 durs += flite_process_output(utt,outtype,TRUE);

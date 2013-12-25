@@ -61,7 +61,6 @@
 
 HTS_MISC_C_START;
 
-#include <stdlib.h>             /* for free() */
 #include <stdarg.h>             /* for va_list */
 #include <string.h>             /* for strcpy() */
 
@@ -125,8 +124,8 @@ HTS_File *HTS_fopen_from_fp(HTS_File * fp, size_t size)
       d->size = size;
       d->index = 0;
       if (fread(d->data, sizeof(unsigned char), size, (FILE *) fp->pointer) != size) {
-         free(d->data);
-         free(d);
+         cst_free(d->data);
+         cst_free(d);
          return NULL;
       }
       f = cst_alloc(HTS_File,1);
