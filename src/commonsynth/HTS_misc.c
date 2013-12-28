@@ -10,7 +10,7 @@
 /*           http://hts-engine.sourceforge.net/                      */
 /* ----------------------------------------------------------------- */
 /*                                                                   */
-/*  Copyright (c) 2001-2012  Nagoya Institute of Technology          */
+/*  Copyright (c) 2001-2013  Nagoya Institute of Technology          */
 /*                           Department of Computer Science          */
 /*                                                                   */
 /*                2001-2008  Tokyo Institute of Technology           */
@@ -264,11 +264,11 @@ size_t HTS_ftell(HTS_File * fp)
    } else if (fp->type == HTS_FILE) {
       fpos_t pos;
       fgetpos((FILE *) fp->pointer, &pos);
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(__ANDROID__)
       return (size_t) pos;
 #else
       return (size_t) pos.__pos;
-#endif                          /* _WIN32 || __APPLE__ */
+#endif                          /* _WIN32 || __CYGWIN__ || __APPLE__ || __ANDROID__ */
    }
    cst_errmsg("HTS_ftell: Unknown file type.\n");
    return 0;

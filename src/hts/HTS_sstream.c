@@ -10,7 +10,7 @@
 /*           http://hts-engine.sourceforge.net/                      */
 /* ----------------------------------------------------------------- */
 /*                                                                   */
-/*  Copyright (c) 2001-2012  Nagoya Institute of Technology          */
+/*  Copyright (c) 2001-2013  Nagoya Institute of Technology          */
 /*                           Department of Computer Science          */
 /*                                                                   */
 /*                2001-2008  Tokyo Institute of Technology           */
@@ -69,8 +69,27 @@ HTS_SSTREAM_C_START;
 /* hts_engine libraries */
 #include "HTS_hidden.h"
 
-/* HTS_set_duration: set duration from state duration probability distribution */
-static double HTS_set_duration(size_t * duration, double *mean, double *vari, size_t size, double frame_length)
+/* HTS_set_default_duration: set default duration from state duration probability distribution */
+static double HTS_set_default_duration(size_t * duration, double *mean, double *vari, size_t size)
+{
+   size_t i;
+   double temp;
+   size_t sum = 0;
+
+   for (i = 0; i < size; i++) {
+      temp = mean[i] + 0.5;
+      if (temp < 1.0)
+         duration[i] = 1;
+      else
+         duration[i] = (size_t) temp;
+      sum += duration[i];
+   }
+
+   return (double) sum;
+}
+
+/* HTS_set_specified_duration: set duration from state duration probability distribution and specified frame length */
+static double HTS_set_specified_duration(size_t * duration, double *mean, double *vari, size_t size, double frame_length)
 {
    size_t i;
    int j;
@@ -78,19 +97,6 @@ static double HTS_set_duration(size_t * duration, double *mean, double *vari, si
    double rho = 0.0;
    size_t sum = 0;
    size_t target_length;
-
-   /* if the frame length is not specified, only the mean vector is used */
-   if (frame_length == 0.0) {
-      for (i = 0; i < size; i++) {
-         temp1 = (mean[i] + 0.5);
-         if (temp1 < 1.0)
-            duration[i] = 1;
-         else
-            duration[i] = (size_t) temp1;
-         sum += duration[i];
-      }
-      return (double) sum;
-   }
 
    /* get the target frame length */
    if (frame_length + 0.5 < 1.0)
@@ -101,7 +107,7 @@ static double HTS_set_duration(size_t * duration, double *mean, double *vari, si
    /* check the specified duration */
    if (target_length <= size) {
       if (target_length < size)
-         cst_errmsg("Warning: HTS_set_duration: Specified frame length is too short.\n");
+         cst_errmsg("Warning: HTS_set_specified_duration: Specified frame length is too short.\n");
       for (i = 0; i < size; i++)
          duration[i] = 1;
       return (double) size;
@@ -236,9 +242,13 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
          sst->mean[j] = cst_alloc(double,(sst->vector_length * HTS_ModelSet_get_window_size(ms, i)));
          sst->vari[j] = cst_alloc(double,(sst->vector_length * HTS_ModelSet_get_window_size(ms, i)));
       }
-      sst->gv_switch = cst_alloc(HTS_Boolean,sss->total_state);
-      for (j = 0; j < sss->total_state; j++)
-         sst->gv_switch[j] = TRUE;
+      if (HTS_ModelSet_use_gv(ms, i)) {
+         sst->gv_switch = cst_alloc(HTS_Boolean,sss->total_state);
+         for (j = 0; j < sss->total_state; j++)
+            sst->gv_switch[j] = TRUE;
+      } else {
+         sst->gv_switch = NULL;
+      }
    }
 
    /* determine state duration */
@@ -254,11 +264,11 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
       for (i = 0; i < HTS_Label_get_size(label); i++) {
          temp = HTS_Label_get_end_frame(label, i);
          if (temp >= 0) {
-            next_time += (size_t) HTS_set_duration(&sss->duration[next_state], &duration_mean[next_state], &duration_vari[next_state], state + sss->nstate - next_state, temp - next_time);
+            next_time += (size_t) HTS_set_specified_duration(&sss->duration[next_state], &duration_mean[next_state], &duration_vari[next_state], state + sss->nstate - next_state, temp - next_time);
             next_state = state + sss->nstate;
          } else if (i + 1 == HTS_Label_get_size(label)) {
             cst_errmsg("Warning: HTS_SStreamSet_create: The time of final label is not specified.\n");
-            HTS_set_duration(&sss->duration[next_state], &duration_mean[next_state], &duration_vari[next_state], state + sss->nstate - next_state, 0.0);
+            HTS_set_default_duration(&sss->duration[next_state], &duration_mean[next_state], &duration_vari[next_state], state + sss->nstate - next_state);
          }
          state += sss->nstate;
       }
@@ -270,11 +280,10 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
             temp += duration_mean[i];
          }
          frame_length = temp / speed;
+         HTS_set_specified_duration(sss->duration, duration_mean, duration_vari, sss->total_state, frame_length);
       } else {
-         frame_length = 0.0;
+         HTS_set_default_duration(sss->duration, duration_mean, duration_vari, sss->total_state);
       }
-      /* set state duration */
-      HTS_set_duration(sss->duration, duration_mean, duration_vari, sss->total_state, frame_length);
    }
    cst_free(duration_mean);
    cst_free(duration_vari);
@@ -492,7 +501,8 @@ void HTS_SStreamSet_clear(HTS_SStreamSet * sss)
             cst_free(sst->gv_mean);
          if (sst->gv_vari)
             cst_free(sst->gv_vari);
-         cst_free(sst->gv_switch);
+         if (sst->gv_switch)
+            cst_free(sst->gv_switch);
       }
       cst_free(sss->sstream);
    }

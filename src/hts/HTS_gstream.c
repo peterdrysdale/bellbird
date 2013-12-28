@@ -10,7 +10,7 @@
 /*           http://hts-engine.sourceforge.net/                      */
 /* ----------------------------------------------------------------- */
 /*                                                                   */
-/*  Copyright (c) 2001-2012  Nagoya Institute of Technology          */
+/*  Copyright (c) 2001-2013  Nagoya Institute of Technology          */
 /*                           Department of Computer Science          */
 /*                                                                   */
 /*                2001-2008  Tokyo Institute of Technology           */
@@ -146,7 +146,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
    /* synthesize speech waveform */
    HTS_Vocoder_initialize(&v, gss->gstream[0].vector_length - 1, stage, use_log_gain, sampling_rate, fperiod);
    if (gss->nstream >= 3)
-      nlpf = (gss->gstream[2].vector_length - 1) / 2;
+      nlpf = gss->gstream[2].vector_length;
    for (i = 0; i < gss->total_frame && (*stop) == FALSE; i++) {
       j = i * fperiod;
       if (gss->nstream >= 3)
@@ -195,9 +195,11 @@ void HTS_GStreamSet_clear(HTS_GStreamSet * gss)
 
    if (gss->gstream) {
       for (i = 0; i < gss->nstream; i++) {
-         for (j = 0; j < gss->total_frame; j++)
-            cst_free(gss->gstream[i].par[j]);
-         cst_free(gss->gstream[i].par);
+         if (gss->gstream[i].par != NULL) {
+            for (j = 0; j < gss->total_frame; j++)
+               cst_free(gss->gstream[i].par[j]);
+            cst_free(gss->gstream[i].par);
+         }
       }
       cst_free(gss->gstream);
    }

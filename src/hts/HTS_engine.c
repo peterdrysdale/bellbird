@@ -10,7 +10,7 @@
 /*           http://hts-engine.sourceforge.net/                      */
 /* ----------------------------------------------------------------- */
 /*                                                                   */
-/*  Copyright (c) 2001-2012  Nagoya Institute of Technology          */
+/*  Copyright (c) 2001-2013  Nagoya Institute of Technology          */
 /*                           Department of Computer Science          */
 /*                                                                   */
 /*                2001-2008  Tokyo Institute of Technology           */
@@ -396,19 +396,32 @@ size_t HTS_Engine_get_nstate(HTS_Engine * engine)
    return HTS_ModelSet_get_nstate(&engine->ms);
 }
 
+/* HTS_Engine_get_total_frame: get total number of frame */
+size_t HTS_Engine_get_total_frame(HTS_Engine * engine)
+{
+   return HTS_GStreamSet_get_total_frame(&engine->gss);
+}
+
 /* HTS_Engine_get_nsamples: get number of samples */
 size_t HTS_Engine_get_nsamples(HTS_Engine * engine)
 {
    return HTS_GStreamSet_get_total_nsamples(&engine->gss);
 }
 
-/* HTS_Engine_get_speech: output generated speech */
-double HTS_Engine_get_speech(HTS_Engine * engine, size_t index)
+/* HTS_Engine_get_generated_parameter: output generated parameter */
+double HTS_Engine_get_generated_parameter(HTS_Engine * engine, size_t stream_index, size_t frame_index, size_t vector_index)
+{
+   return HTS_GStreamSet_get_parameter(&engine->gss, stream_index, frame_index, vector_index);
+}
+
+/* HTS_Engine_get_generated_speech: output generated speech */
+double HTS_Engine_get_generated_speech(HTS_Engine * engine, size_t index)
 {
    return HTS_GStreamSet_get_speech(&engine->gss, index);
 }
 
-static HTS_Boolean HTS_Engine_synthesize(HTS_Engine * engine)
+/* HTS_Engine_generate_state_sequence: genereate state sequence (1st synthesis step) */
+static HTS_Boolean HTS_Engine_generate_state_sequence(HTS_Engine * engine)
 {
    size_t i, state_index, model_index;
    double f;
@@ -435,17 +448,44 @@ static HTS_Boolean HTS_Engine_synthesize(HTS_Engine * engine)
          }
       }
    }
+   return TRUE;
+}
 
-   if (HTS_PStreamSet_create(&engine->pss, &engine->sss, engine->condition.msd_threshold, engine->condition.gv_weight) != TRUE) {
+/* HTS_Engine_generate_state_sequence_from_strings: generate state sequence from strings (1st synthesis step) */
+HTS_Boolean HTS_Engine_generate_state_sequence_from_strings(HTS_Engine * engine, char **lines, size_t num_lines)
+{
+   HTS_Engine_refresh(engine);
+   HTS_Label_load_from_strings(&engine->label, engine->condition.sampling_frequency, engine->condition.fperiod, lines, num_lines);
+   return HTS_Engine_generate_state_sequence(engine);
+}
+
+/* HTS_Engine_generate_parameter_sequence: generate parameter sequence (2nd synthesis step) */
+HTS_Boolean HTS_Engine_generate_parameter_sequence(HTS_Engine * engine)
+{
+   return HTS_PStreamSet_create(&engine->pss, &engine->sss, engine->condition.msd_threshold, engine->condition.gv_weight);
+}
+
+/* HTS_Engine_generate_sample_sequence: generate sample sequence (3rd synthesis step) */
+HTS_Boolean HTS_Engine_generate_sample_sequence(HTS_Engine * engine)
+{
+   return HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.stage, engine->condition.use_log_gain, engine->condition.sampling_frequency, engine->condition.fperiod, engine->condition.alpha, engine->condition.beta, &engine->condition.stop, engine->condition.volume);
+}
+
+/* HTS_Engine_synthesize: synthesize speech */
+static HTS_Boolean HTS_Engine_synthesize(HTS_Engine * engine)
+{
+   if (HTS_Engine_generate_state_sequence(engine) != TRUE) {
       HTS_Engine_refresh(engine);
       return FALSE;
    }
-
-   if (HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.stage, engine->condition.use_log_gain, engine->condition.sampling_frequency, engine->condition.fperiod, engine->condition.alpha, engine->condition.beta, &engine->condition.stop, engine->condition.volume) != TRUE ) {
+   if (HTS_Engine_generate_parameter_sequence(engine) != TRUE) {
       HTS_Engine_refresh(engine);
       return FALSE;
    }
-
+   if (HTS_Engine_generate_sample_sequence(engine) != TRUE) {
+      HTS_Engine_refresh(engine);
+      return FALSE;
+   }
    return TRUE;
 }
 

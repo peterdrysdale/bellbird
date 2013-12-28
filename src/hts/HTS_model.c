@@ -10,7 +10,7 @@
 /*           http://hts-engine.sourceforge.net/                      */
 /* ----------------------------------------------------------------- */
 /*                                                                   */
-/*  Copyright (c) 2001-2012  Nagoya Institute of Technology          */
+/*  Copyright (c) 2001-2013  Nagoya Institute of Technology          */
 /*                           Department of Computer Science          */
 /*                                                                   */
 /*                2001-2008  Tokyo Institute of Technology           */
@@ -668,6 +668,7 @@ static HTS_Boolean HTS_Model_load_tree(HTS_Model * model, HTS_File * fp)
 /* HTS_Model_load_pdf: load pdfs */
 static HTS_Boolean HTS_Model_load_pdf(HTS_Model * model, HTS_File * fp, size_t vector_length, size_t num_windows, HTS_Boolean is_msd)
 {
+   unsigned int i;
    size_t j, k;
    HTS_Boolean result = TRUE;
    size_t len;
@@ -686,8 +687,13 @@ static HTS_Boolean HTS_Model_load_pdf(HTS_Model * model, HTS_File * fp, size_t v
    model->npdf = cst_alloc(size_t,model->ntree);
    model->npdf -= 2;
    /* read the number of pdfs */
-   if (HTS_fread_little_endian(&model->npdf[2], sizeof(size_t), model->ntree, fp) != model->ntree)
-      result = FALSE;
+   for (j = 2; j <= model->ntree + 1; j++) {
+      if (HTS_fread_little_endian(&i, sizeof(unsigned int), 1, fp) != 1) {
+         result = FALSE;
+         break;
+      }
+      model->npdf[j] = (size_t) i;
+   }
    for (j = 2; j <= model->ntree + 1; j++) {
       if (model->npdf[j] <= 0) {
          cst_errmsg("HTS_Model_load_pdf: # of pdfs at %d-th state should be positive.\n", j);
@@ -1617,7 +1623,8 @@ void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, const doub
       vari[i] = 0.0;
    }
    for (i = 0; i < ms->num_voices; i++)
-      HTS_Model_add_parameter(&ms->duration[i], 2, string, mean, vari, NULL, iw[i]);
+      if (iw[i] != 0.0)
+         HTS_Model_add_parameter(&ms->duration[i], 2, string, mean, vari, NULL, iw[i]);
 }
 
 /* HTS_ModelSet_get_parameter_index: get paramter PDF & tree index */
@@ -1640,7 +1647,8 @@ void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t s
       *msd = 0.0;
 
    for (i = 0; i < ms->num_voices; i++)
-      HTS_Model_add_parameter(&ms->stream[i][stream_index], state_index, string, mean, vari, msd, iw[i]);
+      if (iw[i] != 0.0)
+         HTS_Model_add_parameter(&ms->stream[i][stream_index], state_index, string, mean, vari, msd, iw[i]);
 }
 
 /* HTS_ModelSet_get_gv_index: get gv PDF & tree index */
@@ -1660,7 +1668,8 @@ void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *str
       vari[i] = 0.0;
    }
    for (i = 0; i < ms->num_voices; i++)
-      HTS_Model_add_parameter(&ms->gv[i][stream_index], 2, string, mean, vari, NULL, iw[i]);
+      if (iw[i] != 0.0)
+         HTS_Model_add_parameter(&ms->gv[i][stream_index], 2, string, mean, vari, NULL, iw[i]);
 }
 
 HTS_MODEL_C_END;
