@@ -154,26 +154,3 @@ const cst_val *val_string_n(int n)
     else
 	return val_string_const[val_int_const_max-1];
 }
-
-#if 0
-/* This technique isn't thread safe, so I replaced it with val_consts */
-static cst_features *val_string_consts = NULL;
-
-const cst_val *val_string_x(const char *n)
-{
-    const cst_val *v;
-
-    /* *BUG* This will have to be fixed soon */
-    if (val_string_consts == NULL)
-	val_string_consts = new_features();
-    
-    v = feat_val(val_string_consts,n);
-    if (v)
-	return v;
-    else
-    {
-	feat_set_string(val_string_consts,n,n);
-	return feat_val(val_string_consts,n);
-    }
-}
-#endif
