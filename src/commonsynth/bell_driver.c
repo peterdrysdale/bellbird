@@ -314,22 +314,6 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
     return durs;
 }
 
-static cst_utterance *hts_voice_postlex(cst_utterance *utt)
-{
-    const cst_item *s;
-
-    cmu_postlex(utt);
-
-    /* Fix ah to aa for hts voices */
-    /* This should really be done in the index itself */
-
-    for (s=relation_head(utt_relation(utt,"Segment")); s; s=item_next(s))
-	if (cst_streq(item_feat_string(s,"name"),"ah"))
-	    item_set_string(s,"name","aa");
-
-    return utt;
-}
-
 static cst_voice *register_hts_voice(const cst_lang *lang_list)
 {
     /* Voice initialization common to hts and nitech voices */
@@ -365,7 +349,7 @@ static cst_voice *register_hts_voice(const cst_lang *lang_list)
     feat_set(voice->features,"lexicon",lexicon_val(lex));
 
     /* Add hts specific post lexical rules */
-    feat_set(voice->features,"postlex_func",uttfunc_val(&hts_voice_postlex));
+    feat_set(voice->features,"postlex_func",uttfunc_val(&cmu_postlex));
 
     return voice;
 }
