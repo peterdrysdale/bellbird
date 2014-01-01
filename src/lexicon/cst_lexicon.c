@@ -198,33 +198,6 @@ cst_val *cst_lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
     return ventry;
  }
 
-#if 0
-void lexicon_register(cst_lexicon *lex)
-{
-    /* Add given lexicon to list of known lexicons */
-    cst_lexicon **old_lexs;
-    int i;
-    
-    old_lexs = flite_lexicons;
-    flite_num_lexicons++;
-    flite_lexicons = cst_alloc(cst_lexicon *,flite_num_lexicons);
-    for (i=0; i<flite_num_lexicons-1; i++)
-	flite_lexicons[i] = old_lexs[i];
-    flite_lexicons[i] = lex;
-    cst_free(old_lexs);
-}
-
-cst_lexicon *lexicon_select(const char *name)
-{
-    int i;
-
-    for (i=0; i < flite_num_lexicons; i++)
-	if (cst_streq(name,flite_lexicons[i]->name))
-	    return flite_lexicons[i];
-    return NULL;
-}
-#endif
-
 static int no_syl_boundaries(const cst_item *i, const cst_val *p)
 {
     /* This is a default function that will normally be replaced */
@@ -502,5 +475,3 @@ static int lex_match_entry(const char *a, const char *b)
 
     return c;
 }
-
-
