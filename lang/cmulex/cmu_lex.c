@@ -338,12 +338,6 @@ extern const char * const cmu_lts_letter_table[];
 extern const cst_lts_addr cmu_lts_letter_index[];
 extern const cst_lts_model cmu_lts_model[];
 
-cst_lexicon *cmulex_init()
-{
-    /* We actually need the init function match the directory name */
-    return cmu_lex_init();
-}
-
 cst_lexicon *cmu_lex_init()
 {
     /* I'd like to do this as a const but it needs everything in this */
