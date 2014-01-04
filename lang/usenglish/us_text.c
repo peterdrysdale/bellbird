@@ -742,7 +742,8 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 
         cst_free(aaa);
     }
-    else if ((cst_strlen(name) > 1) && (!cst_regex_match(cst_rx_alpha,name)))
+    else if ((cst_strlen(name) > 1) && (!cst_regex_match(cst_rx_alpha,name))
+              && (!in_lex(lex,name,NULL)) )
     {   /* its not just alphas */
 	for (i=0; name[i] != '\0'; i++)
 	    if (text_splitable(name,i))

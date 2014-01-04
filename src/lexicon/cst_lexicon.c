@@ -312,8 +312,7 @@ static cst_val *lex_lookup_addenda(const char *wp,const cst_lexicon *l,
     return NULL;
 }
 
-static int lex_uncompress_word(char *ucword,int max_size,
-			       int p,const cst_lexicon *l)
+static int lex_uncompress_word(char *ucword,int p,const cst_lexicon *l)
 {
     int i,j=0,length;
     unsigned char *cword;
@@ -326,14 +325,29 @@ static int lex_uncompress_word(char *ucword,int max_size,
 	cword = &l->data[p];
 	for (i=0,j=0; cword[i]; i++)
 	{
-	    length = cst_strlen(l->entry_hufftable[cword[i]]);
-	    if (j+length+1<max_size)
-	    {
-		memmove(ucword+j,l->entry_hufftable[cword[i]],length);
-		j += length;
-	    }
-	    else
-		break;
+            if (cword[i] == '\1') /* Test for escape character indicating */
+                                  /* uncompressed byte.                   */
+            {
+                if (j+2<WP_SIZE)
+                {
+                   ucword[j] = cword[i+1]; /* Copy escaped uncompressed byte */
+                   i++;
+                   j += 1;
+                }
+                else
+                   break;
+            }
+            else
+            {
+                length = cst_strlen(l->entry_hufftable[cword[i]]);
+                if (j+length+1<WP_SIZE)
+                {
+                   memmove(ucword+j,l->entry_hufftable[cword[i]],length);
+                   j += length;
+                }
+                else
+                   break;
+            }
 	}
 	ucword[j] = '\0';
     }
@@ -388,7 +402,7 @@ static int lex_lookup_bsearch(const cst_lexicon *l, const char *word)
 
 	/* find previous entry start */
 	mid = lex_data_closest_entry(l,mid,start,end);
-	lex_uncompress_word(word_pos,WP_SIZE,mid,l);
+	lex_uncompress_word(word_pos,mid,l);
 
 	c = lex_match_entry(word_pos,word);
 
@@ -406,21 +420,21 @@ static int lex_lookup_bsearch(const cst_lexicon *l, const char *word)
 #if 0
 	if (l->data[start-1] == 255)
 	{
-	    lex_uncompress_word(word_pos,WP_SIZE,start,l);
+	    lex_uncompress_word(word_pos,start,l);
 	    printf("start %s %d ",word_pos,start);
 	}
 	else
 	    printf("start NULL %d ",start);
 	if (l->data[mid-1] == 255)
 	{
-	    lex_uncompress_word(word_pos,WP_SIZE,mid,l);
+	    lex_uncompress_word(word_pos,mid,l);
 	    printf("mid %s %d ",word_pos,mid);
 	}
 	else
 	    printf("mid NULL %d ",mid);
 	if (l->data[end-1] == 255)
 	{
-	    lex_uncompress_word(word_pos,WP_SIZE,end,l);
+	    lex_uncompress_word(word_pos,end,l);
 	    printf("end %s %d ",word_pos,end);
 	}
 	else
@@ -443,7 +457,7 @@ static int find_full_match(const cst_lexicon *l,
 
     for (w=i; w > 0; )
     {
-	lex_uncompress_word(word_pos,WP_SIZE,w,l);
+	lex_uncompress_word(word_pos,w,l);
 	if (!cst_streq(word+1,word_pos+1))
 	    break;
 	else if (cst_streq(word,word_pos))
@@ -455,7 +469,7 @@ static int find_full_match(const cst_lexicon *l,
 
     for (w=i; w < l->num_bytes;)
     {
-	lex_uncompress_word(word_pos,WP_SIZE,w,l);
+	lex_uncompress_word(word_pos,w,l);
 	if (!cst_streq(word+1,word_pos+1))
 	    break;
 	else if (cst_streq(word,word_pos))
@@ -472,6 +486,10 @@ static int lex_match_entry(const char *a, const char *b)
     int c;
 
     c = strcmp(a+1,b+1);
+
+#if 0
+    cst_errmsg("Compare a:%s.b:%s.\n",(a+1),(b+1));
+#endif
 
     return c;
 }
