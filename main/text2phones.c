@@ -115,9 +115,12 @@ int main(int argc, char **argv)
     const char *text, *name;
     int i;
 
-    if (cst_streq(argv[1],"-h") || cst_streq(argv[1],"--help") ||
+    if (argc == 1 || cst_streq(argv[1],"-h") || cst_streq(argv[1],"--help") ||
         cst_streq(argv[1],"-?"))
+    {
 	    t2p_usage();
+            return 0;
+    }
 
     for (i=1; i<argc; i++)
     {
