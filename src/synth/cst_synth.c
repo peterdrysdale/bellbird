@@ -596,7 +596,6 @@ cst_utterance *flat_prosody(cst_utterance *u)
     mean *= get_param_float(u->features,"f0_shift", 1.0);
     stddev = get_param_float(u->features,"target_f0_stddev", 12.0);
 
-    s=relation_head(utt_relation(u,"Segment"));
     t = relation_append(targ_rel,NULL);
     item_set_float(t,"pos",0.0);
     item_set_float(t,"f0",mean+stddev);
