@@ -254,19 +254,11 @@ cst_val *lex_lookup(const cst_lexicon *l, const char *word, const char *pos)
 
 	if (index >= 0)
 	{
-	    if (l->phone_hufftable)
-	    {
-		for (p=index-2; l->data[p]; p--)
-		    for (q=l->phone_hufftable[l->data[p]]; *q; q++)
-			phones = cons_val(string_val(l->phone_table[(unsigned char)*q]),
-				  phones);
-	    }
-	    else  /* no compression -- should we still support this ? */
-	    {
-		for (p=index-2; l->data[p]; p--)
-		    phones = cons_val(string_val(l->phone_table[l->data[p]]),
-				      phones);
-	    }
+            for (p=index-2; l->data[p]; p--)
+                for (q=l->phone_hufftable[l->data[p]]; *q; q++)
+                    phones = cons_val(string_val(l->phone_table[(unsigned char)*q]),
+                                     phones);
+
 	    phones = val_reverse(phones);
 	}
 	else if (l->lts_function)
@@ -317,40 +309,34 @@ static int lex_uncompress_word(char *ucword,int p,const cst_lexicon *l)
     int i,j=0,length;
     unsigned char *cword;
 
-    if (l->entry_hufftable == 0)
-        /* can have "compressed" lexicons without compression */
-	bell_sprintf(ucword,"%s",&l->data[p]);
-    else
+    cword = &l->data[p];
+    for (i=0,j=0; cword[i]; i++)
     {
-	cword = &l->data[p];
-	for (i=0,j=0; cword[i]; i++)
-	{
-            if (cword[i] == '\1') /* Test for escape character indicating */
-                                  /* uncompressed byte.                   */
+        if (cword[i] == '\1') /* Test for escape character indicating */
+                              /* uncompressed byte.                   */
+        {
+            if (j+2<WP_SIZE)
             {
-                if (j+2<WP_SIZE)
-                {
-                   ucword[j] = cword[i+1]; /* Copy escaped uncompressed byte */
-                   i++;
-                   j += 1;
-                }
-                else
-                   break;
+               ucword[j] = cword[i+1]; /* Copy escaped uncompressed byte */
+               i++;
+               j += 1;
             }
             else
+               break;
+        }
+        else
+        {
+            length = cst_strlen(l->entry_hufftable[cword[i]]);
+            if (j+length+1<WP_SIZE)
             {
-                length = cst_strlen(l->entry_hufftable[cword[i]]);
-                if (j+length+1<WP_SIZE)
-                {
-                   memmove(ucword+j,l->entry_hufftable[cword[i]],length);
-                   j += length;
-                }
-                else
-                   break;
+               memmove(ucword+j,l->entry_hufftable[cword[i]],length);
+               j += length;
             }
-	}
-	ucword[j] = '\0';
+            else
+               break;
+        }
     }
+    ucword[j] = '\0';
 
     return j;
 }
