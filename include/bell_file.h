@@ -1,5 +1,5 @@
 #ifndef __BELL_FILE_H__
-#define __FILE_H__
+#define __BELL_FILE_H__
 
 char * bell_build_filename(const char * fn_voice, const char * end_segment);
 
