@@ -269,16 +269,6 @@ cst_item *item_daughter(const cst_item *i)
 	return i->d;
 }
 
-cst_item *item_nth_daughter(const cst_item *i,int n)
-{
-    int d;
-    cst_item *p;
-
-    for (d=0,p=item_daughter(i); p && (d < n); p=item_next(p),d++);
-    return p;
-}
-
-
 cst_item *item_last_daughter(const cst_item *i)
 {
     cst_item *p;

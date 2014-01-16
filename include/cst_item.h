@@ -90,7 +90,6 @@ cst_item *item_prepend(cst_item *i,cst_item *new_item);
 
 /* Tree accessor/manipulator function */
 cst_item *item_parent(const cst_item *i);
-cst_item *item_nth_daughter(const cst_item *i,int n);
 cst_item *item_daughter(const cst_item *i);
 cst_item *item_last_daughter(const cst_item *i);
 
