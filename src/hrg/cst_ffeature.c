@@ -90,7 +90,7 @@ static const void *internal_ff(const cst_item *item,
     const cst_val *ff;
     cst_ffunction ffunc;
     char tokenstring[200]; /* we don't seem to have featpaths longer than 72 */
-    char *tokens[100];
+    char *tokens[101];
     int i,j;
 
     /* This used to use cst_tokenstream but that was too slow */
@@ -108,6 +108,7 @@ static const void *internal_ff(const cst_item *item,
         }
     }
     tokens[j] = NULL;
+    tokens[j+1] = NULL; /* Cover malformed relation move commands */
     j=0;
     for (tk = tokens[j], pitem=item;
 	 pitem && 
@@ -115,7 +116,16 @@ static const void *internal_ff(const cst_item *item,
 	      ((type == 1) && tk));
 	 j++, tk = tokens[j])
     {
-	if (cst_streq(tk,"n"))
+        if (cst_streq(tk,"R"))
+	{
+	    /* A relation move */
+            j++;
+	    relation = tokens[j];
+	    pitem = item_as(pitem,relation);
+	}
+	else if (cst_streq(tk,"parent"))
+	    pitem = item_parent(pitem);
+	else if (cst_streq(tk,"n"))
 	    pitem = item_next(pitem);
 	else if (cst_streq(tk,"p"))
 	    pitem = item_prev(pitem);
@@ -133,20 +143,11 @@ static const void *internal_ff(const cst_item *item,
 	    else
 		pitem = NULL;
 	}
-	else if (cst_streq(tk,"parent"))
-	    pitem = item_parent(pitem);
 	else if ((cst_streq(tk,"daughter")) ||
 		 (cst_streq(tk,"daughter1")))
 	    pitem = item_daughter(pitem);
 	else if (cst_streq(tk,"daughtern"))
 	    pitem = item_last_daughter(pitem);
-	else if (cst_streq(tk,"R"))
-	{
-	    /* A relation move */
-            j++;
-	    relation = tokens[j];
-	    pitem = item_as(pitem,relation);
-	}
 	else
 	{
 	    cst_errmsg("ffeature: unknown directive \"%s\" ignored\n",tk);
