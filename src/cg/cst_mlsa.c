@@ -423,7 +423,7 @@ static double b2en (double *b, int m, double a, VocoderSetup *vs)
 }
 
 
-/* b2bc : transform MLSA digital filter coefficients to mel-cepstrum */
+/* b2mc : transform MLSA digital filter coefficients to mel-cepstrum */
 static void b2mc (double *b, double *mc, int m, double a)
 {
   double d, o;
