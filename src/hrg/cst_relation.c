@@ -47,8 +47,6 @@
 #include "cst_relation.h"
 #include "cst_utterance.h"
 
-static const char * const cst_relation_noname = "NoName";
-
 cst_relation *new_relation(const char *name, cst_utterance *u)
 {
     cst_relation *r = cst_alloc(cst_relation,1);
@@ -87,11 +85,6 @@ cst_item *relation_head(cst_relation *r)
 cst_item *relation_tail(cst_relation *r)
 {
     return (r == NULL ? NULL : r->tail);
-}
-
-const char *relation_name(cst_relation *r)
-{
-    return (r == NULL ? cst_relation_noname : r->name);
 }
 
 cst_item *relation_append(cst_relation *r, cst_item *i)

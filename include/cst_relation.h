@@ -65,7 +65,6 @@ void delete_relation(cst_relation *r);
 
 cst_item *relation_head(cst_relation *r);
 cst_item *relation_tail(cst_relation *r);
-const char *relation_name(cst_relation *r);
 
 cst_item *relation_append(cst_relation *r,cst_item *i);
 
