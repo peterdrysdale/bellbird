@@ -201,6 +201,8 @@ cst_item *item_append(cst_item *current, cst_item *ni)
     if (ni && (ni->relation == current->relation))
     {
 	/* got to delete it first as an item can't be in a relation twice */
+	cst_errmsg("item_append: already in relation\n");
+	return 0;
     }
     else
 	rni = new_item_relation(current->relation,ni);
@@ -224,6 +226,8 @@ cst_item *item_prepend(cst_item *current, cst_item *ni)
     if (ni && (ni->relation == current->relation))
     {
 	/* got to delete it first as an item can't be in a relation twice */
+	cst_errmsg("item_prepend: already in relation\n");
+	return 0;
     }
     else
 	rni = new_item_relation(current->relation,ni);
