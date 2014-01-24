@@ -81,7 +81,7 @@ int item_after_length(const cst_item *n){
   int i = 0;
   if(n == NULL) return 0;
   for(;n;n=n->n,i++);
-   return i;
+  return i;
 }
 
 const cst_item *item_first(const cst_item *n){
