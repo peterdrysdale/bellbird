@@ -74,7 +74,7 @@ static bell_boolean isdigit_string(char *str)
       return FALSE;
 }
 
-cst_wave * HTS_Process (char **lines, size_t num_lines, 
+static cst_wave * HTS_Process (char **lines, size_t num_lines, 
 		   PStream *mceppst, PStream *lf0pst, globalP *gp, 
 		   ModelSet *ms, TreeSet *ts, VocoderSetup *vs )
 {

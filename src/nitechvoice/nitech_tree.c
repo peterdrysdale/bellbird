@@ -56,7 +56,7 @@
 
 #include "HTS_misc.h"
 
-bell_boolean DPMatch (char *str, char *pat, int pos, int max)
+static bell_boolean DPMatch (char *str, char *pat, int pos, int max)
 {
    if (pos > max) return 0;
    if (*str == '\0' && *pat == '\0') return 1;
@@ -80,7 +80,7 @@ bell_boolean DPMatch (char *str, char *pat, int pos, int max)
    return 0;
 }
 
-bell_boolean PMatch (char *str, char *pat)
+static bell_boolean PMatch (char *str, char *pat)
 {
    int i, max = 0;
    for(i=0; i < (int)cst_strlen(pat); i++)
@@ -89,7 +89,7 @@ bell_boolean PMatch (char *str, char *pat)
    return DPMatch(str, pat, 0, cst_strlen(str)-max);
 }
 
-bell_boolean QMatch (char *str, Question *q)
+static bell_boolean QMatch (char *str, Question *q)
 {
    bell_boolean flag = 0;
    Pattern *p;
@@ -125,7 +125,7 @@ int SearchTree (char *str, Node *node)
    return -1;
 }
 
-void LoadQuestions(HTS_File *fp, Question *q)
+static void LoadQuestions(HTS_File *fp, Question *q)
 {
    char buf[1024];
 
@@ -147,7 +147,7 @@ void LoadQuestions(HTS_File *fp, Question *q)
    }
 }
 
-bell_boolean IsTree (Tree *tree, char *buf)
+static bell_boolean IsTree (Tree *tree, char *buf)
 {
    char *s,*l,*r;
 
@@ -166,7 +166,7 @@ bell_boolean IsTree (Tree *tree, char *buf)
    return 1;
 }
 
-bell_boolean IsNum (char *buf)
+static bell_boolean IsNum (char *buf)
 {
    int i;
 
@@ -177,7 +177,7 @@ bell_boolean IsNum (char *buf)
    return 1;
 }
 
-Question *FindQuestion(TreeSet *ts, Mtype type, char *buf)
+static Question *FindQuestion(TreeSet *ts, Mtype type, char *buf)
 {
    Question *q;
    
@@ -191,12 +191,12 @@ Question *FindQuestion(TreeSet *ts, Mtype type, char *buf)
    return 0;
 }
 
-int name2num(char *buf)
+static int name2num(char *buf)
 {
    return (atoi(strrchr(buf,'_')+1));
 }
 
-Node *FindNode (Node *node, int num)
+static Node *FindNode (Node *node, int num)
 {
    Node *dest;
    

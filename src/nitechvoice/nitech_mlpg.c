@@ -76,7 +76,7 @@ static float **ffcalloc(int x, int y)
 ----------------------------------------------------------------*/
 
 /* calc_R_and_r : calcurate R=W'U^{-1}W and r=W'U^{-1}M */
-void calc_R_and_r(PStream *pst, int m)
+static void calc_R_and_r(PStream *pst, int m)
 {
    register int i, j, k, l, n;
    double   wu;
@@ -107,7 +107,7 @@ void calc_R_and_r(PStream *pst, int m)
 }
 
 /* Cholesky : Cholesky factorization of Matrix R */
-void Cholesky(PStream *pst)
+static void Cholesky(PStream *pst)
 {
    register int i, j, k;
 	
@@ -134,7 +134,7 @@ void Cholesky(PStream *pst)
 }
 
 /* Cholesky_forward : forward substitution to solve linear equations */
-void Cholesky_forward(PStream *pst)
+static void Cholesky_forward(PStream *pst)
 {
    register int i, j;
    double hold;
@@ -152,7 +152,7 @@ void Cholesky_forward(PStream *pst)
 }
 
 /* Cholesky_backward : backward substitution to solve linear equations */
-void Cholesky_backward(PStream *pst, int m)
+static void Cholesky_backward(PStream *pst, int m)
 {
    register int i, j;
    double hold;
@@ -170,7 +170,7 @@ void Cholesky_backward(PStream *pst, int m)
 }
 
 /* generate parameter sequence from pdf sequence */
-void nitech_mlpg(PStream *pst)
+static void nitech_mlpg(PStream *pst)
 {	
    int m;
 
@@ -184,7 +184,7 @@ void nitech_mlpg(PStream *pst)
 
 
 /* InitPStream : Initialise PStream for parameter generation */
-void InitPStream(PStream *pst)
+static void InitPStream(PStream *pst)
 {
    pst->width	   = pst->dw.max_L*2+1;  /* band width of R */
 
@@ -197,7 +197,7 @@ void InitPStream(PStream *pst)
 }
 
 /* FreePStream : Free PStream */
-void FreePStream(PStream *pst)
+static void FreePStream(PStream *pst)
 {
    register int t;
    
@@ -218,7 +218,7 @@ void FreePStream(PStream *pst)
 }
 
 /* InitDWin : Initialise dynamic window */
-void InitDWin(PStream *pst)
+static void InitDWin(PStream *pst)
 {   
    int i;
    int fsize, leng;
