@@ -64,13 +64,7 @@ typedef struct DMATRIX_STRUCT {
     double **data;
 } *DMATRIX;
 
-#define LABS(x) ((x) >= 0 ? (x) : -(x))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-#define xdvnull() xdvalloc(0)
-
-#define xdvnums(length, value) xdvinit((double)(value), 0.0, (double)(length))
-#define xdvzeros(length) xdvnums(length, 0.0)
 
 LVECTOR xlvalloc(long length);
 void xlvfree(LVECTOR x);
@@ -78,8 +72,6 @@ DVECTOR xdvalloc(long length);
 void xdvfree(DVECTOR vector);
 DMATRIX xdmalloc(long row, long col);
 void xdmfree(DMATRIX matrix);
-DVECTOR xdvinit(double j, double incr, double n);
-
 
 typedef enum {MFALSE, MTRUE} Boolean;
 
