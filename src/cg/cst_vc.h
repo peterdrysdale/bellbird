@@ -51,20 +51,17 @@
 typedef struct LVECTOR_STRUCT {
     long length;
     long *data;
-    long *imag;
 } *LVECTOR;
 
 typedef struct DVECTOR_STRUCT {
     long length;
     double *data;
-    double *imag;
 } *DVECTOR;
 
 typedef struct DMATRIX_STRUCT {
     long row;
     long col;
     double **data;
-    double **imag;
 } *DMATRIX;
 
 #define LABS(x) ((x) >= 0 ? (x) : -(x))

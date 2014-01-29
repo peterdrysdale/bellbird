@@ -67,7 +67,6 @@ LVECTOR xlvalloc(long length)
     length = MAX(length, 0);
     x = cst_alloc(struct LVECTOR_STRUCT,1);
     x->data = cst_alloc(long,MAX(length, 1));
-    x->imag = NULL;
     x->length = length;
 
     return x;
@@ -78,9 +77,6 @@ void xlvfree(LVECTOR x)
     if (x != NULL) {
 	if (x->data != NULL) {
 	    cst_free(x->data);
-	}
-	if (x->imag != NULL) {
-	    cst_free(x->imag);
 	}
 	cst_free(x);
     }
@@ -95,7 +91,6 @@ DVECTOR xdvalloc(long length)
     length = MAX(length, 0);
     x = cst_alloc(struct DVECTOR_STRUCT,1);
     x->data = cst_alloc(double,MAX(length, 1));
-    x->imag = NULL;
     x->length = length;
 
     return x;
@@ -106,9 +101,6 @@ void xdvfree(DVECTOR x)
     if (x != NULL) {
 	if (x->data != NULL) {
 	    cst_free(x->data);
-	}
-	if (x->imag != NULL) {
-	    cst_free(x->imag);
 	}
 	cst_free(x);
     }
@@ -125,7 +117,6 @@ DMATRIX xdmalloc(long row, long col)
     matrix->data = cst_alloc(double *,row);
     for (i=0; i<row; i++)
         matrix->data[i] = cst_alloc(double,col);
-    matrix->imag = NULL;
     matrix->row = row;
     matrix->col = col;
 
@@ -141,11 +132,6 @@ void xdmfree(DMATRIX matrix)
             for (i=0; i<matrix->row; i++)
                 cst_free(matrix->data[i]);
             cst_free(matrix->data);
-	}
-	if (matrix->imag != NULL) {
-            for (i=0; i<matrix->row; i++)
-                cst_free(matrix->imag[i]);
-            cst_free(matrix->imag);
 	}
 	cst_free(matrix);
     }
