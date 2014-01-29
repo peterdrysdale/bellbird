@@ -116,45 +116,6 @@ void xdvfree(DVECTOR x)
     return;
 }
 
-void dvialloc(DVECTOR x)
-{
-    if (x->imag != NULL) {
-	cst_free(x->imag);
-    }
-    x->imag = cst_alloc(double,x->length);
-
-    return;
-}
-
-DVECTOR xdvcut(DVECTOR x, long offset, long length)
-{
-    long k;
-    long pos;
-    DVECTOR y;
-    
-    y = xdvalloc(length);
-    if (x->imag != NULL) {
-	dvialloc(y);
-    }
-
-    for (k = 0; k < y->length; k++) {
-	pos = k + offset;
-	if (pos >= 0 && pos < x->length) {
-	    y->data[k] = x->data[pos];
-	    if (y->imag != NULL) {
-		y->imag[k] = x->imag[pos];
-	    }
-	} else {
-	    y->data[k] = 0.0;
-	    if (y->imag != NULL) {
-		y->imag[k] = 0.0;
-	    }
-	}
-    }
-
-    return y;
-}
-
 DMATRIX xdmalloc(long row, long col)
 {
     DMATRIX matrix;
@@ -221,61 +182,4 @@ DVECTOR xdvinit(double j, double incr, double n)
     }
 
     return x;
-}
-
-/* from voperate.cc */
-double dvmax(DVECTOR x, long *index)
-{
-    long k;
-    long ind;
-    double max;
-
-    ind = 0;
-    max = x->data[ind];
-    for (k = 1; k < x->length; k++) {
-	if (max < x->data[k]) {
-	    ind = k;
-	    max = x->data[k];
-	}
-    }
-
-    if (index != NULL) {
-	*index = ind;
-    }
-
-    return max;
-}
-
-double dvmin(DVECTOR x, long *index)
-{
-    long k;
-    long ind;
-    double min;
-
-    ind = 0;
-    min = x->data[ind];
-    for (k = 1; k < x->length; k++) {
-	if (min > x->data[k]) {
-	    ind = k;
-	    min = x->data[k];
-	}
-    }
-
-    if (index != NULL) {
-	*index = ind;
-    }
-
-    return min;
-}
-
-double dvsum(DVECTOR x)
-{
-    long k;
-    double sum;
-
-    for (k = 0, sum = 0.0; k < x->length; k++) {
-	sum += x->data[k];
-    }
-
-    return sum;
 }

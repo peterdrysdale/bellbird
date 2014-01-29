@@ -67,7 +67,6 @@ typedef struct DMATRIX_STRUCT {
     double **imag;
 } *DMATRIX;
 
-#define FABS(x) ((x) >= 0.0 ? (x) : -(x))
 #define LABS(x) ((x) >= 0 ? (x) : -(x))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -79,15 +78,11 @@ typedef struct DMATRIX_STRUCT {
 LVECTOR xlvalloc(long length);
 void xlvfree(LVECTOR x);
 DVECTOR xdvalloc(long length);
-DVECTOR xdvcut(DVECTOR x, long offset, long length);
 void xdvfree(DVECTOR vector);
-double dvmax(DVECTOR x, long *index);
-double dvmin(DVECTOR x, long *index);
 DMATRIX xdmalloc(long row, long col);
 void xdmfree(DMATRIX matrix);
 DVECTOR xdvinit(double j, double incr, double n);
 
-double dvsum(DVECTOR x);
 
 typedef enum {MFALSE, MTRUE} Boolean;
 
