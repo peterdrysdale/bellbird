@@ -250,7 +250,7 @@ static void HTS_mc2b(double *mc, double *b, int m, const double a)
          b[m] -= a * b[m + 1];
 }
 
-/* HTS_b2bc: transform MLSA digital filter coefficients to mel-cepstrum */
+/* HTS_b2mc: transform MLSA digital filter coefficients to mel-cepstrum */
 static void HTS_b2mc(const double *b, double *mc, int m, const double a)
 {
    double d, o;
