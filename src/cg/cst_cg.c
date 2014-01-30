@@ -271,23 +271,6 @@ static cst_utterance *cg_make_params(cst_utterance *utt)
     return utt;
 }
 
-#if CG_OLD
-static int voiced_frame(cst_item *m)
-{
-    const char *ph_vc;
-    const char *ph_cvox;
-
-    ph_vc = ffeature_string(m,"R:mcep_link.parent.R:segstate.parent.ph_vc");
-    ph_cvox = ffeature_string(m,"R:mcep_link.parent.R:segstate.parent.ph_cvox");
-
-    if (cst_streq("-",ph_vc) &&
-        cst_streq("-",ph_cvox))
-        return 0; /* unvoiced */
-    else
-        return 1; /* voiced */
-}
-#endif
-
 static int voiced_frame(cst_item *m)
 {
     const char *ph_vc;
