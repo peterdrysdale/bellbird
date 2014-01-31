@@ -110,7 +110,7 @@ static int post_break(cst_item *syl)
     if ((item_prev(syl) == 0) ||
 	(cst_streq("pau",
 		   ffeature_string(syl,
-				   "R:SylStructure.daughter.R:Segment.p.name"))))
+				   "R:SylStructure.daughter1.R:Segment.p.name"))))
 	return TRUE;
     else
 	return FALSE;
@@ -198,7 +198,7 @@ cst_utterance *us_f0_model(cst_utterance *u)
 	    lend = map_f0(start,local_mean,local_stddev);
 	add_target_point(targ_rel,
 			 ffeature_float(syl,
-				"R:SylStructure.daughter.R:Segment.p.end"),
+				"R:SylStructure.daughter1.R:Segment.p.end"),
 			 map_f0((start+lend)/2.0,local_mean,local_stddev));
 	add_target_point(targ_rel,
 			 vowel_mid(syl),

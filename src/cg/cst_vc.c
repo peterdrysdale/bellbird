@@ -66,7 +66,7 @@ LVECTOR xlvalloc(long length)
 
     length = MAX(length, 0);
     x = cst_alloc(struct LVECTOR_STRUCT,1);
-    x->data = cst_alloc(long,MAX(length, 1));
+    x->data = cst_alloc(long,length);
     x->length = length;
 
     return x;
@@ -90,7 +90,7 @@ DVECTOR xdvalloc(long length)
 
     length = MAX(length, 0);
     x = cst_alloc(struct DVECTOR_STRUCT,1);
-    x->data = cst_alloc(double,MAX(length, 1));
+    x->data = cst_alloc(double,length);
     x->length = length;
 
     return x;

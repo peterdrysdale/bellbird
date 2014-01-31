@@ -563,7 +563,7 @@ static const cst_val *ssyl_in(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter.R:SylStructure.daughter");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
 
     /* This should actually include the first syllable, but Festival's
        doesn't. */
@@ -609,7 +609,7 @@ static const cst_val *syl_in(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter.R:SylStructure.daughter");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -715,7 +715,7 @@ static const cst_val *asyl_in(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter.R:SylStructure.daughter");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 

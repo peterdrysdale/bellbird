@@ -130,21 +130,10 @@ static const void *internal_ff(const cst_item *item,
 	else if (cst_streq(tk,"p"))
 	    pitem = item_prev(pitem);
 	else if (cst_streq(tk,"pp"))
-	{
-	    if (item_prev(pitem))
-		pitem = item_prev(item_prev(pitem));
-	    else
-		pitem = NULL;
-	}
+	    pitem = item_prev(item_prev(pitem));
 	else if (cst_streq(tk,"nn"))
-	{
-	    if (item_next(pitem))
-		pitem = item_next(item_next(pitem));
-	    else
-		pitem = NULL;
-	}
-	else if ((cst_streq(tk,"daughter")) ||
-		 (cst_streq(tk,"daughter1")))
+	    pitem = item_next(item_next(pitem));
+	else if (cst_streq(tk,"daughter1"))
 	    pitem = item_daughter(pitem);
 	else if (cst_streq(tk,"daughtern"))
 	    pitem = item_last_daughter(pitem);
