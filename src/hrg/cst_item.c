@@ -55,19 +55,36 @@ CST_VAL_REGISTER_TYPE_NODEL(item,cst_item)
 CST_VAL_REGISTER_TYPE(utterance,cst_utterance)
 CST_VAL_REGISTER_FUNCPTR(itemfunc,cst_itemfunc)
 
-cst_item *new_item_relation(cst_relation *r,cst_item *i)
+static void item_unref_contents(cst_item *item)
 {
-    cst_item *ni;
+    /* unreference this item from contents, and delete contents */
+    /* if no one else is referencing it                         */
 
-    ni = cst_alloc(cst_item, 1);
-    ni->contents = 0;
-    ni->n = ni->p = ni->u = ni->d = 0;
-    ni->relation = r;
-    item_contents_set(ni,i);
-    return ni;
+    if (item && item->contents)
+    {
+	feat_remove(item->contents->relations,item->relation->name);
+	if (feat_length(item->contents->relations) == 0)
+	{
+	    delete_features(item->contents->relations);
+	    delete_features(item->contents->features);
+	    cst_free(item->contents);
+	}
+	item->contents = NULL;
+    }
 }
 
-void item_contents_set(cst_item *current, cst_item *i)
+static cst_item_contents *new_item_contents(void)
+{
+    cst_item_contents *ic;
+
+    ic = cst_alloc(cst_item_contents,1);
+    ic->features = new_features();
+    ic->relations = new_features();
+
+    return ic;
+}
+
+static void item_contents_set(cst_item *current, cst_item *i)
 {
     cst_item_contents *c = 0;
     cst_item *nn_item;
@@ -95,6 +112,18 @@ void item_contents_set(cst_item *current, cst_item *i)
 		 current->relation->name,
 		 item_val(current));
     }
+}
+
+cst_item *new_item_relation(cst_relation *r,cst_item *i)
+{
+    cst_item *ni;
+
+    ni = cst_alloc(cst_item, 1);
+    ni->contents = 0;
+    ni->n = ni->p = ni->u = ni->d = 0;
+    ni->relation = r;
+    item_contents_set(ni,i);
+    return ni;
 }
 
 void delete_item(cst_item *item)
@@ -126,35 +155,6 @@ void delete_item(cst_item *item)
     
     item_unref_contents(item);
     cst_free(item);
-}
-
-void item_unref_contents(cst_item *item)
-{
-    /* unreference this item from contents, and delete contents */
-    /* if no one else is referencing it                         */
-
-    if (item && item->contents)
-    {
-	feat_remove(item->contents->relations,item->relation->name);
-	if (feat_length(item->contents->relations) == 0)
-	{
-	    delete_features(item->contents->relations);
-	    delete_features(item->contents->features);
-	    cst_free(item->contents);
-	}
-	item->contents = NULL;
-    }
-}
-
-cst_item_contents *new_item_contents(void)
-{
-    cst_item_contents *ic;
-
-    ic = cst_alloc(cst_item_contents,1);
-    ic->features = new_features();
-    ic->relations = new_features();
-
-    return ic;
 }
 
 cst_item *item_as(const cst_item *i,const char *rname)
