@@ -78,8 +78,6 @@ int audio_drain(cst_audiodev *ad); /* empty buffers now */
 
 /* Generic high level audio functions */
 int play_wave(cst_wave *w);
-int play_wave_sync(cst_wave *w, cst_relation *rel,
-                   int (*call_back)(cst_item *));
 
 /* For audio streaming */
 #define CST_AUDIO_STREAM_STOP -1
