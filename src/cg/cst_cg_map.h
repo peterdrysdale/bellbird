@@ -57,8 +57,6 @@ int cst_cg_read_header(cst_file fd);
 cst_cg_db* cst_cg_load_db(cst_file fd);
 void cst_cg_free_db(cst_cg_db*);
 
-char *cst_read_string(cst_file fd);
-void* cst_read_padded(cst_file fd, int*nb); 
 char** cst_read_db_types(cst_file fd);
 
 cst_cart_node* cst_read_tree_nodes(cst_file fd);
@@ -66,16 +64,11 @@ char** cst_read_tree_feats(cst_file fd);
 cst_cart* cst_read_tree(cst_file fd);
 cst_cart** cst_read_tree_array(cst_file fd);
 
-void* cst_read_array(cst_file fd);
-void** cst_read_2d_array(cst_file fd);
-
 dur_stat** cst_read_dur_stats(cst_file fd);
 
 char*** cst_read_phone_states(cst_file fd);
 
 void cst_read_voice_feature(cst_file fd,char** fname, char** fval);
-int cst_read_int(cst_file fd);
-float cst_read_float(cst_file fd);
 
 extern char *cg_voice_header_string;
 

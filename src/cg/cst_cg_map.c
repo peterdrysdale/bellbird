@@ -49,6 +49,83 @@
 #include "bell_file.h"
 
 char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v1.5.4";
+static int cst_read_int(cst_file fd)
+{
+    int val;
+    int n;
+
+    n = bell_fread(&val,sizeof(int),1,fd);
+    if(n != 1)
+    {
+        cst_errmsg("cst_read_int: Unable to read in int from file.\n");
+        cst_error();
+    }
+    return val;
+}
+
+static float cst_read_float(cst_file fd)
+{
+    float val;
+    int n;
+
+    n = bell_fread(&val,sizeof(float),1,fd);
+    if(n != 1)
+    {
+        cst_errmsg("cst_read_float: Unable to read in float from file.\n");
+        cst_error();
+    }
+    return val;
+}
+
+static void *cst_read_padded(cst_file fd, int *numbytes)
+{
+    void* ret;
+    int n; 
+
+    *numbytes = cst_read_int(fd);
+    ret = (void *)cst_alloc(char,*numbytes);
+    n = bell_fread(ret,sizeof(char),*numbytes,fd);
+    if(n != (*numbytes))
+    {
+        cst_errmsg("cst_read_padded: Unable to read in bytes from file.\n");
+        cst_error();
+    }
+    return ret;
+}
+
+static char *cst_read_string(cst_file fd)
+{
+    int numbytes;
+
+    return (char *)cst_read_padded(fd,&numbytes);
+}
+
+static void* cst_read_array(cst_file fd)
+{
+    int temp;
+    void* ret;
+    ret = cst_read_padded(fd,&temp);
+    return ret;
+}
+
+static void** cst_read_2d_array(cst_file fd)
+{
+    int numrows;
+    int i;
+    void** arrayrows = NULL;
+
+    numrows = cst_read_int(fd);
+
+    if (numrows > 0)
+    {
+        arrayrows = cst_alloc(void *,numrows);
+
+        for(i=0;i<numrows;i++)
+            arrayrows[i] = cst_read_array(fd);
+    }
+
+    return arrayrows; 
+}
 
 int cst_cg_read_header(cst_file fd)
 {
@@ -68,13 +145,6 @@ int cst_cg_read_header(cst_file fd)
         return -1;                           /* dumped with other byte order */
   
     return 0;
-}
-
-char *cst_read_string(cst_file fd)
-{
-    int numbytes;
-
-    return (char *)cst_read_padded(fd,&numbytes);
 }
 
 cst_cg_db *cst_cg_load_db(cst_file fd)
@@ -160,22 +230,6 @@ void cst_cg_free_db(cst_cg_db *db)
 {
     /* Only gets called when this isn't populated : I think */ 
     cst_free(db);
-}
-
-void *cst_read_padded(cst_file fd, int *numbytes)
-{
-    void* ret;
-    int n; 
-
-    *numbytes = cst_read_int(fd);
-    ret = (void *)cst_alloc(char,*numbytes);
-    n = bell_fread(ret,sizeof(char),*numbytes,fd);
-    if(n != (*numbytes))
-    {
-        cst_errmsg("cst_read_padded: Unable to read in bytes from file.\n");
-        cst_error();
-    }
-    return ret;
 }
 
 char **cst_read_db_types(cst_file fd)
@@ -278,33 +332,6 @@ cst_cart** cst_read_tree_array(cst_file fd)
     return trees; 
 }
 
-void* cst_read_array(cst_file fd)
-{
-    int temp;
-    void* ret;
-    ret = cst_read_padded(fd,&temp);
-    return ret;
-}
-
-void** cst_read_2d_array(cst_file fd)
-{
-    int numrows;
-    int i;
-    void** arrayrows = NULL;
-
-    numrows = cst_read_int(fd);
-
-    if (numrows > 0)
-    {
-        arrayrows = cst_alloc(void *,numrows);
-
-        for(i=0;i<numrows;i++)
-            arrayrows[i] = cst_read_array(fd);
-    }
-
-    return arrayrows; 
-}
-
 dur_stat** cst_read_dur_stats(cst_file fd)
 {
     int numstats;
@@ -354,32 +381,4 @@ void cst_read_voice_feature(cst_file fd,char** fname, char** fval)
     int temp;
     *fname = cst_read_padded(fd,&temp);
     *fval = cst_read_padded(fd,&temp);
-}
-
-int cst_read_int(cst_file fd)
-{
-    int val;
-    int n;
-
-    n = bell_fread(&val,sizeof(int),1,fd);
-    if(n != 1)
-    {
-        cst_errmsg("cst_read_int: Unable to read in int from file.\n");
-        cst_error();
-    }
-    return val;
-}
-
-float cst_read_float(cst_file fd)
-{
-    float val;
-    int n;
-
-    n = bell_fread(&val,sizeof(float),1,fd);
-    if(n != 1)
-    {
-        cst_errmsg("cst_read_float: Unable to read in float from file.\n");
-        cst_error();
-    }
-    return val;
 }
