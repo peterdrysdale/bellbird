@@ -73,9 +73,6 @@ HTS_File *HTS_fopen_from_data(void *data, size_t size);
 /* HTS_fclose: wrapper for fclose */
 void HTS_fclose(HTS_File * fp);
 
-/* HTS_fgetc: wrapper for fgetc */
-int HTS_fgetc(HTS_File * fp);
-
 /* HTS_feof: wrapper for feof */
 int HTS_feof(HTS_File * fp);
 

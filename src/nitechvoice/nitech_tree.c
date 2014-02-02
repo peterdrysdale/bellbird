@@ -217,7 +217,7 @@ static Node *FindNode (Node *node, int num)
    return NULL;
 }
          
-void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
+static void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
 {
    char buf[1024];
    Node *node;

@@ -84,6 +84,23 @@ typedef struct _HTS_Data {
    size_t index;
 } HTS_Data;
 
+/* HTS_fgetc: wrapper for fgetc */
+int HTS_fgetc(HTS_File * fp)
+{
+   if (fp == NULL) {
+      return EOF;
+   } else if (fp->type == HTS_FILE) {
+      return fgetc((FILE *) fp->pointer);
+   } else if (fp->type == HTS_DATA) {
+      HTS_Data *d = (HTS_Data *) fp->pointer;
+      if (d->size <= d->index)
+         return EOF;
+      return (int) d->data[d->index++];
+   }
+   cst_errmsg("HTS_fgetc: Unknown file type.\n");
+   return EOF;
+}
+
 /* HTS_fopen_from_cst_file: wrapper for opening from cst_file */
 HTS_File *HTS_fopen_from_cst_file(cst_file cst_fp)
 {
@@ -198,23 +215,6 @@ void HTS_fclose(HTS_File * fp)
       return;
    }
    cst_errmsg("HTS_fclose: Unknown file type.\n");
-}
-
-/* HTS_fgetc: wrapper for fgetc */
-int HTS_fgetc(HTS_File * fp)
-{
-   if (fp == NULL) {
-      return EOF;
-   } else if (fp->type == HTS_FILE) {
-      return fgetc((FILE *) fp->pointer);
-   } else if (fp->type == HTS_DATA) {
-      HTS_Data *d = (HTS_Data *) fp->pointer;
-      if (d->size <= d->index)
-         return EOF;
-      return (int) d->data[d->index++];
-   }
-   cst_errmsg("HTS_fgetc: Unknown file type.\n");
-   return EOF;
 }
 
 /* HTS_feof: wrapper for feof */

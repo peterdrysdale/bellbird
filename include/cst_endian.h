@@ -62,7 +62,4 @@
 
 void swap_bytes_short(short * b,int n);
 
-void swapdouble(double *d);
-void swapfloat(float *f);
-
 #endif
