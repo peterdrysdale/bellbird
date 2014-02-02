@@ -49,10 +49,6 @@
 /* Big endian support is signalled in this code by defining WORDS_BIGENDIAN */
 /* If this is not set then little endian support is assumed */
 
-/* EST byte order strings */
-#define BYTE_ORDER_BIG "10"
-#define BYTE_ORDER_LITTLE "01"
-
 #define SWAPINT(x) ((((unsigned int)x) & 0xff) << 24 | \
         (((unsigned int)x) & 0xff00) << 8 | \
 	(((unsigned int)x) & 0xff0000) >> 8 | \
