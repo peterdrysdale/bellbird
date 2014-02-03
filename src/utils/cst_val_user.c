@@ -60,9 +60,6 @@ CST_VAL_REG_TD_TYPE_NODEL(cart,cst_cart,23)
 CST_VAL_REG_TD_TYPE_NODEL(phoneset,cst_phoneset,25)
 CST_VAL_REG_TD_TYPE_NODEL(lexicon,cst_lexicon,27)
 CST_VAL_REG_TD_TYPE_NODEL(dur_stats,dur_stats,29)
-CST_VAL_REG_TD_TYPE_NODEL(diphone_db,cst_diphone_db,31)
-CST_VAL_REG_TD_TYPE_NODEL(clunit_db,cst_clunit_db,33)
-CST_VAL_REG_TD_TYPE_NODEL(vit_cand,cst_vit_cand,35)
 CST_VAL_REG_TD_TYPE_NODEL(userdata,cst_userdata,41)
 CST_VAL_REGISTER_TYPE_NODEL(userdata,cst_userdata)
 CST_VAL_REG_TD_FUNCPTR(itemfunc,cst_itemfunc,43)
@@ -90,9 +87,9 @@ const cst_val_def cst_val_defs[] = {
     { "phoneset", val_delete_phoneset },   /* 25 phoneset */
     { "lexicon", val_delete_lexicon },     /* 27 lexicon */
     { "dur_stats", val_delete_dur_stats }, /* 29 dur_stats */
-    { "diphone_db", val_delete_diphone_db }, /* 31 diphone_db */
-    { "clunit_db", val_delete_clunit_db }, /* 33 clunit_db */
-    { "vit_cand", val_delete_vit_cand },   /* 35 vit_cand */
+    { NULL, NULL },                        /* 31 (diphone_db reserved) */
+    { NULL, NULL },                        /* 33 (clunit_db reserved) */
+    { NULL, NULL },                        /* 35 (vit_cand reserved) */
     { NULL, NULL },                        /* 37 (sts_list reserved) */
     { NULL, NULL },                        /* 39 (reserved) */
     { "userdata", val_delete_userdata },   /* 41 userdata */
