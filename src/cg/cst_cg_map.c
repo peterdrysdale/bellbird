@@ -48,7 +48,9 @@
 #include "cst_cg_map.h"
 #include "bell_file.h"
 
-char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v1.5.4";
+static char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v1.5.4";
+/* This is the supported voice type for this module */
+
 static int cst_read_int(cst_file fd)
 {
     int val;
@@ -125,6 +127,150 @@ static void** cst_read_2d_array(cst_file fd)
     }
 
     return arrayrows; 
+}
+
+static char **cst_read_db_types(cst_file fd)
+{
+    char** types;
+    int numtypes;
+    int i;
+
+    numtypes = cst_read_int(fd);
+    types = cst_alloc(char*,numtypes+1);
+  
+    for(i=0;i<numtypes;i++)
+    {
+        types[i] = cst_read_string(fd);
+    }
+    types[i] = 0;
+  
+    return types;
+}
+
+static cst_cart_node* cst_read_tree_nodes(cst_file fd)
+{   
+    cst_cart_node* nodes;
+    int temp;
+    int i, num_nodes;
+    short vtype;
+    char *str;
+
+    num_nodes = cst_read_int(fd);
+    nodes = cst_alloc(cst_cart_node,num_nodes+1);
+
+    for (i=0; i<num_nodes; i++)
+    {
+        bell_fread(&nodes[i].feat,sizeof(char),1,fd);
+        bell_fread(&nodes[i].op,sizeof(char),1,fd);
+        bell_fread(&nodes[i].no_node,sizeof(short),1,fd);
+        bell_fread(&vtype,sizeof(short),1,fd);
+        if (vtype == CST_VAL_TYPE_STRING)
+        {
+            str = cst_read_padded(fd,&temp);
+            nodes[i].val = string_val(str);
+            cst_free(str);
+        }
+        else if (vtype == CST_VAL_TYPE_INT)
+            nodes[i].val = int_val(cst_read_int(fd));
+        else if (vtype == CST_VAL_TYPE_FLOAT)
+            nodes[i].val = float_val(cst_read_float(fd));
+        else
+            nodes[i].val = int_val(cst_read_int(fd));
+    }
+    nodes[i].val = NULL;
+
+    return nodes;
+}
+
+static char** cst_read_tree_feats(cst_file fd)
+{
+    char** feats;
+    int numfeats;
+    int i;
+
+    numfeats = cst_read_int(fd);
+    feats = cst_alloc(char *,numfeats+1);
+
+    for(i=0;i<numfeats;i++)
+        feats[i] = cst_read_string(fd);
+    feats[i] = 0;
+  
+    return feats;
+}
+
+static cst_cart* cst_read_tree(cst_file fd)
+{
+    cst_cart* tree;
+
+    tree = cst_alloc(cst_cart,1);
+    tree->rule_table = cst_read_tree_nodes(fd);  
+    tree->feat_table = (const char * const *)cst_read_tree_feats(fd);
+
+    return tree;
+}
+
+static cst_cart** cst_read_tree_array(cst_file fd)
+{
+    cst_cart** trees = NULL;
+    int numtrees;
+    int i;
+
+    numtrees = cst_read_int(fd);
+    
+    if (numtrees > 0)
+    {
+        trees = cst_alloc(cst_cart *,numtrees+1);
+
+        for(i=0;i<numtrees;i++)
+            trees[i] = cst_read_tree(fd);
+        trees[i] = 0;
+    }
+
+    return trees; 
+}
+
+static dur_stat** cst_read_dur_stats(cst_file fd)
+{
+    int numstats;
+    int i,temp;
+    dur_stat** ds;
+
+    numstats = cst_read_int(fd);
+    ds = cst_alloc(dur_stat *,(1+numstats));
+
+    /* load structuer values */
+    for(i=0;i<numstats;i++)
+    {
+        ds[i] = cst_alloc(dur_stat,1);
+        ds[i]->mean = cst_read_float(fd);
+        ds[i]->stddev = cst_read_float(fd);
+        ds[i]->phone = cst_read_padded(fd,&temp);
+    }
+    ds[i] = NULL;
+
+    return ds;
+}
+
+static char*** cst_read_phone_states(cst_file fd)
+{
+    int i,j,count1,count2,temp;
+    char*** ps;
+
+    count1 = cst_read_int(fd);
+    ps = cst_alloc(char **,count1+1);
+    for(i=0;i<count1;i++)
+    {
+        count2 = cst_read_int(fd);
+        ps[i] = cst_alloc(char *,count2+1);
+        for(j=0;j<count2;j++)
+	{
+            ps[i][j]=cst_read_padded(fd,&temp);
+	}
+        ps[i][j] = 0;
+    }
+    ps[i] = 0;
+
+    return ps;
 }
 
 int cst_cg_read_header(cst_file fd)
@@ -230,150 +376,6 @@ void cst_cg_free_db(cst_cg_db *db)
 {
     /* Only gets called when this isn't populated : I think */ 
     cst_free(db);
-}
-
-char **cst_read_db_types(cst_file fd)
-{
-    char** types;
-    int numtypes;
-    int i;
-
-    numtypes = cst_read_int(fd);
-    types = cst_alloc(char*,numtypes+1);
-  
-    for(i=0;i<numtypes;i++)
-    {
-        types[i] = cst_read_string(fd);
-    }
-    types[i] = 0;
-  
-    return types;
-}
-
-cst_cart_node* cst_read_tree_nodes(cst_file fd)
-{   
-    cst_cart_node* nodes;
-    int temp;
-    int i, num_nodes;
-    short vtype;
-    char *str;
-
-    num_nodes = cst_read_int(fd);
-    nodes = cst_alloc(cst_cart_node,num_nodes+1);
-
-    for (i=0; i<num_nodes; i++)
-    {
-        bell_fread(&nodes[i].feat,sizeof(char),1,fd);
-        bell_fread(&nodes[i].op,sizeof(char),1,fd);
-        bell_fread(&nodes[i].no_node,sizeof(short),1,fd);
-        bell_fread(&vtype,sizeof(short),1,fd);
-        if (vtype == CST_VAL_TYPE_STRING)
-        {
-            str = cst_read_padded(fd,&temp);
-            nodes[i].val = string_val(str);
-            cst_free(str);
-        }
-        else if (vtype == CST_VAL_TYPE_INT)
-            nodes[i].val = int_val(cst_read_int(fd));
-        else if (vtype == CST_VAL_TYPE_FLOAT)
-            nodes[i].val = float_val(cst_read_float(fd));
-        else
-            nodes[i].val = int_val(cst_read_int(fd));
-    }
-    nodes[i].val = NULL;
-
-    return nodes;
-}
-
-char** cst_read_tree_feats(cst_file fd)
-{
-    char** feats;
-    int numfeats;
-    int i;
-
-    numfeats = cst_read_int(fd);
-    feats = cst_alloc(char *,numfeats+1);
-
-    for(i=0;i<numfeats;i++)
-        feats[i] = cst_read_string(fd);
-    feats[i] = 0;
-  
-    return feats;
-}
-
-cst_cart* cst_read_tree(cst_file fd)
-{
-    cst_cart* tree;
-
-    tree = cst_alloc(cst_cart,1);
-    tree->rule_table = cst_read_tree_nodes(fd);  
-    tree->feat_table = (const char * const *)cst_read_tree_feats(fd);
-
-    return tree;
-}
-
-cst_cart** cst_read_tree_array(cst_file fd)
-{
-    cst_cart** trees = NULL;
-    int numtrees;
-    int i;
-
-    numtrees = cst_read_int(fd);
-    
-    if (numtrees > 0)
-    {
-        trees = cst_alloc(cst_cart *,numtrees+1);
-
-        for(i=0;i<numtrees;i++)
-            trees[i] = cst_read_tree(fd);
-        trees[i] = 0;
-    }
-
-    return trees; 
-}
-
-dur_stat** cst_read_dur_stats(cst_file fd)
-{
-    int numstats;
-    int i,temp;
-    dur_stat** ds;
-
-    numstats = cst_read_int(fd);
-    ds = cst_alloc(dur_stat *,(1+numstats));
-
-    /* load structuer values */
-    for(i=0;i<numstats;i++)
-    {
-        ds[i] = cst_alloc(dur_stat,1);
-        ds[i]->mean = cst_read_float(fd);
-        ds[i]->stddev = cst_read_float(fd);
-        ds[i]->phone = cst_read_padded(fd,&temp);
-    }
-    ds[i] = NULL;
-
-    return ds;
-}
-
-char*** cst_read_phone_states(cst_file fd)
-{
-    int i,j,count1,count2,temp;
-    char*** ps;
-
-    count1 = cst_read_int(fd);
-    ps = cst_alloc(char **,count1+1);
-    for(i=0;i<count1;i++)
-    {
-        count2 = cst_read_int(fd);
-        ps[i] = cst_alloc(char *,count2+1);
-        for(j=0;j<count2;j++)
-	{
-            ps[i][j]=cst_read_padded(fd,&temp);
-	}
-        ps[i][j] = 0;
-    }
-    ps[i] = 0;
-
-    return ps;
 }
 
 void cst_read_voice_feature(cst_file fd,char** fname, char** fval)

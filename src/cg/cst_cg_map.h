@@ -57,19 +57,6 @@ int cst_cg_read_header(cst_file fd);
 cst_cg_db* cst_cg_load_db(cst_file fd);
 void cst_cg_free_db(cst_cg_db*);
 
-char** cst_read_db_types(cst_file fd);
-
-cst_cart_node* cst_read_tree_nodes(cst_file fd);
-char** cst_read_tree_feats(cst_file fd);
-cst_cart* cst_read_tree(cst_file fd);
-cst_cart** cst_read_tree_array(cst_file fd);
-
-dur_stat** cst_read_dur_stats(cst_file fd);
-
-char*** cst_read_phone_states(cst_file fd);
-
 void cst_read_voice_feature(cst_file fd,char** fname, char** fval);
-
-extern char *cg_voice_header_string;
 
 #endif

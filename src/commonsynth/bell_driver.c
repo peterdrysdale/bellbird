@@ -80,13 +80,13 @@ static void bell_hts_copyto_wave(HTS_Engine * engine,cst_utterance * utt)
 
     wave = new_wave();
     wave->num_channels=1;
-    cst_wave_set_num_samples(wave,HTS_GStreamSet_get_total_nsamples(gss));
-    cst_wave_samples(wave) = cst_alloc(short,cst_wave_num_samples(wave));
-    for (i = 0; i < cst_wave_num_samples(wave); i++)
+    CST_WAVE_SET_NUM_SAMPLES(wave,HTS_GStreamSet_get_total_nsamples(gss));
+    CST_WAVE_SAMPLES(wave) = cst_alloc(short,CST_WAVE_NUM_SAMPLES(wave));
+    for (i = 0; i < CST_WAVE_NUM_SAMPLES(wave); i++)
     {
-       cst_wave_samples(wave)[i] = HTS_GStreamSet_get_speech(gss, i);
+       CST_WAVE_SAMPLES(wave)[i] = HTS_GStreamSet_get_speech(gss, i);
     }
-    cst_wave_set_sample_rate(wave,HTS_Engine_get_sampling_frequency(engine));
+    CST_WAVE_SET_SAMPLE_RATE(wave,HTS_Engine_get_sampling_frequency(engine));
     utt_set_wave(utt,wave);
     return;
 }
@@ -216,11 +216,11 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
 	cst_wave_resize(w,0,1);
         if (voice_type==HTSMODE)
         {
-	   cst_wave_set_sample_rate(w,48000);
+	   CST_WAVE_SET_SAMPLE_RATE(w,48000);
         } 
         else if (voice_type==NITECHMODE)
         {
-           cst_wave_set_sample_rate(w,16000);
+           CST_WAVE_SET_SAMPLE_RATE(w,16000);
         }
 	cst_wave_save_riff(w,outtype);  /* an empty wave */
 	delete_wave(w);

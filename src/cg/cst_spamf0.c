@@ -61,17 +61,17 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
     const cst_cart *acc_tree, *phrase_tree;
     float end,f0val, syldur;
     int num_frames,f,i;
-    cg_db = val_cg_db(utt_feat_val(utt,"cg_db"));
+    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
 
     spamf0_track=new_track();
     cst_track_resize(spamf0_track,
-                     (utt_feat_int(utt,"param_track_num_frames")),
+                     (UTT_FEAT_INT(utt,"param_track_num_frames")),
                      1);
     acc_tree = cg_db->spamf0_accent_tree;
     phrase_tree = cg_db->spamf0_phrase_tree;
     end = 0.0;
     num_frames = 0;
-    for (s = utt_rel_head(utt,"Segment"); s; s=item_next(s))
+    for (s = UTT_REL_HEAD(utt,"Segment"); s; s=item_next(s))
     {
         end = ffeature_float(s,"end");
         if(cst_streq("pau",ffeature_string(s,"name")))
@@ -83,13 +83,13 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
             f0val=val_float(cart_interpret(s,phrase_tree));
         }
 
-        for ( ; ((num_frames * cg_db->frame_advance) <= end) && (num_frames < utt_feat_int(utt,"param_track_num_frames")); num_frames++)
+        for ( ; ((num_frames * cg_db->frame_advance) <= end) && (num_frames < UTT_FEAT_INT(utt,"param_track_num_frames")); num_frames++)
         {
             spamf0_track->frames[num_frames][0]=f0val;
         }
     }
 
-    for (s=utt_rel_head(utt,"Syllable"); s; s=item_next(s))
+    for (s=UTT_REL_HEAD(utt,"Syllable"); s; s=item_next(s))
     {
         f = val_int(cart_interpret(s,acc_tree));
         syldur = ffeature_float(s,"R:SylStructure.daughtern.R:Segment.end")
@@ -102,8 +102,8 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
                       cg_db->spamf0_accent_vectors[f][6],
                       spamf0_track);
     }
-    param_track = val_track(utt_feat_val(utt,"param_track"));
-    for (i=0;i<utt_feat_int(utt,"param_track_num_frames");i++)
+    param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));
+    for (i=0;i<UTT_FEAT_INT(utt,"param_track_num_frames");i++)
     {
         param_track->frames[i][0]=spamf0_track->frames[i][0];
     }

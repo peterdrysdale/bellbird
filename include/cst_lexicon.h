@@ -74,8 +74,6 @@ typedef struct lexicon_struct {
 cst_lexicon *new_lexicon();
 void delete_lexicon(cst_lexicon *lex);
 
-cst_val *cst_lex_make_entry(const cst_lexicon *lex, 
-                            const cst_string *entry);
 cst_val *cst_lex_load_addenda(const cst_lexicon *lex, 
                               const char *lexfile);
 

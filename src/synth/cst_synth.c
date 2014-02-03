@@ -136,7 +136,7 @@ cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v)
     return u;
 }
 
-cst_utterance *apply_synth_module(cst_utterance *u,
+static cst_utterance *apply_synth_module(cst_utterance *u,
 				  const cst_synth_module *mod)
 {
     const cst_val *v;
@@ -149,7 +149,7 @@ cst_utterance *apply_synth_module(cst_utterance *u,
     return u;
 }
 
-cst_utterance *apply_synth_method(cst_utterance *u,
+static cst_utterance *apply_synth_method(cst_utterance *u,
 				  const cst_synth_module meth[])
 {
     while (meth->hookname)
@@ -616,7 +616,7 @@ static cst_utterance *tokentosegs(cst_utterance *u)
     cst_item *sylitem, *sylstructureitem, *worditem, *sssyl;
     cst_phoneset *ps;
 
-    ps = val_phoneset(utt_feat_val(u, "phoneset"));
+    ps = val_phoneset(UTT_FEAT_VAL(u, "phoneset"));
     /* Just copy tokens into the Segment relation */
     seg = utt_relation_create(u, "Segment");
     syl = utt_relation_create(u, "Syllable");

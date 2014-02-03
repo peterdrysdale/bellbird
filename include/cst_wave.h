@@ -68,13 +68,13 @@ typedef struct  cst_wave_header_struct {
 cst_wave *new_wave();
 void delete_wave(cst_wave *val);
 
-#define cst_wave_num_samples(w) (w?w->num_samples:0)
-#define cst_wave_num_channels(w) (w?w->num_channels:0)
-#define cst_wave_sample_rate(w) (w?w->sample_rate:0)
-#define cst_wave_samples(w) (w->samples)
+#define CST_WAVE_NUM_SAMPLES(w) (w?w->num_samples:0)
+#define CST_WAVE_NUM_CHANNELS(w) (w?w->num_channels:0)
+#define CST_WAVE_SAMPLE_RATE(w) (w?w->sample_rate:0)
+#define CST_WAVE_SAMPLES(w) (w->samples)
 
-#define cst_wave_set_num_samples(w,s) w->num_samples=s
-#define cst_wave_set_sample_rate(w,s) w->sample_rate=s
+#define CST_WAVE_SET_NUM_SAMPLES(w,s) w->num_samples=s
+#define CST_WAVE_SET_SAMPLE_RATE(w,s) w->sample_rate=s
 
 #define BELL_IO_SUCCESS  0
 #define BELL_IO_ERROR   -1

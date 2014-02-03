@@ -163,7 +163,7 @@ float flite_ts_to_speech(cst_tokenstream *ts,
     {
 	w = new_wave();
 	cst_wave_resize(w,0,1);
-	cst_wave_set_sample_rate(w,16000);
+	CST_WAVE_SET_SAMPLE_RATE(w,16000);
 	cst_wave_save_riff(w,outtype);  /* an empty wave */
 	delete_wave(w);
     }

@@ -161,7 +161,7 @@ static cst_utterance *print_info(cst_utterance *u)
     cst_item *item;
     const char *relname;
 
-    relname = utt_feat_string(u,"print_info_relation");
+    relname = UTT_FEAT_STRING(u,"print_info_relation");
     for (item=relation_head(utt_relation(u,relname)); 
 	 item; 
 	 item=item_next(item))

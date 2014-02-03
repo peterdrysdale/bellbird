@@ -186,7 +186,7 @@ static int section_like(const cst_item *t)
 cst_utterance *us_textanalysis(cst_utterance *u)
 {
     if (!feat_present(u->features, "tokentowords_func"))
-	utt_set_feat(u, "tokentowords_func", itemfunc_val(us_tokentowords));
+	UTT_SET_FEAT(u, "tokentowords_func", itemfunc_val(us_tokentowords));
 
     return default_textanalysis(u);
 }

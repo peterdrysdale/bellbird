@@ -95,9 +95,5 @@ typedef struct cst_synth_module_struct {
     cst_uttfunc defhook;
 } cst_synth_module;
 
-cst_utterance *apply_synth_module(cst_utterance *u,
-				  const cst_synth_module *mod);
-cst_utterance *apply_synth_method(cst_utterance *u,
-				  const cst_synth_module meth[]);
 #endif
 

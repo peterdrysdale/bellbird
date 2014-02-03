@@ -172,18 +172,18 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
     {
       fd=stdout;
 #ifdef WORDS_BIGENDIAN
-      short *xdata = cst_alloc(short,cst_wave_num_channels(w)*cst_wave_num_samples(w));
-      memmove(xdata,cst_wave_samples(w),sizeof(short)*cst_wave_num_channels(w)*
-                  cst_wave_num_samples(w));
-      swap_bytes_short(xdata,cst_wave_num_channels(w)*cst_wave_num_samples(w));
-      n = bell_fwrite(xdata,sizeof(short),cst_wave_num_channels(w)*
-                  cst_wave_num_samples(w),fd);
+      short *xdata = cst_alloc(short,CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w));
+      memmove(xdata,CST_WAVE_SAMPLES(w),sizeof(short)*CST_WAVE_NUM_CHANNELS(w)*
+                  CST_WAVE_NUM_SAMPLES(w));
+      swap_bytes_short(xdata,CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w));
+      n = bell_fwrite(xdata,sizeof(short),CST_WAVE_NUM_CHANNELS(w)*
+                  CST_WAVE_NUM_SAMPLES(w),fd);
       cst_free(xdata);
 #else
-      n = bell_fwrite(cst_wave_samples(w),sizeof(short),
-		  cst_wave_num_channels(w)*cst_wave_num_samples(w),fd);
+      n = bell_fwrite(CST_WAVE_SAMPLES(w),sizeof(short),
+		  CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w),fd);
 #endif
-      if(n != cst_wave_num_channels(w)*cst_wave_num_samples(w) )
+      if(n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
       {
           cst_errmsg("cst_wave_append: can't write all output samples.\n");
 	  return BELL_IO_ERROR;
@@ -233,18 +233,18 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
       }
 
 #ifdef WORDS_BIGENDIAN
-      short *xdata = cst_alloc(short,cst_wave_num_channels(w)*cst_wave_num_samples(w));
-      memmove(xdata,cst_wave_samples(w),sizeof(short)*cst_wave_num_channels(w)*
-                  cst_wave_num_samples(w));
-      swap_bytes_short(xdata,cst_wave_num_channels(w)*cst_wave_num_samples(w));
-      n = bell_fwrite(xdata,sizeof(short),cst_wave_num_channels(w)*
-                  cst_wave_num_samples(w),fd);
+      short *xdata = cst_alloc(short,CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w));
+      memmove(xdata,CST_WAVE_SAMPLES(w),sizeof(short)*CST_WAVE_NUM_CHANNELS(w)*
+                  CST_WAVE_NUM_SAMPLES(w));
+      swap_bytes_short(xdata,CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w));
+      n = bell_fwrite(xdata,sizeof(short),CST_WAVE_NUM_CHANNELS(w)*
+                  CST_WAVE_NUM_SAMPLES(w),fd);
       cst_free(xdata);
 #else
-      n = bell_fwrite(cst_wave_samples(w),sizeof(short),
-		  cst_wave_num_channels(w)*cst_wave_num_samples(w),fd);
+      n = bell_fwrite(CST_WAVE_SAMPLES(w),sizeof(short),
+		  CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w),fd);
 #endif
-      if(n != cst_wave_num_channels(w)*cst_wave_num_samples(w) )
+      if(n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
       {
           cst_errmsg("cst_wave_append: can't write all output samples.\n");
           bell_fclose(fd);
@@ -275,7 +275,7 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
           return BELL_IO_ERROR;
       }
       num_bytes = 
-	(sizeof(short) * cst_wave_num_channels(w) * cst_wave_num_samples(w)) +
+	(sizeof(short) * CST_WAVE_NUM_CHANNELS(w) * CST_WAVE_NUM_SAMPLES(w)) +
 	(sizeof(short) * hdr.num_channels * hdr.num_samples);
 #ifdef WORDS_BIGENDIAN
       num_bytes = SWAPINT(num_bytes);
@@ -333,8 +333,8 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
     {
          rv = BELL_IO_ERROR;
     }
-    num_bytes = (cst_wave_num_samples(w)
-		 * cst_wave_num_channels(w)
+    num_bytes = (CST_WAVE_NUM_SAMPLES(w)
+		 * CST_WAVE_NUM_CHANNELS(w)
 		 * sizeof(short)) + 8 + 16 + 12;
 #ifdef WORDS_BIGENDIAN
     num_bytes = SWAPINT(num_bytes);
@@ -367,7 +367,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
     {
          rv = BELL_IO_ERROR;
     }
-    d_short = cst_wave_num_channels(w); /* number of channels */
+    d_short = CST_WAVE_NUM_CHANNELS(w); /* number of channels */
 #ifdef WORDS_BIGENDIAN
     d_short = SWAPSHORT(d_short);
 #endif
@@ -375,7 +375,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
     {
          rv = BELL_IO_ERROR;
     }         
-    d_int = cst_wave_sample_rate(w);  /* sample rate */
+    d_int = CST_WAVE_SAMPLE_RATE(w);  /* sample rate */
 #ifdef WORDS_BIGENDIAN
     d_int = SWAPINT(d_int);
 #endif
@@ -383,8 +383,8 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
     {
          rv = BELL_IO_ERROR;
     }
-    d_int = (cst_wave_sample_rate(w)
-	     * cst_wave_num_channels(w)
+    d_int = (CST_WAVE_SAMPLE_RATE(w)
+	     * CST_WAVE_NUM_CHANNELS(w)
 	     * sizeof(short));        /* average bytes per second */
 #ifdef WORDS_BIGENDIAN
     d_int = SWAPINT(d_int);
@@ -393,7 +393,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
     {
          rv = BELL_IO_ERROR;
     }
-    d_short = (cst_wave_num_channels(w)
+    d_short = (CST_WAVE_NUM_CHANNELS(w)
 	       * sizeof(short));      /* block align */
 #ifdef WORDS_BIGENDIAN
     d_short = SWAPSHORT(d_short);
@@ -414,8 +414,8 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
     {
          rv = BELL_IO_ERROR;
     }
-    d_int = (cst_wave_num_channels(w)
-	     * cst_wave_num_samples(w)
+    d_int = (CST_WAVE_NUM_CHANNELS(w)
+	     * CST_WAVE_NUM_SAMPLES(w)
 	     * sizeof(short));	      /* bytes in data */
 #ifdef WORDS_BIGENDIAN
     d_int = SWAPINT(d_int);
@@ -432,18 +432,18 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
     }
 
 #ifdef WORDS_BIGENDIAN
-    short *xdata = cst_alloc(short,cst_wave_num_channels(w)*cst_wave_num_samples(w));
-    memmove(xdata,cst_wave_samples(w),sizeof(short)*cst_wave_num_channels(w)*
-		   cst_wave_num_samples(w));
-    swap_bytes_short(xdata,cst_wave_num_channels(w)*cst_wave_num_samples(w));
+    short *xdata = cst_alloc(short,CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w));
+    memmove(xdata,CST_WAVE_SAMPLES(w),sizeof(short)*CST_WAVE_NUM_CHANNELS(w)*
+		   CST_WAVE_NUM_SAMPLES(w));
+    swap_bytes_short(xdata,CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w));
     n = bell_fwrite(xdata,sizeof(short),
-		   cst_wave_num_channels(w)*cst_wave_num_samples(w),fd);
+		   CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w),fd);
     cst_free(xdata);
 #else
-    n = bell_fwrite(cst_wave_samples(w),sizeof(short),
-		   cst_wave_num_channels(w)*cst_wave_num_samples(w),fd);
+    n = bell_fwrite(CST_WAVE_SAMPLES(w),sizeof(short),
+		   CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w),fd);
 #endif
-    if( n != cst_wave_num_channels(w)*cst_wave_num_samples(w) )
+    if( n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
     {
         cst_errmsg("cst_wave_save_riff_fd: Unable to write all output samples.\n");
 	return BELL_IO_ERROR;
@@ -552,7 +552,7 @@ int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
     }
 
     /* Now read the data itself */
-    cst_wave_set_sample_rate(w,hdr.sample_rate);     /* sample rate */
+    CST_WAVE_SET_SAMPLE_RATE(w,hdr.sample_rate);     /* sample rate */
     data_length = samples;
     cst_wave_resize(w,samples/hdr.num_channels,hdr.num_channels);
 

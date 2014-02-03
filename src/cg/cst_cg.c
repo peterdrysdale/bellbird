@@ -151,7 +151,7 @@ void delete_cg_db(cst_cg_db *db)
 cst_utterance *cg_synth(cst_utterance *utt)
 {
     cst_cg_db *cg_db;
-    cg_db = val_cg_db(utt_feat_val(utt,"cg_db"));
+    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
 
     cg_make_hmmstates(utt);
     cg_make_params(utt);
@@ -201,11 +201,11 @@ static cst_utterance *cg_make_hmmstates(cst_utterance *utt)
     const char *segname;
     int sp,p;
 
-    cg_db = val_cg_db(utt_feat_val(utt,"cg_db"));
+    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     hmmstate = utt_relation_create(utt,"HMMstate");
     segstate = utt_relation_create(utt,"segstate");
 
-    for (seg = utt_rel_head(utt,"Segment"); seg; seg=item_next(seg))
+    for (seg = UTT_REL_HEAD(utt,"Segment"); seg; seg=item_next(seg))
     {
         ss = relation_append(segstate,seg);
         segname = item_feat_string(seg,"name");
@@ -237,14 +237,14 @@ static cst_utterance *cg_make_params(cst_utterance *utt)
     float start, end;
     float dur_stretch, tok_stretch;
 
-    cg_db = val_cg_db(utt_feat_val(utt,"cg_db"));
+    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     mcep = utt_relation_create(utt,"mcep");
     mcep_link = utt_relation_create(utt,"mcep_link");
     end = 0.0;
     num_frames = 0;
     dur_stretch = get_param_float(utt->features,"duration_stretch", 1.0);
 
-    for (s = utt_rel_head(utt,"HMMstate"); s; s=item_next(s))
+    for (s = UTT_REL_HEAD(utt,"HMMstate"); s; s=item_next(s))
     {
         start = end;
         tok_stretch = ffeature_float(s,"R:segstate.parent.R:SylStructure.parent.parent.R:Token.parent.local_duration_stretch");
@@ -263,10 +263,10 @@ static cst_utterance *cg_make_params(cst_utterance *utt)
     }
 
     /* Copy duration up onto Segment relation */
-    for (s = utt_rel_head(utt,"Segment"); s; s=item_next(s))
+    for (s = UTT_REL_HEAD(utt,"Segment"); s; s=item_next(s))
         item_set(s,"end",ffeature(s,"R:segstate.daughtern.end"));
 
-    utt_set_feat_int(utt,"param_track_num_frames",num_frames);
+    UTT_SET_FEAT_INT(utt,"param_track_num_frames",num_frames);
 
     return utt;
 }
@@ -324,7 +324,7 @@ static void cg_smooth_F0(cst_utterance *utt,cst_cg_db *cg_db,
     stddev = 
         get_param_float(utt->features,"int_f0_target_stddev", cg_db->f0_stddev);
     
-    for (i=0,mcep=utt_rel_head(utt,"mcep"); mcep; i++,mcep=item_next(mcep))
+    for (i=0,mcep=UTT_REL_HEAD(utt,"mcep"); mcep; i++,mcep=item_next(mcep))
     {
         if (voiced_frame(mcep))
         {
@@ -358,7 +358,7 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
     int fff;
     int extra_feats = 0;
 
-    cg_db = val_cg_db(utt_feat_val(utt,"cg_db"));
+    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     param_track = new_track();
     if (cg_db->do_mlpg) /* which should be the default */
         fff = 1;  /* copy details with stddevs */
@@ -371,15 +371,15 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
         extra_feats += 5;
         str_track = new_track();
         cst_track_resize(str_track,
-                         utt_feat_int(utt,"param_track_num_frames"),
+                         UTT_FEAT_INT(utt,"param_track_num_frames"),
                          5);
     }
     
     cst_track_resize(param_track,
-                     utt_feat_int(utt,"param_track_num_frames"),
+                     UTT_FEAT_INT(utt,"param_track_num_frames"),
                      (cg_db->num_channels0/fff)-
                        (2 * extra_feats));/* no voicing or str */
-    for (i=0,mcep=utt_rel_head(utt,"mcep"); mcep; i++,mcep=item_next(mcep))
+    for (i=0,mcep=UTT_REL_HEAD(utt,"mcep"); mcep; i++,mcep=item_next(mcep))
     {
         mname = item_feat_string(mcep,"name");
         for (p=0; cg_db->types[p]; p++)
@@ -455,9 +455,9 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
 
     cg_smooth_F0(utt,cg_db,param_track);
 
-    utt_set_feat(utt,"param_track",track_val(param_track));
+    UTT_SET_FEAT(utt,"param_track",track_val(param_track));
     if (cg_db->mixed_excitation)
-        utt_set_feat(utt,"str_track",track_val(str_track));
+        UTT_SET_FEAT(utt,"str_track",track_val(str_track));
 
     return utt;
 }
@@ -479,10 +479,10 @@ static cst_utterance *cg_resynth(cst_utterance *utt)
         asi->utt = utt;
     }
 
-    cg_db = val_cg_db(utt_feat_val(utt,"cg_db"));
-    param_track = val_track(utt_feat_val(utt,"param_track"));
+    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
+    param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));
     if (cg_db->mixed_excitation)
-        str_track = val_track(utt_feat_val(utt,"str_track"));
+        str_track = val_track(UTT_FEAT_VAL(utt,"str_track"));
 
     if (cg_db->do_mlpg)
     {
@@ -496,7 +496,7 @@ static cst_utterance *cg_resynth(cst_utterance *utt)
     if (w == NULL)
     {
         /* Synthesis Failed, probably because it was interrupted */
-        utt_set_feat_int(utt,"Interrupted",1);
+        UTT_SET_FEAT_INT(utt,"Interrupted",1);
         w = new_wave();
     }
 

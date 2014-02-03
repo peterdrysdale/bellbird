@@ -79,46 +79,7 @@ void delete_lexicon(cst_lexicon *lex)
     }
 }
 
-cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
-{   /* Load an addend from given file, check its phones wrt lex */
-    cst_tokenstream *lf;
-    const cst_string *line;
-    cst_val *e = NULL;
-    cst_val *na = NULL;
-    int i;
-
-    lf = ts_open(lexfile,"\n","","","");
-    if (lf == NULL)
-    {
-	cst_errmsg("lex_add_addenda: cannot open lexicon file\n");
-        return NULL;;
-    }
-
-    while (!ts_eof(lf))
-    {
-        line = ts_get(lf);
-        if (line[0] == '#')
-            continue;  /* a comment */
-        for (i=0; line[i]; i++)
-        {
-            if (line[i] != ' ')
-                break;
-        }
-        if (line[i])
-        {
-            e = cst_lex_make_entry(lex,line);
-            if (e)
-                na = cons_val(e,na);
-        }
-        else
-            continue;  /* a blank line */
-    }
-
-    ts_close(lf);
-    return val_reverse(na);
-}
-
-cst_val *cst_lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
+static cst_val *cst_lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
 {   /* if replace then replace entry in addenda of lex with entry */
     /* else append entry to addenda of lex                        */
     cst_tokenstream *e;
@@ -196,7 +157,46 @@ cst_val *cst_lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
 #endif
 
     return ventry;
- }
+}
+
+cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
+{   /* Load an addend from given file, check its phones wrt lex */
+    cst_tokenstream *lf;
+    const cst_string *line;
+    cst_val *e = NULL;
+    cst_val *na = NULL;
+    int i;
+
+    lf = ts_open(lexfile,"\n","","","");
+    if (lf == NULL)
+    {
+	cst_errmsg("lex_add_addenda: cannot open lexicon file\n");
+        return NULL;;
+    }
+
+    while (!ts_eof(lf))
+    {
+        line = ts_get(lf);
+        if (line[0] == '#')
+            continue;  /* a comment */
+        for (i=0; line[i]; i++)
+        {
+            if (line[i] != ' ')
+                break;
+        }
+        if (line[i])
+        {
+            e = cst_lex_make_entry(lex,line);
+            if (e)
+                na = cons_val(e,na);
+        }
+        else
+            continue;  /* a blank line */
+    }
+
+    ts_close(lf);
+    return val_reverse(na);
+}
 
 static int no_syl_boundaries(const cst_item *i, const cst_val *p)
 {
