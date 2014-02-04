@@ -79,15 +79,6 @@ typedef struct  cst_tokenstream_struct {
     cst_string charclass[256];
 } cst_tokenstream;
 
-#define TS_CHARCLASS_NONE        0
-#define TS_CHARCLASS_WHITESPACE  2
-#define TS_CHARCLASS_SINGLECHAR  4
-#define TS_CHARCLASS_PREPUNCT    8
-#define TS_CHARCLASS_POSTPUNCT  16
-#define TS_CHARCLASS_QUOTE      32
-
-#define ts_charclass(C,CLASS,TS) ((TS)->charclass[(unsigned char)C] & CLASS)
-
 extern const cst_string * const cst_ts_default_whitespacesymbols;
 extern const cst_string * const cst_ts_default_prepunctuationsymbols;
 extern const cst_string * const cst_ts_default_postpunctuationsymbols;

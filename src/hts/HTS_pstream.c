@@ -439,12 +439,6 @@ double HTS_PStreamSet_get_parameter(HTS_PStreamSet * pss, size_t stream_index, s
    return pss->pstream[stream_index].par[frame_index][vector_index];
 }
 
-/* HTS_PStreamSet_get_parameter_vector: get parameter vector*/
-double *HTS_PStreamSet_get_parameter_vector(HTS_PStreamSet * pss, size_t stream_index, size_t frame_index)
-{
-   return pss->pstream[stream_index].par[frame_index];
-}
-
 /* HTS_PStreamSet_get_msd_flag: get generated MSD flag per frame */
 HTS_Boolean HTS_PStreamSet_get_msd_flag(HTS_PStreamSet * pss, size_t stream_index, size_t frame_index)
 {

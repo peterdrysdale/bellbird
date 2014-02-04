@@ -94,7 +94,7 @@ static void the_iy_ax(cst_utterance *u)
 
     for (i = relation_head(utt_relation(u, "Segment")); i; i = item_next(i))
     {
-	if (cst_streq("ax", item_name(i)))
+	if (cst_streq("ax", ITEM_NAME(i)))
 	{
 	    word = ffeature_string(i,"R:SylStructure.parent.parent.name");
 	    if (cst_streq("the", word)

@@ -443,12 +443,6 @@ double HTS_SStreamSet_get_vari(HTS_SStreamSet * sss, size_t stream_index, size_t
    return sss->sstream[stream_index].vari[state_index][vector_index];
 }
 
-/* HTS_SStreamSet_set_vari: set variance parameter */
-void HTS_SStreamSet_set_vari(HTS_SStreamSet * sss, size_t stream_index, size_t state_index, size_t vector_index, double f)
-{
-   sss->sstream[stream_index].vari[state_index][vector_index] = f;
-}
-
 /* HTS_SStreamSet_get_gv_mean: get GV mean parameter */
 double HTS_SStreamSet_get_gv_mean(HTS_SStreamSet * sss, size_t stream_index, size_t vector_index)
 {
@@ -459,12 +453,6 @@ double HTS_SStreamSet_get_gv_mean(HTS_SStreamSet * sss, size_t stream_index, siz
 double HTS_SStreamSet_get_gv_vari(HTS_SStreamSet * sss, size_t stream_index, size_t vector_index)
 {
    return sss->sstream[stream_index].gv_vari[vector_index];
-}
-
-/* HTS_SStreamSet_set_gv_switch: set GV switch */
-void HTS_SStreamSet_set_gv_switch(HTS_SStreamSet * sss, size_t stream_index, size_t state_index, HTS_Boolean i)
-{
-   sss->sstream[stream_index].gv_switch[state_index] = i;
 }
 
 /* HTS_SStreamSet_get_gv_switch: get GV switch */

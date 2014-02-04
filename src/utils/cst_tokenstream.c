@@ -54,6 +54,13 @@ const cst_string * const cst_ts_default_postpunctuationsymbols = "\"'`.,:;!?(){}
 
 #define TS_BUFFER_SIZE 256
 #define TS_EOF -1
+#define TS_CHARCLASS_NONE        0
+#define TS_CHARCLASS_WHITESPACE  2
+#define TS_CHARCLASS_SINGLECHAR  4
+#define TS_CHARCLASS_PREPUNCT    8
+#define TS_CHARCLASS_POSTPUNCT  16
+#define TS_CHARCLASS_QUOTE      32
+#define TS_CHARCLASS(C,CLASS,TS) ((TS)->charclass[(unsigned char)C] & CLASS)
 
 static cst_string ts_getc(cst_tokenstream *ts);
 
@@ -213,8 +220,8 @@ static void get_token_sub_part(cst_tokenstream *ts,
     int p;
 
     for (p=0; ((ts->current_char != TS_EOF) &&
-               (ts_charclass(ts->current_char,charclass,ts)) &&
-	       (!ts_charclass(ts->current_char,
+               (TS_CHARCLASS(ts->current_char,charclass,ts)) &&
+	       (!TS_CHARCLASS(ts->current_char,
 			      TS_CHARCLASS_SINGLECHAR,ts))); p++)
     {
 	if (p+1 >= *buffer_max) extend_buffer(buffer,buffer_max);
@@ -233,8 +240,8 @@ static void get_token_sub_part_2(cst_tokenstream *ts,
     int p;
 
     for (p=0; ((ts->current_char != TS_EOF) &&
-               (!ts_charclass(ts->current_char,endclass1,ts)) &&
-	       (!ts_charclass(ts->current_char,
+               (!TS_CHARCLASS(ts->current_char,endclass1,ts)) &&
+	       (!TS_CHARCLASS(ts->current_char,
 			      TS_CHARCLASS_SINGLECHAR,ts)));
          p++)
     {
@@ -253,7 +260,7 @@ static void get_token_postpunctuation(cst_tokenstream *ts)
     for (p=t;
 	 (p > 0) && 
 	     ((ts->token[p] == '\0') ||
-	      (ts_charclass(ts->token[p],TS_CHARCLASS_POSTPUNCT,ts)));
+	      (TS_CHARCLASS(ts->token[p],TS_CHARCLASS_POSTPUNCT,ts)));
 	 p--);
 
     if (t != p)
@@ -377,7 +384,7 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
 			   &ts->prepunctuation,
 			   &ts->prep_max);
 	/* Get the symbol itself */
-	if (ts_charclass(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
+	if (TS_CHARCLASS(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
 	{
 	    if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max);
 	    ts->token[0] = ts->current_char;
@@ -412,7 +419,7 @@ const cst_string *ts_get(cst_tokenstream *ts)
 	
     /* Get prepunctuation */
     if (ts->current_char != TS_EOF &&
-        ts_charclass(ts->current_char,TS_CHARCLASS_PREPUNCT,ts))
+        TS_CHARCLASS(ts->current_char,TS_CHARCLASS_PREPUNCT,ts))
 	get_token_sub_part(ts,
 			   TS_CHARCLASS_PREPUNCT,
 			   &ts->prepunctuation,
@@ -421,7 +428,7 @@ const cst_string *ts_get(cst_tokenstream *ts)
 	ts->prepunctuation[0] = '\0';
     /* Get the symbol itself */
     if (ts->current_char != TS_EOF &&
-        ts_charclass(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
+        TS_CHARCLASS(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
     {
 	if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max);
 	ts->token[0] = ts->current_char;

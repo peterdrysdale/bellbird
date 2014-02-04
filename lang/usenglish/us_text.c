@@ -227,7 +227,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
     const char *nsw = "";
     cst_lexicon *lex;
     cst_utterance *utt;
-    /* printf("token_name %s name %s\n",item_name(token),name); */
+    /* printf("token_name %s name %s\n",ITEM_NAME(token),name); */
     /* FIXME: For SAPI and friends, any tokens with explicit
        pronunciations need to be passed through as-is.  This should be
        done in the interface code rather than here once the
@@ -246,7 +246,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
         r = NULL;
     else if ((cst_streq("a",name) || cst_streq("A",name)) &&
         ((item_next(token) == 0) ||
-         (!cst_streq(name,item_name(token))) ||
+         (!cst_streq(name,ITEM_NAME(token))) ||
          (!cst_streq("",ffeature_string(token,"punc")))))
     {   /* if A is a sub part of a token, then its ey not ah */
 	r = cons_val(string_val("_a"),0);
@@ -505,7 +505,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
     }
     else if (cst_streq(name,"am") || cst_streq(name,"AM"))
     {
-        if (!cst_streq(name,item_name(token)))
+        if (!cst_streq(name,ITEM_NAME(token)))
             r = en_exp_letters(name);
         else if (item_prev(token) &&
                  (cst_regex_match(numbertime,ffeature_string(token,"p.name")) ||
@@ -665,7 +665,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 	cst_free(bbb);
     }
     else if ((cst_regex_match(digitsslashdigits,name)) &&
-	     (cst_streq(name,item_name(token))))
+	     (cst_streq(name,ITEM_NAME(token))))
     {   /* might be fraction, or not */
 	p=strchr(name,'/');
 	aaa = cst_strdup(name);
@@ -940,6 +940,3 @@ static cst_val *state_name(const char *name,cst_item *t)
     return r;
 
 }
-
-
-

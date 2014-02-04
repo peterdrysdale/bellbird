@@ -135,19 +135,11 @@ size_t HTS_ModelSet_get_window_max_width(HTS_ModelSet * ms, size_t stream_index)
 /* HTS_ModelSet_use_gv: get GV flag */
 HTS_Boolean HTS_ModelSet_use_gv(HTS_ModelSet * ms, size_t stream_index);
 
-/* HTS_ModelSet_get_duration_index: get index of duration tree and PDF */
-void HTS_ModelSet_get_duration_index(HTS_ModelSet * ms, size_t voice_index, const char *string, size_t * tree_index, size_t * pdf_index);
-
 /* HTS_ModelSet_get_duration: get duration using interpolation weight */
 void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, const double *iw, double *mean, double *vari);
 
-/* HTS_ModelSet_get_parameter_index: get index of parameter tree and PDF */
-void HTS_ModelSet_get_parameter_index(HTS_ModelSet * ms, size_t voice_index, size_t stream_index, size_t state_index, const char *string, size_t * tree_index, size_t * pdf_index);
-
 /* HTS_ModelSet_get_parameter: get parameter using interpolation weight */
 void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t state_index, const char *string, const double *iw, double *mean, double *vari, double *msd);
-
-void HTS_ModelSet_get_gv_index(HTS_ModelSet * ms, size_t voice_index, size_t stream_index, const char *string, size_t * tree_index, size_t * pdf_index);
 
 /* HTS_ModelSet_get_gv: get GV using interpolation weight */
 void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *string, const double *iw, double *mean, double *vari);
@@ -234,17 +226,11 @@ void HTS_SStreamSet_set_mean(HTS_SStreamSet * sss, size_t stream_index, size_t s
 /* HTS_SStreamSet_get_vari: get variance parameter */
 double HTS_SStreamSet_get_vari(HTS_SStreamSet * sss, size_t stream_index, size_t state_index, size_t vector_index);
 
-/* HTS_SStreamSet_set_vari: set variance parameter */
-void HTS_SStreamSet_set_vari(HTS_SStreamSet * sss, size_t stream_index, size_t state_index, size_t vector_index, double f);
-
 /* HTS_SStreamSet_get_gv_mean: get GV mean parameter */
 double HTS_SStreamSet_get_gv_mean(HTS_SStreamSet * sss, size_t stream_index, size_t vector_index);
 
 /* HTS_SStreamSet_get_gv_mean: get GV variance parameter */
 double HTS_SStreamSet_get_gv_vari(HTS_SStreamSet * sss, size_t stream_index, size_t vector_index);
-
-/* HTS_SStreamSet_set_gv_switch: set GV switch */
-void HTS_SStreamSet_set_gv_switch(HTS_SStreamSet * sss, size_t stream_index, size_t state_index, HTS_Boolean i);
 
 /* HTS_SStreamSet_get_gv_switch: get GV switch */
 HTS_Boolean HTS_SStreamSet_get_gv_switch(HTS_SStreamSet * sss, size_t stream_index, size_t state_index);
@@ -279,9 +265,6 @@ size_t HTS_PStreamSet_get_total_frame(HTS_PStreamSet * pss);
 
 /* HTS_PStreamSet_get_parameter: get parameter */
 double HTS_PStreamSet_get_parameter(HTS_PStreamSet * pss, size_t stream_index, size_t frame_index, size_t vector_index);
-
-/* HTS_PStreamSet_get_parameter_vector: get parameter vector */
-double *HTS_PStreamSet_get_parameter_vector(HTS_PStreamSet * pss, size_t stream_index, size_t frame_index);
 
 /* HTS_PStreamSet_get_msd_flag: get generated MSD flag per frame */
 HTS_Boolean HTS_PStreamSet_get_msd_flag(HTS_PStreamSet * pss, size_t stream_index, size_t frame_index);

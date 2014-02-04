@@ -423,7 +423,7 @@ cst_utterance *cart_duration(cst_utterance *u)
     for (s=relation_head(utt_relation(u,"Segment")); s; s=item_next(s))
     {
 	zdur = val_float(cart_interpret(s,dur_tree));
-	dur_stat = phone_dur_stat(ds,item_name(s));
+	dur_stat = phone_dur_stat(ds,ITEM_NAME(s));
 
 	local_dur_stretch = ffeature_float(s, "R:SylStructure.parent.parent."
 					   "R:Token.parent.local_duration_stretch");
@@ -434,7 +434,7 @@ cst_utterance *cart_duration(cst_utterance *u)
 
 	dur = local_dur_stretch * ((zdur*dur_stat->stddev)+dur_stat->mean);
 	DPRINTF(0,("phone %s accent %s stress %s pdur %f stretch %f mean %f std %f dur %f\n",
-		   item_name(s),
+		   ITEM_NAME(s),
 		   ffeature_string(s,"R:SylStructure.parent.accented"),
 		   ffeature_string(s,"R:SylStructure.parent.stress"),
 		   zdur, local_dur_stretch, dur_stat->mean,
@@ -680,7 +680,7 @@ int default_utt_break(cst_tokenstream *ts,
     /* This is the default utt break functions, languages may override this */
     /* This will be ok for some latin based languages */
     const char *postpunct = item_feat_string(relation_tail(tokens), "punc");
-    const char *ltoken = item_name(relation_tail(tokens));
+    const char *ltoken = ITEM_NAME(relation_tail(tokens));
 
     if (cst_strchr(ts->whitespace,'\n') != cst_strrchr(ts->whitespace,'\n'))
 	 /* contains two new lines */

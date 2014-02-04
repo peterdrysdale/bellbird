@@ -85,7 +85,7 @@ typedef struct _HTS_Data {
 } HTS_Data;
 
 /* HTS_fgetc: wrapper for fgetc */
-int HTS_fgetc(HTS_File * fp)
+static int HTS_fgetc(HTS_File * fp)
 {
    if (fp == NULL) {
       return EOF;

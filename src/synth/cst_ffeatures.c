@@ -68,35 +68,35 @@ DEF_STATIC_CONST_VAL_STRING(val_string_empty,"");
 
 const cst_val *ph_vc(const cst_item *p)
 {
-    return phone_feature(item_phoneset(p),item_name(p),"vc");
+    return phone_feature(item_phoneset(p),ITEM_NAME(p),"vc");
 }
 const cst_val *ph_vlng(const cst_item *p)
 {
-    return phone_feature(item_phoneset(p),item_name(p),"vlng");
+    return phone_feature(item_phoneset(p),ITEM_NAME(p),"vlng");
 }
 const cst_val *ph_vheight(const cst_item *p)
 {
-   return phone_feature(item_phoneset(p),item_name(p),"vheight");
+   return phone_feature(item_phoneset(p),ITEM_NAME(p),"vheight");
 }
 const cst_val *ph_vrnd(const cst_item *p)
 {
-    return phone_feature(item_phoneset(p),item_name(p),"vrnd");
+    return phone_feature(item_phoneset(p),ITEM_NAME(p),"vrnd");
 }
 const cst_val *ph_vfront(const cst_item *p)
 {
-    return phone_feature(item_phoneset(p),item_name(p),"vfront");
+    return phone_feature(item_phoneset(p),ITEM_NAME(p),"vfront");
 }
 const cst_val *ph_ctype(const cst_item *p)
 {
-    return phone_feature(item_phoneset(p),item_name(p),"ctype");
+    return phone_feature(item_phoneset(p),ITEM_NAME(p),"ctype");
 }
 const cst_val *ph_cplace(const cst_item *p)
 {
-    return phone_feature(item_phoneset(p),item_name(p),"cplace");
+    return phone_feature(item_phoneset(p),ITEM_NAME(p),"cplace");
 }
 const cst_val *ph_cvox(const cst_item *p)
 {
-    return phone_feature(item_phoneset(p),item_name(p),"cvox");
+    return phone_feature(item_phoneset(p),ITEM_NAME(p),"cvox");
 }
 
 const cst_val *cg_duration(const cst_item *p)
@@ -254,9 +254,9 @@ const cst_val *syl_vowel(const cst_item *p)
 	ls=item_as(path_to_item(p,"R:SylStructure.daughtern"),"Segment");
 	for(;s && !item_equal(s,ls);s=item_next(s))
 	{
-		if (cst_streq("+",val_string(ph_vc(s)))){ return string_val(item_name(s));}
+		if (cst_streq("+",val_string(ph_vc(s)))){ return string_val(ITEM_NAME(s));}
 	}
-	if (cst_streq("+",val_string(ph_vc(s)))){ return string_val(item_name(s));}
+	if (cst_streq("+",val_string(ph_vc(s)))){ return string_val(ITEM_NAME(s));}
 	return (cst_val *) NULL;
 }
 

@@ -104,7 +104,7 @@ void item_set_int(const cst_item *i,const char *name,int val);
 void item_set_float(const cst_item *i,const char *name,float val);
 void item_set_string(const cst_item *i,const char *name,const char *val);
 
-#define item_name(I) item_feat_string(I,"name")
+#define ITEM_NAME(I) item_feat_string(I,"name")
 
 int item_equal(const cst_item *a, const cst_item *b);
 

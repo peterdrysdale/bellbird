@@ -69,6 +69,31 @@ static cst_val *new_val()
     return cst_alloc(struct cst_val_struct,1);
 }
 
+static int val_dec_refcount(const cst_val *b)
+{
+    cst_val *wb;
+
+    wb = (cst_val *)(void *)b;
+
+    if (CST_VAL_REFCOUNT(wb) == -1) 
+	/* or is a cons cell in the text segment, how do I do that ? */
+	return -1;
+    else if (cst_val_consp(wb)) /* we don't ref count cons cells */
+	return 0;
+    else if (CST_VAL_REFCOUNT(wb) == 0)
+    {
+	/* Otherwise, trying to free a val outside an
+           item/relation/etc has rather the opposite effect from what
+           you might have intended... */
+	return 0;
+    }
+    else
+    {
+	CST_VAL_REFCOUNT(wb) -= 1;
+	return 	CST_VAL_REFCOUNT(wb);
+    }
+}
+
 cst_val *int_val(int i)
 {
     cst_val *v = new_val();
@@ -267,28 +292,6 @@ int cst_val_consp(const cst_val *v)
       return FALSE;
 }
 
-const cst_val *set_cdr(cst_val *v1, const cst_val *v2)
-{
-    /* destructive set cdr, be careful you have a pointer to current cdr */
-    
-    if (!cst_val_consp(v1))
-    {
-	cst_errmsg("VAL: tried to set cdr of non-consp cell\n");
-	cst_error();
-	return NULL;
-    }
-    else
-    {
-        if (CST_VAL_CDR(v1))
-        {
-            val_dec_refcount(CST_VAL_CDR(v1));
-            val_inc_refcount(v1);
-        }
-	CST_VAL_CDR(v1) = (cst_val *)v2;
-    }
-    return v1;
-}
-
 const cst_val *set_car(cst_val *v1, const cst_val *v2)
 {
     /* destructive set car, be careful you have a pointer to current car */
@@ -426,18 +429,6 @@ int val_member(const cst_val *v1,const cst_val *l)
     return FALSE;
 }
 
-int val_member_string(const char *v1,const cst_val *l)
-{
-    const cst_val *i;
-
-    for (i=l; i; i=val_cdr(i))
-    {
-	if (cst_streq(v1,val_string(val_car(i))))
-	    return TRUE;
-    }
-    return FALSE;
-}
-
 cst_val *val_inc_refcount(const cst_val *b)
 {
     cst_val *wb;
@@ -454,76 +445,6 @@ cst_val *val_inc_refcount(const cst_val *b)
     return wb;
 }
 
-int val_dec_refcount(const cst_val *b)
-{
-    cst_val *wb;
-
-    wb = (cst_val *)(void *)b;
-
-    if (CST_VAL_REFCOUNT(wb) == -1) 
-	/* or is a cons cell in the text segment, how do I do that ? */
-	return -1;
-    else if (cst_val_consp(wb)) /* we don't ref count cons cells */
-	return 0;
-    else if (CST_VAL_REFCOUNT(wb) == 0)
-    {
-	/* Otherwise, trying to free a val outside an
-           item/relation/etc has rather the opposite effect from what
-           you might have intended... */
-	return 0;
-    }
-    else
-    {
-	CST_VAL_REFCOUNT(wb) -= 1;
-	return 	CST_VAL_REFCOUNT(wb);
-    }
-}
-
-cst_val *cst_utf8_explode(const cst_string *utf8string)
-{
-    /* return a list of utf-8 characters as strings */
-    const unsigned char *xxx = (const unsigned char *)utf8string;
-    cst_val *chars=NULL;
-    int i;
-    char utf8char[5];
-
-    for (i=0; xxx[i]; i++)
-    {
-        if (xxx[i] < 0x80)  /* one byte */
-        {
-            sprintf(utf8char,"%c",xxx[i]);
-        }
-        else if (xxx[i] < 0xe0) /* two bytes */
-        {
-            sprintf(utf8char,"%c%c",xxx[i],xxx[i+1]);
-            i++;
-        }
-        else if (xxx[i] < 0xff) /* three bytes */
-        {
-            sprintf(utf8char,"%c%c%c",xxx[i],xxx[i+1],xxx[i+2]);
-            i++; i++;
-        }
-        else
-        {
-            sprintf(utf8char,"%c%c%c%c",xxx[i],xxx[i+1],xxx[i+2],xxx[i+3]);
-            i++; i++; i++;
-        }
-        chars = cons_val(string_val(utf8char),chars);
-    }
-    return val_reverse(chars);
-
-}
-
-int val_stringp(const cst_val *v)
-{
-    if (cst_val_consp(v))
-        return FALSE;
-    else if (CST_VAL_TYPE(v) == CST_VAL_TYPE_STRING)
-        return TRUE;
-    else
-        return FALSE;
-}
-
 const cst_val *val_assoc_string(const char *v1,const cst_val *al)
 {
     const cst_val *i;
@@ -534,30 +455,6 @@ const cst_val *val_assoc_string(const char *v1,const cst_val *al)
 	    return val_car(i);
     }
     return NULL;
-}
-
-cst_string *cst_implode(const cst_val *sl)
-{
-    const cst_val *v;
-    int l=0;
-    char *s;
-
-    for (v=sl; v; v=val_cdr(v))
-    {
-        if (val_stringp(val_car(v)))
-            l += cst_strlen(val_string(val_car(v)));
-    }
-
-    s = cst_alloc(cst_string,l+1);
-
-    for (v=sl; v; v=val_cdr(v))
-    {
-        if (val_stringp(val_car(v)))
-            bell_sprintf(s,"%s%s",s,val_string(val_car(v)));
-
-    }
-
-    return s;
 }
 
 cst_val *val_readlist_string(const char *str)

@@ -1606,12 +1606,6 @@ static void HTS_Model_add_parameter(HTS_Model * model, size_t state_index, const
       *msd += weight * model->pdf[tree_index][pdf_index][len + len];
 }
 
-/* HTS_ModelSet_get_duration_index: get duration PDF & tree index */
-void HTS_ModelSet_get_duration_index(HTS_ModelSet * ms, size_t voice_index, const char *string, size_t * tree_index, size_t * pdf_index)
-{
-   HTS_Model_get_index(&ms->duration[voice_index], 2, string, tree_index, pdf_index);
-}
-
 /* HTS_ModelSet_get_duration: get duration using interpolation weight */
 void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, const double *iw, double *mean, double *vari)
 {
@@ -1625,12 +1619,6 @@ void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, const doub
    for (i = 0; i < ms->num_voices; i++)
       if (iw[i] != 0.0)
          HTS_Model_add_parameter(&ms->duration[i], 2, string, mean, vari, NULL, iw[i]);
-}
-
-/* HTS_ModelSet_get_parameter_index: get paramter PDF & tree index */
-void HTS_ModelSet_get_parameter_index(HTS_ModelSet * ms, size_t voice_index, size_t stream_index, size_t state_index, const char *string, size_t * tree_index, size_t * pdf_index)
-{
-   HTS_Model_get_index(&ms->stream[voice_index][stream_index], state_index, string, tree_index, pdf_index);
 }
 
 /* HTS_ModelSet_get_parameter: get parameter using interpolation weight */
@@ -1649,12 +1637,6 @@ void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t s
    for (i = 0; i < ms->num_voices; i++)
       if (iw[i] != 0.0)
          HTS_Model_add_parameter(&ms->stream[i][stream_index], state_index, string, mean, vari, msd, iw[i]);
-}
-
-/* HTS_ModelSet_get_gv_index: get gv PDF & tree index */
-void HTS_ModelSet_get_gv_index(HTS_ModelSet * ms, size_t voice_index, size_t stream_index, const char *string, size_t * tree_index, size_t * pdf_index)
-{
-   HTS_Model_get_index(&ms->gv[voice_index][stream_index], 2, string, tree_index, pdf_index);
 }
 
 /* HTS_ModelSet_get_gv: get GV using interpolation weight */
