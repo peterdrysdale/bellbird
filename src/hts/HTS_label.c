@@ -178,19 +178,6 @@ const char *HTS_Label_get_string(HTS_Label * label, size_t index)
    return lstring->name;
 }
 
-/* HTS_Label_get_start_frame: get start frame */
-double HTS_Label_get_start_frame(HTS_Label * label, size_t index)
-{
-   size_t i;
-   HTS_LabelString *lstring = label->head;
-
-   for (i = 0; i < index && lstring; i++)
-      lstring = lstring->next;
-   if (!lstring)
-      return -1.0;
-   return lstring->start;
-}
-
 /* HTS_Label_get_end_frame: get end frame */
 double HTS_Label_get_end_frame(HTS_Label * label, size_t index)
 {

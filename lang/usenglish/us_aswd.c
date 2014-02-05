@@ -52,7 +52,7 @@ typedef struct fsm_struct {
     const unsigned short *transitions;
 } cst_fsm;
 
-int fsm_transition(const cst_fsm *fsm,int state, int symbol)
+static int fsm_transition(const cst_fsm *fsm,int state, int symbol)
 {
     int i;
 

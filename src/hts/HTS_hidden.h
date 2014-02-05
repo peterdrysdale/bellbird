@@ -161,9 +161,6 @@ size_t HTS_Label_get_size(HTS_Label * label);
 /* HTS_Label_get_string: get label string */
 const char *HTS_Label_get_string(HTS_Label * label, size_t index);
 
-/* HTS_Label_get_start_frame: get start frame */
-double HTS_Label_get_start_frame(HTS_Label * label, size_t index);
-
 /* HTS_Label_get_end_frame: get end frame */
 double HTS_Label_get_end_frame(HTS_Label * label, size_t index);
 
@@ -286,17 +283,8 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
 /* HTS_GStreamSet_get_total_nsamples: get total number of sample */
 size_t HTS_GStreamSet_get_total_nsamples(HTS_GStreamSet * gss);
 
-/* HTS_GStreamSet_get_total_frame: get total number of frame */
-size_t HTS_GStreamSet_get_total_frame(HTS_GStreamSet * gss);
-
-/* HTS_GStreamSet_get_static_length: get features length */
-size_t HTS_GStreamSet_get_vector_length(HTS_GStreamSet * gss, size_t stream_index);
-
 /* HTS_GStreamSet_get_speech: get synthesized speech parameter */
 double HTS_GStreamSet_get_speech(HTS_GStreamSet * gss, size_t sample_index);
-
-/* HTS_GStreamSet_get_parameter: get generated parameter */
-double HTS_GStreamSet_get_parameter(HTS_GStreamSet * gss, size_t stream_index, size_t frame_index, size_t vector_index);
 
 /* HTS_GStreamSet_clear: free generated parameter stream set */
 void HTS_GStreamSet_clear(HTS_GStreamSet * gss);
@@ -314,10 +302,6 @@ void HTS_GStreamSet_clear(HTS_GStreamSet * gss);
 #ifndef PI
 #define PI  3.14159265358979323846
 #endif                          /* !PI */
-
-#ifndef PI2
-#define PI2 6.28318530717958647692
-#endif                          /* !PI2 */
 
 #define RANDMAX 32767
 

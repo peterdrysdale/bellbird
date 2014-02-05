@@ -164,28 +164,10 @@ size_t HTS_GStreamSet_get_total_nsamples(HTS_GStreamSet * gss)
    return gss->total_nsample;
 }
 
-/* HTS_GStreamSet_get_total_frame: get total number of frame */
-size_t HTS_GStreamSet_get_total_frame(HTS_GStreamSet * gss)
-{
-   return gss->total_frame;
-}
-
-/* HTS_GStreamSet_get_vector_length: get features length */
-size_t HTS_GStreamSet_get_vector_length(HTS_GStreamSet * gss, size_t stream_index)
-{
-   return gss->gstream[stream_index].vector_length;
-}
-
 /* HTS_GStreamSet_get_speech: get synthesized speech parameter */
 double HTS_GStreamSet_get_speech(HTS_GStreamSet * gss, size_t sample_index)
 {
    return gss->gspeech[sample_index];
-}
-
-/* HTS_GStreamSet_get_parameter: get generated parameter */
-double HTS_GStreamSet_get_parameter(HTS_GStreamSet * gss, size_t stream_index, size_t frame_index, size_t vector_index)
-{
-   return gss->gstream[stream_index].par[frame_index][vector_index];
 }
 
 /* HTS_GStreamSet_clear: free generated parameter stream set */
