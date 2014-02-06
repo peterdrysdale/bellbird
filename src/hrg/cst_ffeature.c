@@ -93,22 +93,25 @@ static const void *internal_ff(const cst_item *item,
     char *tokens[101];
     int i,j;
 
-    /* This used to use cst_tokenstream but that was too slow */
-    for (i=0; i<199 && featpath[i]; i++)
-        tokenstring[i] = featpath[i];
-    tokenstring[i]='\0';
+    /* Perform 'split' of featpath into tokenstring using '.' delimiter */
     tokens[0] = tokenstring;
-    for (i=0,j=1; tokenstring[i]; i++)
+    for (i=0,j=1; i<199 && featpath[i]; i++)
     {
-        if (strchr(":.",tokenstring[i]))
+        if('.'==featpath[i])
         {
             tokenstring[i] = '\0';
             tokens[j] = &tokenstring[i+1];
             j++;
         }
+        else
+        {
+            tokenstring[i] = featpath[i];
+        }
     }
+    tokenstring[i]='\0';
     tokens[j] = NULL;
-    tokens[j+1] = NULL; /* Cover malformed relation move commands */
+
+    /* Parse directives */
     j=0;
     for (tk = tokens[j], pitem=item;
 	 pitem && 
@@ -116,11 +119,10 @@ static const void *internal_ff(const cst_item *item,
 	      ((type == 1) && tk));
 	 j++, tk = tokens[j])
     {
-        if (cst_streq(tk,"R"))
+        if (tk[0]=='R' && tk[0]!='\0' && tk[1]==':')
 	{
 	    /* A relation move */
-            j++;
-	    relation = tokens[j];
+	    relation = tk+2; /* the bit past the 'R:' */
 	    pitem = item_as(pitem,relation);
 	}
 	else if (cst_streq(tk,"parent"))
