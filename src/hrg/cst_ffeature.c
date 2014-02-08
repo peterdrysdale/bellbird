@@ -50,6 +50,8 @@
 #include "cst_utterance.h"
 #include "cst_tokenstream.h"
 
+#define TOKENSTRINGBUF 199 /* current max. length of tokenstring is approx. 142 chars */
+
 CST_VAL_REGISTER_FUNCPTR(ffunc,cst_ffunction)
 
 DEF_STATIC_CONST_VAL_STRING(ffeature_default_val,"0");
@@ -89,13 +91,13 @@ static const void *internal_ff(const cst_item *item,
     void *void_v;
     const cst_val *ff;
     cst_ffunction ffunc;
-    char tokenstring[200]; /* we don't seem to have featpaths longer than 72 */
-    char *tokens[101];
+    char tokenstring[TOKENSTRINGBUF+1];
+    char *tokens[TOKENSTRINGBUF+1];
     int i,j;
 
     /* Perform 'split' of featpath into tokenstring using '.' delimiter */
     tokens[0] = tokenstring;
-    for (i=0,j=1; i<199 && featpath[i]; i++)
+    for (i=0,j=1; i<TOKENSTRINGBUF && featpath[i]; i++)
     {
         if('.'==featpath[i])
         {
