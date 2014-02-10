@@ -75,3 +75,23 @@ void cst_free(void *p)
     if (p != NULL) free(p);
 }
 
+double **bell_alloc_dmatrix(size_t row, size_t col)
+/* Allocate a simple double matrix */
+{
+   size_t i;
+   double **p = cst_alloc(double *,row);
+
+   for (i = 0; i < row; i++)
+      p[i] = cst_alloc(double,col);
+   return p;
+}
+
+void bell_free_dmatrix(double **p, size_t row)
+/* Free the simple double matrix */
+{
+   size_t i;
+
+   for (i = 0; i < row; i++)
+      cst_free(p[i]);
+   cst_free(p);
+}

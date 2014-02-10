@@ -100,12 +100,6 @@ bell_boolean HTS_get_token_from_string(const char *string, size_t * index, char 
 /* HTS_get_token_from_string_with_separator: get token from string with specified separator */
 bell_boolean HTS_get_token_from_string_with_separator(const char *str, size_t * index, char *buff, char separator);
 
-/* HTS_calloc_matrix: allocate double matrix */
-double **HTS_alloc_matrix(size_t x, size_t y);
-
-/* HTS_free_matrix: free double matrix */
-void HTS_free_matrix(double **p, size_t x);
-
 /* HTS_finv: calculate 1.0/variance function */
 double HTS_finv(const double x);
 #endif 

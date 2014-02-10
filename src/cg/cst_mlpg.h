@@ -102,7 +102,6 @@
 
 #include "cst_cg.h"
 
-#define	LENGTH 256
 #define	INFTY ((double) 1.0e+38)
 #define	INFTY2 ((double) 1.0e+19)
 #define	INVINF ((double) 1.0e-38)
@@ -113,9 +112,6 @@
 #else
 #define PI		3.1415926535897932385
 #endif
-
-#define	WLEFT 0
-#define	WRIGHT 1
 
 typedef struct _DWin {
     int	num;		/* number of static + deltas */
@@ -162,78 +158,6 @@ typedef struct MLPGPARA_STRUCT {
     DVECTOR var;
 } *MLPGPARA;
 
-static MLPGPARA xmlpgpara_init(int dim, int dim2, int dnum, int clsnum);
-static void xmlpgparafree(MLPGPARA param);
-static double get_like_pdfseq_vit(int dim, int dim2, int dnum,
-                                  MLPGPARA param, 
-                                  float **model, 
-                                  int dia_flag);
-#if 0
-static double get_like_gv(long dim2, long dnum, MLPGPARA param);
-static void sm_mvav(DMATRIX mat, long hlen);
-#endif
-static void get_dltmat(DMATRIX mat, DWin *dw, int dno, DMATRIX dmat);
-
-/***********************************/
-/* ML using Choleski decomposition */
-/***********************************/
-/* Diagonal Covariance Version */
-static void InitDWin(PStreamChol *pst, const float *dynwin, int fsize);
-static void InitPStreamChol(PStreamChol *pst, const float *dynwin, int fsize,
-                            int order, int T);
-static void mlgparaChol(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp);
-static void mlpgChol(PStreamChol *pst);
-static void calc_R_and_r(PStreamChol *pst, const int m);
-static void Choleski(PStreamChol *pst);
-static void Choleski_forward(PStreamChol *pst);
-static void Choleski_backward(PStreamChol *pst, const int m);
-
-/**********************************/
-/* ML Considering Global Variance */
-/**********************************/
-#if 0
-static void varconv(double **c, const int m, const int T, const double var);
-static void calc_varstats(double **c, const int m, const int T,
-			  double *av, double *var, double *dif);
-/* Diagonal Covariance Version */
-static void mlgparaGrad(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp,
-			const int max, double th, double e, double alpha,
-			DVECTOR vm, DVECTOR vv, int nrmflag, int extvflag);
-static void mlpgGrad(PStreamChol *pst, const int max, double th, double e,
-		     double alpha, DVECTOR vm, DVECTOR vv, int nrmflag);
-static void calc_grad(PStreamChol *pst, const int m);
-static void calc_vargrad(PStreamChol *pst, const int m, double alpha, double n,
-			 double vm, double vv);
-static double get_gauss_dia5(double det,
-		     double weight,
-		     DVECTOR vec,		// dim
-		     DVECTOR meanvec,		// dim
-                      DVECTOR invcovvec);		// dim
-#endif
-
-static double get_gauss_full(long clsidx,
-		      DVECTOR vec,		// [dim]
-		      DVECTOR detvec,		// [clsnum]
-		      DMATRIX weightmat,	// [clsnum][1]
-		      DMATRIX meanvec,		// [clsnum][dim]
-		      DMATRIX invcovmat);	// [clsnum * dim][dim]
-static double get_gauss_dia(long clsidx,
-		     DVECTOR vec,		// [dim]
-		     DVECTOR detvec,		// [clsnum]
-		     DMATRIX weightmat,		// [clsnum][1]
-		     DMATRIX meanmat,		// [clsnum][dim]
-		     DMATRIX invcovmat);	// [clsnum][dim]
-static double cal_xmcxmc(long clsidx,
-		  DVECTOR x,
-		  DMATRIX mm,	// [num class][dim]
-		  DMATRIX cm);	// [num class * dim][dim]
-
-#if 0
-static void get_gv_mlpgpara(MLPGPARA param, char *vmfile, char *vvfile,
-			    long dim2, int msg_flag);
-#endif
-
-/* User level function */
 cst_track *mlpg(const cst_track *param_track, cst_cg_db *cg_db);
 
 #endif /* _MLPG_H */

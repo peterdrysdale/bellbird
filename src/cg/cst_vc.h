@@ -64,15 +64,11 @@ typedef struct DMATRIX_STRUCT {
     double **data;
 } *DMATRIX;
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
 LVECTOR xlvalloc(long length);
 void xlvfree(LVECTOR x);
 DVECTOR xdvalloc(long length);
 void xdvfree(DVECTOR vector);
 DMATRIX xdmalloc(long row, long col);
 void xdmfree(DMATRIX matrix);
-
-typedef enum {MFALSE, MTRUE} Boolean;
 
 #endif /* __CST_VC_H */

@@ -188,10 +188,10 @@ static void InitPStream(PStream *pst)
 {
    pst->width	   = pst->dw.max_L*2+1;  /* band width of R */
 
-   pst->mseq  = HTS_alloc_matrix(pst->T, pst->vSize);
-   pst->ivseq = HTS_alloc_matrix(pst->T, pst->vSize);
+   pst->mseq  = bell_alloc_dmatrix(pst->T, pst->vSize);
+   pst->ivseq = bell_alloc_dmatrix(pst->T, pst->vSize);
    pst->g     = cst_alloc(double,pst->T);
-   pst->R     = HTS_alloc_matrix(pst->T, pst->width);
+   pst->R     = bell_alloc_dmatrix(pst->T, pst->width);
    pst->r     = cst_alloc(double,pst->T);
    pst->c     = ffcalloc(pst->T,pst->order+1);
 }
@@ -209,9 +209,9 @@ static void FreePStream(PStream *pst)
        cst_free(pst->dw.width[t]);
    cst_free(pst->dw.width);
 	
-   HTS_free_matrix(pst->mseq,pst->T);
-   HTS_free_matrix(pst->ivseq,pst->T);
-   HTS_free_matrix(pst->R,pst->T);
+   bell_free_dmatrix(pst->mseq,pst->T);
+   bell_free_dmatrix(pst->ivseq,pst->T);
+   bell_free_dmatrix(pst->R,pst->T);
    cst_free(pst->g);
    cst_free(pst->r);
    cst_free(pst->c);

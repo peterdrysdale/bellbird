@@ -309,12 +309,12 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
       pst->vector_length = HTS_SStreamSet_get_vector_length(sss, i);
       pst->width = HTS_SStreamSet_get_window_max_width(sss, i) * 2 + 1; /* band width of R */
       pst->win_size = HTS_SStreamSet_get_window_size(sss, i);
-      pst->sm.mean = HTS_alloc_matrix(pst->length, pst->vector_length * pst->win_size);
-      pst->sm.ivar = HTS_alloc_matrix(pst->length, pst->vector_length * pst->win_size);
+      pst->sm.mean = bell_alloc_dmatrix(pst->length, pst->vector_length * pst->win_size);
+      pst->sm.ivar = bell_alloc_dmatrix(pst->length, pst->vector_length * pst->win_size);
       pst->sm.wum = cst_alloc(double,pst->length);
-      pst->sm.wuw = HTS_alloc_matrix(pst->length, pst->width);
+      pst->sm.wuw = bell_alloc_dmatrix(pst->length, pst->width);
       pst->sm.g = cst_alloc(double,pst->length);
-      pst->par = HTS_alloc_matrix(pst->length, pst->vector_length);
+      pst->par = bell_alloc_dmatrix(pst->length, pst->vector_length);
       /* copy dynamic window */
       pst->win_l_width = cst_alloc(int,pst->win_size);
       pst->win_r_width = cst_alloc(int,pst->win_size);
@@ -462,10 +462,10 @@ void HTS_PStreamSet_clear(HTS_PStreamSet * pss)
          pstream = &pss->pstream[i];
          cst_free(pstream->sm.wum);
          cst_free(pstream->sm.g);
-         HTS_free_matrix(pstream->sm.wuw, pstream->length);
-         HTS_free_matrix(pstream->sm.ivar, pstream->length);
-         HTS_free_matrix(pstream->sm.mean, pstream->length);
-         HTS_free_matrix(pstream->par, pstream->length);
+         bell_free_dmatrix(pstream->sm.wuw, pstream->length);
+         bell_free_dmatrix(pstream->sm.ivar, pstream->length);
+         bell_free_dmatrix(pstream->sm.mean, pstream->length);
+         bell_free_dmatrix(pstream->par, pstream->length);
          if (pstream->msd_flag)
             cst_free(pstream->msd_flag);
          if (pstream->win_coefficient) {

@@ -41,30 +41,21 @@
 /*  PERFORMANCE OF THIS SOFTWARE.                                    */
 /*                                                                   */
 /*  ---------------------------------------------------------------  */
-/*   This is Zen's MLSA filter as ported by Toda to festvox vc        */
-/*   and back ported into hts/festival so we can do MLSA filtering   */
-/*   If I took more time I could probably make this use the same as  */
-/*   as the other code in this directory -- awb@cs.cmu.edu 03JAN06   */
-/*  ---------------------------------------------------------------  */
+/*   This is Zen's MLSA filter as ported by Toda to festvox vc.      */
+/*   Ported into festival/hts  -- awb@cs.cmu.edu 03JAN06             */
 /*   and then ported into Flite (November 2007 awb@cs.cmu.edu)       */
-
 /*********************************************************************/
-/*                                                                   */
-/*  vector (etc) code common to mlpg and mlsa                        */
-/*-------------------------------------------------------------------*/
 
-#include <math.h>
+/* vector and matrix code for mlpg */
+
 #include "cst_alloc.h"
 #include "cst_string.h"
 #include "cst_vc.h"
-
-/* from vector.cc */
 
 LVECTOR xlvalloc(long length)
 {
     LVECTOR x;
 
-    length = MAX(length, 0);
     x = cst_alloc(struct LVECTOR_STRUCT,1);
     x->data = cst_alloc(long,length);
     x->length = length;
@@ -75,10 +66,8 @@ LVECTOR xlvalloc(long length)
 void xlvfree(LVECTOR x)
 {
     if (x != NULL) {
-	if (x->data != NULL) {
-	    cst_free(x->data);
-	}
-	cst_free(x);
+        cst_free(x->data);
+        cst_free(x);
     }
 
     return;
@@ -88,7 +77,6 @@ DVECTOR xdvalloc(long length)
 {
     DVECTOR x;
 
-    length = MAX(length, 0);
     x = cst_alloc(struct DVECTOR_STRUCT,1);
     x->data = cst_alloc(double,length);
     x->length = length;
@@ -99,10 +87,8 @@ DVECTOR xdvalloc(long length)
 void xdvfree(DVECTOR x)
 {
     if (x != NULL) {
-	if (x->data != NULL) {
-	    cst_free(x->data);
-	}
-	cst_free(x);
+        cst_free(x->data);
+        cst_free(x);
     }
 
     return;
@@ -111,12 +97,9 @@ void xdvfree(DVECTOR x)
 DMATRIX xdmalloc(long row, long col)
 {
     DMATRIX matrix;
-    int i;
 
     matrix = cst_alloc(struct DMATRIX_STRUCT,1);
-    matrix->data = cst_alloc(double *,row);
-    for (i=0; i<row; i++)
-        matrix->data[i] = cst_alloc(double,col);
+    matrix->data = bell_alloc_dmatrix(row,col);
     matrix->row = row;
     matrix->col = col;
 
@@ -125,14 +108,8 @@ DMATRIX xdmalloc(long row, long col)
 
 void xdmfree(DMATRIX matrix)
 {
-    int i;
-
     if (matrix != NULL) {
-	if (matrix->data != NULL) {
-            for (i=0; i<matrix->row; i++)
-                cst_free(matrix->data[i]);
-            cst_free(matrix->data);
-	}
+        bell_free_dmatrix(matrix->data,matrix->row);
 	cst_free(matrix);
     }
 

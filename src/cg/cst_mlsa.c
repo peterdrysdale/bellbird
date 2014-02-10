@@ -72,7 +72,6 @@
 #define SPEED_HACK
 #endif
 
-#include "cst_vc.h"
 #include "cst_cg.h"
 #include "cst_mlsa.h"
 
@@ -87,106 +86,6 @@ static void mc2b (double *mc, double *b, int m, double a)
       b[m] = mc[m] - a * b[m+1];
    
    return;
-}
-
-static cst_wave *synthesis_body(const cst_track *params, 
-                                const cst_track *str, 
-                                double fs, double framem,
-                                cst_cg_db *cg_db,
-                                cst_audio_streaming_info *asi);
-
-cst_wave *mlsa_resynthesis(const cst_track *params, 
-                           const cst_track *str, 
-                           cst_cg_db *cg_db,
-                           cst_audio_streaming_info *asi)
-{
-    /* Resynthesizes a wave from given track */
-    cst_wave *wave = 0;
-    int sr = cg_db->sample_rate;
-    double shift;
-
-    if (params->num_frames > 1)
-        shift = 1000.0*(params->times[1]-params->times[0]);
-    else
-        shift = 5.0;
-
-    wave = synthesis_body(params,str,sr,shift,cg_db,asi);
-
-    return wave;
-}
-
-static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
-                                const cst_track *str,
-                                double fs,	/* sampling frequency (Hz) */
-                                double framem,	/* frame size */
-                                cst_cg_db *cg_db,
-                                cst_audio_streaming_info *asi)
-{
-    long t, pos;
-    int framel, i;
-    double f0;
-    VocoderSetup vs;
-    cst_wave *wave = 0;
-    double *mcep;
-    int stream_mark;
-    int rc = CST_AUDIO_STREAM_CONT;
-    int num_mcep;
-    double ffs = 16000;
-
-    num_mcep = params->num_channels-1;
-    framel = (int)(0.5 + (framem * ffs / 1000.0)); /* 80 for 16KHz */
-    init_vocoder(ffs, framel, num_mcep, &vs, cg_db);
-
-    if (str != NULL)
-        vs.gauss = MFALSE;
-
-    /* synthesize waveforms by MLSA filter */
-    wave = new_wave();
-    cst_wave_resize(wave,params->num_frames * framel,1);
-    /* It is (weirdly) possible that fs and ffs are different */
-    /* But only for weird speech hack created 8KHz voices */
-    wave->sample_rate = fs; 
-
-    mcep = cst_alloc(double,num_mcep+1);
-
-    for (t = 0, stream_mark = pos = 0; 
-         (rc == CST_AUDIO_STREAM_CONT) && (t < params->num_frames);
-         t++) 
-    {
-        f0 = (double)params->frames[t][0];
-        for (i=1; i<num_mcep+1; i++)
-            mcep[i-1] = params->frames[t][i];
-        mcep[i-1] = 0;
-
-        if (str)
-            vocoder(f0, mcep, str->frames[t], num_mcep, cg_db, &vs, wave, &pos);
-        else
-            vocoder(f0, mcep, NULL, num_mcep, cg_db, &vs, wave, &pos);
-
-        if (asi && (pos-stream_mark > asi->min_buffsize))
-        {
-            rc=(*asi->asc)(wave,stream_mark,pos-stream_mark,0,asi);
-            stream_mark = pos;
-        }
-    }
-    wave->num_samples = pos;
-
-    if (asi && (rc == CST_AUDIO_STREAM_CONT))
-    {   /* drain the last part of the waveform */
-        (*asi->asc)(wave,stream_mark,pos-stream_mark,1,asi);
-    }
-
-    /* memory free */
-    cst_free(mcep);
-    free_vocoder(&vs);
-
-    if (rc == CST_AUDIO_STREAM_STOP)
-    {
-        delete_wave(wave);
-        return NULL;
-    }
-    else
-        return wave;
 }
 
 static void init_vocoder(double fs, int framel, int m, 
@@ -238,6 +137,128 @@ static void init_vocoder(double fs, int framel, int m,
     vs->h = cg_db->me_h;
 
     return;
+}
+
+static void free_vocoder(VocoderSetup *vs)
+{
+
+    cst_free(vs->c);
+    cst_free(vs->mc);
+    cst_free(vs->d);
+ 
+    vs->c = NULL;
+    vs->mc = NULL;
+    vs->d = NULL;
+    vs->ppade = NULL;
+    vs->cc = NULL;
+    vs->cinc = NULL;
+    vs->d1 = NULL;
+    vs->g = NULL;
+    vs->cep = NULL;
+    vs->ir = NULL;
+
+    cst_free(vs->hpulse);
+    cst_free(vs->hnoise);
+    cst_free(vs->xpulsesig);
+    cst_free(vs->xnoisesig);
+
+   
+    return;
+}
+
+/* b2mc : transform MLSA digital filter coefficients to mel-cepstrum */
+static void b2mc (double *b, double *mc, int m, double a)
+{
+  double d, o;
+        
+  d = mc[m] = b[m];
+  for (m--; m>=0; m--) {
+    o = b[m] + a * d;
+    d = b[m];
+    mc[m] = o;
+  }
+  
+  return;
+}
+
+/* freqt : frequency transformation */
+static void freqt (double *c1, int m1, double *c2, int m2, double a, VocoderSetup *vs)
+{
+   register int i, j;
+   double b;
+    
+   if (vs->d==NULL) {
+      vs->size = m2;
+      vs->d    = cst_alloc(double,vs->size + vs->size + 2);
+      vs->g    = vs->d+vs->size+1;
+   }
+
+   if (m2>vs->size) {
+       cst_free(vs->d);
+      vs->size = m2;
+      vs->d    = cst_alloc(double,vs->size + vs->size + 2);
+      vs->g    = vs->d+vs->size+1;
+   }
+    
+   b = 1-a*a;
+   for (i=0; i<m2+1; i++)
+      vs->g[i] = 0.0;
+
+   for (i=-m1; i<=0; i++) {
+      if (0 <= m2)
+         vs->g[0] = c1[-i]+a*(vs->d[0]=vs->g[0]);
+      if (1 <= m2)
+         vs->g[1] = b*vs->d[0]+a*(vs->d[1]=vs->g[1]);
+      for (j=2; j<=m2; j++)
+         vs->g[j] = vs->d[j-1]+a*((vs->d[j]=vs->g[j])-vs->g[j-1]);
+   }
+
+   memmove(c2,vs->g,sizeof(double)*(m2+1));
+   
+   return;
+}
+
+/* c2ir : The minimum phase impulse response is evaluated from the minimum phase cepstrum */
+static void c2ir (double *c, int nc, double *h, int leng)
+{
+   register int n, k, upl;
+   double  d;
+
+   h[0] = exp(c[0]);
+   for (n=1; n<leng; n++) {
+      d = 0;
+      upl = (n>=nc) ? nc-1 : n;
+      for (k=1; k<=upl; k++)
+         d += k*c[k]*h[n-k];
+      h[n] = d/n;
+   }
+   
+   return;
+}
+
+static double b2en (double *b, int m, double a, VocoderSetup *vs)
+{
+   double en;
+   int k;
+   
+   if (vs->o<m) {
+      if (vs->mc != NULL)
+          cst_free(vs->mc);
+    
+      vs->mc = cst_alloc(double,(m + 1) + 2 * vs->irleng);
+      vs->cep = vs->mc + m+1;
+      vs->ir  = vs->cep + vs->irleng;
+   }
+
+   b2mc(b, vs->mc, m, a);
+   freqt(vs->mc, m, vs->cep, vs->irleng-1, -a, vs);
+   c2ir(vs->cep, vs->irleng, vs->ir, vs->irleng);
+   en = 0.0;
+   
+   for (k=0;k<vs->irleng;k++)
+      en += vs->ir[k] * vs->ir[k];
+
+   return(en);
 }
 
 static double plus_or_minus_one()
@@ -397,125 +418,96 @@ static void vocoder(double p, double *mc,
     return;
 }
 
-static double b2en (double *b, int m, double a, VocoderSetup *vs)
+static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
+                                const cst_track *str,
+                                double fs,	/* sampling frequency (Hz) */
+                                double framem,	/* frame size */
+                                cst_cg_db *cg_db,
+                                cst_audio_streaming_info *asi)
 {
-   double en;
-   int k;
-   
-   if (vs->o<m) {
-      if (vs->mc != NULL)
-          cst_free(vs->mc);
-    
-      vs->mc = cst_alloc(double,(m + 1) + 2 * vs->irleng);
-      vs->cep = vs->mc + m+1;
-      vs->ir  = vs->cep + vs->irleng;
-   }
+    long t, pos;
+    int framel, i;
+    double f0;
+    VocoderSetup vs;
+    cst_wave *wave = 0;
+    double *mcep;
+    int stream_mark;
+    int rc = CST_AUDIO_STREAM_CONT;
+    int num_mcep;
+    double ffs = 16000;
 
-   b2mc(b, vs->mc, m, a);
-   freqt(vs->mc, m, vs->cep, vs->irleng-1, -a, vs);
-   c2ir(vs->cep, vs->irleng, vs->ir, vs->irleng);
-   en = 0.0;
-   
-   for (k=0;k<vs->irleng;k++)
-      en += vs->ir[k] * vs->ir[k];
+    num_mcep = params->num_channels-1;
+    framel = (int)(0.5 + (framem * ffs / 1000.0)); /* 80 for 16KHz */
+    init_vocoder(ffs, framel, num_mcep, &vs, cg_db);
 
-   return(en);
+    if (str != NULL)
+        vs.gauss = MFALSE;
+
+    /* synthesize waveforms by MLSA filter */
+    wave = new_wave();
+    cst_wave_resize(wave,params->num_frames * framel,1);
+    /* It is (weirdly) possible that fs and ffs are different */
+    /* But only for weird speech hack created 8KHz voices */
+    wave->sample_rate = fs; 
+
+    mcep = cst_alloc(double,num_mcep+1);
+
+    for (t = 0, stream_mark = pos = 0; 
+         (rc == CST_AUDIO_STREAM_CONT) && (t < params->num_frames);
+         t++) 
+    {
+        f0 = (double)params->frames[t][0];
+        for (i=1; i<num_mcep+1; i++)
+            mcep[i-1] = params->frames[t][i];
+        mcep[i-1] = 0;
+
+        if (str)
+            vocoder(f0, mcep, str->frames[t], num_mcep, cg_db, &vs, wave, &pos);
+        else
+            vocoder(f0, mcep, NULL, num_mcep, cg_db, &vs, wave, &pos);
+
+        if (asi && (pos-stream_mark > asi->min_buffsize))
+        {
+            rc=(*asi->asc)(wave,stream_mark,pos-stream_mark,0,asi);
+            stream_mark = pos;
+        }
+    }
+    wave->num_samples = pos;
+
+    if (asi && (rc == CST_AUDIO_STREAM_CONT))
+    {   /* drain the last part of the waveform */
+        (*asi->asc)(wave,stream_mark,pos-stream_mark,1,asi);
+    }
+
+    /* memory free */
+    cst_free(mcep);
+    free_vocoder(&vs);
+
+    if (rc == CST_AUDIO_STREAM_STOP)
+    {
+        delete_wave(wave);
+        return NULL;
+    }
+    else
+        return wave;
 }
 
-
-/* b2mc : transform MLSA digital filter coefficients to mel-cepstrum */
-static void b2mc (double *b, double *mc, int m, double a)
+cst_wave *mlsa_resynthesis(const cst_track *params, 
+                           const cst_track *str, 
+                           cst_cg_db *cg_db,
+                           cst_audio_streaming_info *asi)
 {
-  double d, o;
-        
-  d = mc[m] = b[m];
-  for (m--; m>=0; m--) {
-    o = b[m] + a * d;
-    d = b[m];
-    mc[m] = o;
-  }
-  
-  return;
-}
+    /* Resynthesizes a wave from given track */
+    cst_wave *wave = 0;
+    int sr = cg_db->sample_rate;
+    double shift;
 
-/* freqt : frequency transformation */
-static void freqt (double *c1, int m1, double *c2, int m2, double a, VocoderSetup *vs)
-{
-   register int i, j;
-   double b;
-    
-   if (vs->d==NULL) {
-      vs->size = m2;
-      vs->d    = cst_alloc(double,vs->size + vs->size + 2);
-      vs->g    = vs->d+vs->size+1;
-   }
+    if (params->num_frames > 1)
+        shift = 1000.0*(params->times[1]-params->times[0]);
+    else
+        shift = 5.0;
 
-   if (m2>vs->size) {
-       cst_free(vs->d);
-      vs->size = m2;
-      vs->d    = cst_alloc(double,vs->size + vs->size + 2);
-      vs->g    = vs->d+vs->size+1;
-   }
-    
-   b = 1-a*a;
-   for (i=0; i<m2+1; i++)
-      vs->g[i] = 0.0;
+    wave = synthesis_body(params,str,sr,shift,cg_db,asi);
 
-   for (i=-m1; i<=0; i++) {
-      if (0 <= m2)
-         vs->g[0] = c1[-i]+a*(vs->d[0]=vs->g[0]);
-      if (1 <= m2)
-         vs->g[1] = b*vs->d[0]+a*(vs->d[1]=vs->g[1]);
-      for (j=2; j<=m2; j++)
-         vs->g[j] = vs->d[j-1]+a*((vs->d[j]=vs->g[j])-vs->g[j-1]);
-   }
-
-   memmove(c2,vs->g,sizeof(double)*(m2+1));
-   
-   return;
-}
-
-/* c2ir : The minimum phase impulse response is evaluated from the minimum phase cepstrum */
-static void c2ir (double *c, int nc, double *h, int leng)
-{
-   register int n, k, upl;
-   double  d;
-
-   h[0] = exp(c[0]);
-   for (n=1; n<leng; n++) {
-      d = 0;
-      upl = (n>=nc) ? nc-1 : n;
-      for (k=1; k<=upl; k++)
-         d += k*c[k]*h[n-k];
-      h[n] = d/n;
-   }
-   
-   return;
-}
-
-static void free_vocoder(VocoderSetup *vs)
-{
-
-    cst_free(vs->c);
-    cst_free(vs->mc);
-    cst_free(vs->d);
- 
-    vs->c = NULL;
-    vs->mc = NULL;
-    vs->d = NULL;
-    vs->ppade = NULL;
-    vs->cc = NULL;
-    vs->cinc = NULL;
-    vs->d1 = NULL;
-    vs->g = NULL;
-    vs->cep = NULL;
-    vs->ir = NULL;
-
-    cst_free(vs->hpulse);
-    cst_free(vs->hnoise);
-    cst_free(vs->xpulsesig);
-    cst_free(vs->xnoisesig);
-
-   
-    return;
+    return wave;
 }

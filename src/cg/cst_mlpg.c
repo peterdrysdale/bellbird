@@ -96,9 +96,11 @@
 #include "cst_track.h"
 #include "cst_wave.h"
 #include "cst_vc.h"
-#include "HTS_misc.h"
 
 #include "cst_mlpg.h"
+
+#define	WLEFT 0
+#define	WRIGHT 1
 
 static MLPGPARA xmlpgpara_init(int dim, int dim2, int dnum, 
                                int clsnum)
@@ -155,6 +157,84 @@ static void xmlpgparafree(MLPGPARA param)
     }
 
     return;
+}
+
+static double cal_xmcxmc(long clsidx,
+		  DVECTOR x,
+		  DMATRIX mm,	// [num class][dim]
+		  DMATRIX cm)	// [num class * dim][dim]
+{
+    long clsnum, k, l, b, dim;
+    double *vec = NULL;
+    double td, d;
+
+    dim = x->length;
+    clsnum = mm->row;
+    b = clsidx * dim;
+    if (mm->col != dim || cm->col != dim || clsnum * dim != cm->row) {
+	cst_errmsg("Error cal_xmcxmc: different dimension\n");
+        cst_error();
+    }
+
+    // memory allocation
+    vec = cst_alloc(double,(int)dim);
+    for (k = 0; k < dim; k++) vec[k] = x->data[k] - mm->data[clsidx][k];
+    for (k = 0, d = 0.0; k < dim; k++) {
+	for (l = 0, td = 0.0; l < dim; l++) td += vec[l] * cm->data[l + b][k];
+	d += td * vec[k];
+    }
+    // memory free
+    cst_free(vec); vec = NULL;
+
+    return d;
+}
+
+static double get_gauss_full(long clsidx,
+		      DVECTOR vec,		// [dim]
+		      DVECTOR detvec,		// [clsnum]
+		      DMATRIX weightmat,	// [clsnum][1]
+		      DMATRIX meanvec,		// [clsnum][dim]
+		      DMATRIX invcovmat)	// [clsnum * dim][dim]
+{
+    double gauss;
+
+    if (detvec->data[clsidx] <= 0.0) {
+	cst_errmsg("#error: det <= 0.0\n");
+        cst_error();
+    }
+
+    gauss = weightmat->data[clsidx][0]
+	/ sqrt(pow(2.0 * PI, (double)vec->length) * detvec->data[clsidx])
+	* exp(-1.0 * cal_xmcxmc(clsidx, vec, meanvec, invcovmat) / 2.0);
+    
+    return gauss;
+}
+
+static double get_gauss_dia(long clsidx,
+		     DVECTOR vec,		// [dim]
+		     DVECTOR detvec,		// [clsnum]
+		     DMATRIX weightmat,		// [clsnum][1]
+		     DMATRIX meanmat,		// [clsnum][dim]
+		     DMATRIX invcovmat)		// [clsnum][dim]
+{
+    double gauss, sb;
+    long k;
+
+    if (detvec->data[clsidx] <= 0.0) {
+	cst_errmsg("#error: det <= 0.0\n");
+        cst_error();
+    }
+
+    for (k = 0, gauss = 0.0; k < vec->length; k++) {
+	sb = vec->data[k] - meanmat->data[clsidx][k];
+	gauss += sb * invcovmat->data[clsidx][k] * sb;
+    }
+
+    gauss = weightmat->data[clsidx][0]
+	/ sqrt(pow(2.0 * PI, (double)vec->length) * detvec->data[clsidx])
+	* exp(-gauss / 2.0);
+
+    return gauss;
 }
 
 static double get_like_pdfseq_vit(int dim, int dim2, int dnum,
@@ -226,60 +306,6 @@ static double get_like_pdfseq_vit(int dim, int dim2, int dnum,
 
     return like;
 }
-
-#if 0
-static double get_like_gv(long dim2, long dnum, MLPGPARA param)
-{
-    long k;
-    double av = 0.0, dif = 0.0;
-    double vlike = -INFTY;
-
-    if (param->vm != NULL && param->vv != NULL) {
-	for (k = 0; k < dim2; k++)
-	    calc_varstats(param->stm->data, k, dnum, &av,
-			  &(param->var->data[k]), &dif);
-	vlike = log(get_gauss_dia5(param->vdet, 1.0, param->var,
-                                   param->vm, param->vv));
-    }
-
-    return vlike;
-}
-
-static void sm_mvav(DMATRIX mat, long hlen)
-{
-    long k, l, m, p;
-    double d, sd;
-    DVECTOR vec = NULL;
-    DVECTOR win = NULL;
-
-    vec = xdvalloc(mat->row);
-
-    // smoothing window
-    win = xdvalloc(hlen * 2 + 1);
-    for (k = 0, d = 1.0, sd = 0.0; k < hlen; k++, d += 1.0) {
-	win->data[k] = d;	win->data[win->length - k - 1] = d;
-	sd += d + d;
-    }
-    win->data[k] = d;	sd += d;
-    for (k = 0; k < win->length; k++) win->data[k] /= sd;
-
-    for (l = 0; l < mat->col; l++) {
-	for (k = 0; k < mat->row; k++) {
-	    for (m = 0, vec->data[k] = 0.0; m < win->length; m++) {
-		p = k - hlen + m;
-		if (p >= 0 && p < mat->row)
-		    vec->data[k] += mat->data[p][l] * win->data[m];
-	    }
-	}
-	for (k = 0; k < mat->row; k++) mat->data[k][l] = vec->data[k];
-    }
-
-    xdvfree(win);
-    xdvfree(vec);
-
-    return;
-}
-#endif
 
 static void get_dltmat(DMATRIX mat, DWin *dw, int dno, DMATRIX dmat)
 {
@@ -377,59 +403,14 @@ static void InitPStreamChol(PStreamChol *pst, const float *dynwin, int fsize,
     // memory allocation
     pst->T = T;					// number of frames
     pst->width = pst->dw.maxw[WRIGHT] * 2 + 1;	// width of R
-    pst->mseq = HTS_alloc_matrix(T,pst->vSize);	// [T][odim] 
-    pst->ivseq = HTS_alloc_matrix(T,pst->vSize);// [T][odim]
-    pst->R = HTS_alloc_matrix(T,pst->width);    // [T][width]
+    pst->mseq = bell_alloc_dmatrix(T,pst->vSize);	// [T][odim] 
+    pst->ivseq = bell_alloc_dmatrix(T,pst->vSize);// [T][odim]
+    pst->R = bell_alloc_dmatrix(T,pst->width);    // [T][width]
     pst->r = cst_alloc(double,T);		// [T]
     pst->g = cst_alloc(double,T);		// [T]
-    pst->c = HTS_alloc_matrix(T,pst->order + 1);// [T][dim]
+    pst->c = bell_alloc_dmatrix(T,pst->order + 1);// [T][dim]
 
     return;
-}
-
-static void mlgparaChol(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp)
-{
-    int t, d;
-
-    // error check
-    if (pst->vSize * 2 != pdf->col || pst->order + 1 != mlgp->col) {
-	cst_errmsg("Error mlgparaChol: Different dimension\n");
-        cst_error();
-    }
-
-    // mseq: U^{-1}*M,	ifvseq: U^{-1}
-    for (t = 0; t < pst->T; t++) {
-	for (d = 0; d < pst->vSize; d++) {
-	    pst->mseq[t][d] = pdf->data[t][d];
-	    pst->ivseq[t][d] = pdf->data[t][pst->vSize + d];
-	}
-    } 
-
-    // ML parameter generation
-    mlpgChol(pst);
-
-    // extracting parameters
-    for (t = 0; t < pst->T; t++)
-	for (d = 0; d <= pst->order; d++)
-	    mlgp->data[t][d] = pst->c[t][d];
-
-    return;
-}
-
-// generate parameter sequence from pdf sequence using Choleski decomposition
-static void mlpgChol(PStreamChol *pst)
-{
-   register int m;
-
-   // generating parameter in each dimension
-   for (m = 0; m <= pst->order; m++) {
-       calc_R_and_r(pst, m);
-       Choleski(pst);
-       Choleski_forward(pst);
-       Choleski_backward(pst, m);
-   }
-   
-   return;
 }
 
 //------ parameter generation fuctions
@@ -534,48 +515,23 @@ static void Choleski_backward(PStreamChol *pst, const int m)
    return;
 }
 
-////////////////////////////////////
-// ML Considering Global Variance //
-////////////////////////////////////
-#if 0
-static void varconv(double **c, const int m, const int T, const double var)
+// generate parameter sequence from pdf sequence using Choleski decomposition
+static void mlpgChol(PStreamChol *pst)
 {
-    register int n;
-    double sd, osd;
-    double oav = 0.0, ovar = 0.0, odif = 0.0;
+   register int m;
 
-    calc_varstats(c, m, T, &oav, &ovar, &odif);
-    osd = sqrt(ovar);	sd = sqrt(var);
-    for (n = 0; n < T; n++)
-	c[n][m] = (c[n][m] - oav) / osd * sd + oav;
-
-    return;
+   // generating parameter in each dimension
+   for (m = 0; m <= pst->order; m++) {
+       calc_R_and_r(pst, m);
+       Choleski(pst);
+       Choleski_forward(pst);
+       Choleski_backward(pst, m);
+   }
+   
+   return;
 }
 
-static void calc_varstats(double **c, const int m, const int T,
-		   double *av, double *var, double *dif)
-{
-    register int i;
-    register double d;
-
-    *av = 0.0;
-    *var = 0.0;
-    *dif = 0.0;
-    for (i = 0; i < T; i++) *av += c[i][m];
-    *av /= (double)T;
-    for (i = 0; i < T; i++) {
-	d = c[i][m] - *av;
-	*var += d * d;	*dif += d;
-    }
-    *var /= (double)T;
-
-    return;
-}
-
-// Diagonal Covariance Version
-static void mlgparaGrad(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp, const int max,
-		 double th, double e, double alpha, DVECTOR vm, DVECTOR vv,
-		 int nrmflag, int extvflag)
+static void mlgparaChol(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp)
 {
     int t, d;
 
@@ -596,14 +552,6 @@ static void mlgparaGrad(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp, const int m
     // ML parameter generation
     mlpgChol(pst);
 
-    // extend variance
-    if (extvflag)
-	for (d = 0; d <= pst->order; d++)
-	    varconv(pst->c, d, pst->T, vm->data[d]);
-
-    // estimating parameters
-    mlpgGrad(pst, max, th, e, alpha, vm, vv, nrmflag);
-
     // extracting parameters
     for (t = 0; t < pst->T; t++)
 	for (d = 0; d <= pst->order; d++)
@@ -611,77 +559,6 @@ static void mlgparaGrad(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp, const int m
 
     return;
 }
-
-// generate parameter sequence from pdf sequence using gradient
-static void mlpgGrad(PStreamChol *pst, const int max, double th, double e,
-	      double alpha, DVECTOR vm, DVECTOR vv, int nrmflag)
-{
-   register int m, i, t;
-   double diff, n, dth;
-
-   if (nrmflag)
-       n = (double)(pst->T * pst->vSize) / (double)(vm->length);
-   else n = 1.0;
-
-   // generating parameter in each dimension
-   for (m = 0; m <= pst->order; m++) {
-       calc_R_and_r(pst, m);
-       dth = th * sqrt(vm->data[m]);
-       for (i = 0; i < max; i++) {
-	   calc_grad(pst, m);
-	   if (vm != NULL && vv != NULL)
-	       calc_vargrad(pst, m, alpha, n, vm->data[m], vv->data[m]);
-	   for (t = 0, diff = 0.0; t < pst->T; t++) {
-	       diff += pst->g[t] * pst->g[t];
-	       pst->c[t][m] += e * pst->g[t];
-	   }
-	   diff = sqrt(diff / (double)pst->T);
-	   if (diff < dth || diff == 0.0) break;
-       }
-   }
-   
-   return;
-}
-
-// calc_grad: calculate -RX + r = -W'U^{-1}W * X + W'U^{-1}M
-void calc_grad(PStreamChol *pst, const int m)
-{
-    register int i, j;
-
-    for (i = 0; i < pst->T; i++) {
-	pst->g[i] = pst->r[i] - pst->c[i][m] * pst->R[i][0];
-	for (j = 1; j < pst->width; j++) {
-	    if (i + j < pst->T) pst->g[i] -= pst->c[i + j][m] * pst->R[i][j];
-	    if (i - j >= 0) pst->g[i] -= pst->c[i - j][m] * pst->R[i - j][j];
-	}
-    }
-
-    return;
-}
-
-static void calc_vargrad(PStreamChol *pst, const int m, double alpha, double n,
-		  double vm, double vv)
-{
-    register int i;
-    double vg, w1, w2;
-    double av = 0.0, var = 0.0, dif = 0.0;
-
-    if (alpha > 1.0 || alpha < 0.0) {
-	w1 = 1.0;		w2 = 1.0;
-    } else {
-	w1 = alpha;	w2 = 1.0 - alpha;
-    }
-
-    calc_varstats(pst->c, m, pst->T, &av, &var, &dif);
-
-    for (i = 0; i < pst->T; i++) {
-	vg = -(var - vm) * (pst->c[i][m] - av) * vv * 2.0 / (double)pst->T;
-	pst->g[i] = w1 * pst->g[i] / n + w2 * vg;
-    }
-
-    return;
-}
-#endif
 
 // diagonal covariance
 static DVECTOR xget_detvec_diamat2inv(DMATRIX covmat)	// [num class][dim]
@@ -712,112 +589,6 @@ static DVECTOR xget_detvec_diamat2inv(DMATRIX covmat)	// [num class][dim]
     return detvec;
 }
 
-static double get_gauss_full(long clsidx,
-		      DVECTOR vec,		// [dim]
-		      DVECTOR detvec,		// [clsnum]
-		      DMATRIX weightmat,	// [clsnum][1]
-		      DMATRIX meanvec,		// [clsnum][dim]
-		      DMATRIX invcovmat)	// [clsnum * dim][dim]
-{
-    double gauss;
-
-    if (detvec->data[clsidx] <= 0.0) {
-	cst_errmsg("#error: det <= 0.0\n");
-        cst_error();
-    }
-
-    gauss = weightmat->data[clsidx][0]
-	/ sqrt(pow(2.0 * PI, (double)vec->length) * detvec->data[clsidx])
-	* exp(-1.0 * cal_xmcxmc(clsidx, vec, meanvec, invcovmat) / 2.0);
-    
-    return gauss;
-}
-
-static double cal_xmcxmc(long clsidx,
-		  DVECTOR x,
-		  DMATRIX mm,	// [num class][dim]
-		  DMATRIX cm)	// [num class * dim][dim]
-{
-    long clsnum, k, l, b, dim;
-    double *vec = NULL;
-    double td, d;
-
-    dim = x->length;
-    clsnum = mm->row;
-    b = clsidx * dim;
-    if (mm->col != dim || cm->col != dim || clsnum * dim != cm->row) {
-	cst_errmsg("Error cal_xmcxmc: different dimension\n");
-        cst_error();
-    }
-
-    // memory allocation
-    vec = cst_alloc(double,(int)dim);
-    for (k = 0; k < dim; k++) vec[k] = x->data[k] - mm->data[clsidx][k];
-    for (k = 0, d = 0.0; k < dim; k++) {
-	for (l = 0, td = 0.0; l < dim; l++) td += vec[l] * cm->data[l + b][k];
-	d += td * vec[k];
-    }
-    // memory free
-    cst_free(vec); vec = NULL;
-
-    return d;
-}
-
-#if 0
-// diagonal covariance
-static double get_gauss_dia5(double det,
-		     double weight,
-		     DVECTOR vec,		// dim
-		     DVECTOR meanvec,		// dim
-		     DVECTOR invcovvec)		// dim
-{
-    double gauss, sb;
-    long k;
-
-    if (det <= 0.0) {
-	cst_errmsg("#error: det <= 0.0\n");
-        cst_error();
-    }
-
-    for (k = 0, gauss = 0.0; k < vec->length; k++) {
-	sb = vec->data[k] - meanvec->data[k];
-	gauss += sb * invcovvec->data[k] * sb;
-    }
-
-    gauss = weight / sqrt(pow(2.0 * PI, (double)vec->length) * det)
-	* exp(-gauss / 2.0);
-
-    return gauss;
-}
-#endif
-
-static double get_gauss_dia(long clsidx,
-		     DVECTOR vec,		// [dim]
-		     DVECTOR detvec,		// [clsnum]
-		     DMATRIX weightmat,		// [clsnum][1]
-		     DMATRIX meanmat,		// [clsnum][dim]
-		     DMATRIX invcovmat)		// [clsnum][dim]
-{
-    double gauss, sb;
-    long k;
-
-    if (detvec->data[clsidx] <= 0.0) {
-	cst_errmsg("#error: det <= 0.0\n");
-        cst_error();
-    }
-
-    for (k = 0, gauss = 0.0; k < vec->length; k++) {
-	sb = vec->data[k] - meanmat->data[clsidx][k];
-	gauss += sb * invcovmat->data[clsidx][k] * sb;
-    }
-
-    gauss = weightmat->data[clsidx][0]
-	/ sqrt(pow(2.0 * PI, (double)vec->length) * detvec->data[clsidx])
-	* exp(-gauss / 2.0);
-
-    return gauss;
-}
-
 static void pst_free(PStreamChol *pst)
 {
     int i;
@@ -830,12 +601,12 @@ static void pst_free(PStreamChol *pst)
     cst_free(pst->dw.coef); pst->dw.coef = NULL;
     cst_free(pst->dw.coef_ptrs); pst->dw.coef_ptrs = NULL;
 
-    HTS_free_matrix(pst->mseq,pst->T);
-    HTS_free_matrix(pst->ivseq,pst->T);
-    HTS_free_matrix(pst->R,pst->T);
+    bell_free_dmatrix(pst->mseq,pst->T);
+    bell_free_dmatrix(pst->ivseq,pst->T);
+    bell_free_dmatrix(pst->R,pst->T);
     cst_free(pst->r);
     cst_free(pst->g);
-    HTS_free_matrix(pst->c,pst->T);
+    bell_free_dmatrix(pst->c,pst->T);
 
     return;
 }
@@ -916,4 +687,3 @@ cst_track *mlpg(const cst_track *param_track, cst_cg_db *cg_db)
 
     return out;
 }
-

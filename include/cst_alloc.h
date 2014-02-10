@@ -39,12 +39,14 @@
 /*             Author:  Alan W Black (awb@cs.cmu.edu)                    */
 /*               Date:  July 1999                                        */
 /*************************************************************************/
-/*                                                                       */
-/*    Basic wraparounds for malloc and free                              */
-/*                                                                       */
-/*************************************************************************/
+
+
+/*    Basic allocators and matrix allocators                             */
+
 #ifndef __CST_ALLOC_H__
 #define __CST_ALLOC_H__
+
+#include <stdio.h>
 
 #ifndef TRUE
 #define TRUE (1==1)
@@ -63,5 +65,9 @@ void *cst_safe_alloc(int size);
 #define cst_alloc(TYPE,SIZE) ((TYPE *)cst_safe_alloc(sizeof(TYPE)*(SIZE)))
 
 void cst_free(void *p);
+
+/* double matrix allocation and deallocation */
+double **bell_alloc_dmatrix(size_t row, size_t col);
+void bell_free_dmatrix(double **p, size_t row);
 
 #endif

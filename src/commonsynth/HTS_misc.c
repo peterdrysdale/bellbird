@@ -510,27 +510,6 @@ bell_boolean HTS_get_token_from_string_with_separator(const char *str, size_t * 
       return FALSE;
 }
 
-/* HTS_alloc_matrix: allocate double matrix */
-double **HTS_alloc_matrix(size_t x, size_t y)
-{
-   size_t i;
-   double **p = cst_alloc(double *,x);
-
-   for (i = 0; i < x; i++)
-      p[i] = cst_alloc(double,y);
-   return p;
-}
-
-/* HTS_free_matrix: free double matrix */
-void HTS_free_matrix(double **p, size_t x)
-{
-   size_t i;
-
-   for (i = 0; i < x; i++)
-      cst_free(p[i]);
-   cst_free(p);
-}
-
 /* HTS_finv: calculate 1.0/variance function */
 double HTS_finv(const double x)
 {
