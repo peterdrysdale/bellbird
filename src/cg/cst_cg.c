@@ -486,7 +486,7 @@ static cst_utterance *cg_resynth(cst_utterance *utt)
 
     if (cg_db->do_mlpg)
     {
-        smoothed_track = mlpg(param_track, cg_db);
+        smoothed_track = cg_mlpg(param_track, cg_db);
         w = mlsa_resynthesis(smoothed_track,str_track,cg_db,asi);
         delete_track(smoothed_track);
     }

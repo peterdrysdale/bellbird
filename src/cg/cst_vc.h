@@ -41,34 +41,34 @@
 /*                                                                   */
 /*          Author :  Tomoki Toda (tomoki@ics.nitech.ac.jp)          */
 /*          Date   :  June 2004                                      */
-/*                                                                   */
-/* Functions shared between mlpg and mlsa                            */
 /*-------------------------------------------------------------------*/
+
+/* Vector and matrix functions for mlpg.c */
 
 #ifndef __CST_VC_H
 #define __CST_VC_H
 
-typedef struct LVECTOR_STRUCT {
+typedef struct lvector_struct {
     long length;
     long *data;
-} *LVECTOR;
+} *lvector;
 
-typedef struct DVECTOR_STRUCT {
+typedef struct dvector_struct {
     long length;
     double *data;
-} *DVECTOR;
+} *dvector;
 
-typedef struct DMATRIX_STRUCT {
+typedef struct dmatrix_struct {
     long row;
     long col;
     double **data;
-} *DMATRIX;
+} *dmatrix;
 
-LVECTOR xlvalloc(long length);
-void xlvfree(LVECTOR x);
-DVECTOR xdvalloc(long length);
-void xdvfree(DVECTOR vector);
-DMATRIX xdmalloc(long row, long col);
-void xdmfree(DMATRIX matrix);
+lvector xlvalloc(long length);
+void xlvfree(lvector x);
+dvector xdvalloc(long length);
+void xdvfree(dvector vector);
+dmatrix xdmalloc(long row, long col);
+void xdmfree(dmatrix matrix);
 
 #endif /* __CST_VC_H */

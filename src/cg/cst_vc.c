@@ -52,18 +52,18 @@
 #include "cst_string.h"
 #include "cst_vc.h"
 
-LVECTOR xlvalloc(long length)
+lvector xlvalloc(long length)
 {
-    LVECTOR x;
+    lvector x;
 
-    x = cst_alloc(struct LVECTOR_STRUCT,1);
+    x = cst_alloc(struct lvector_struct,1);
     x->data = cst_alloc(long,length);
     x->length = length;
 
     return x;
 }
 
-void xlvfree(LVECTOR x)
+void xlvfree(lvector x)
 {
     if (x != NULL) {
         cst_free(x->data);
@@ -73,18 +73,18 @@ void xlvfree(LVECTOR x)
     return;
 }
 
-DVECTOR xdvalloc(long length)
+dvector xdvalloc(long length)
 {
-    DVECTOR x;
+    dvector x;
 
-    x = cst_alloc(struct DVECTOR_STRUCT,1);
+    x = cst_alloc(struct dvector_struct,1);
     x->data = cst_alloc(double,length);
     x->length = length;
 
     return x;
 }
 
-void xdvfree(DVECTOR x)
+void xdvfree(dvector x)
 {
     if (x != NULL) {
         cst_free(x->data);
@@ -94,11 +94,11 @@ void xdvfree(DVECTOR x)
     return;
 }
 
-DMATRIX xdmalloc(long row, long col)
+dmatrix xdmalloc(long row, long col)
 {
-    DMATRIX matrix;
+    dmatrix matrix;
 
-    matrix = cst_alloc(struct DMATRIX_STRUCT,1);
+    matrix = cst_alloc(struct dmatrix_struct,1);
     matrix->data = bell_alloc_dmatrix(row,col);
     matrix->row = row;
     matrix->col = col;
@@ -106,7 +106,7 @@ DMATRIX xdmalloc(long row, long col)
     return matrix;
 }
 
-void xdmfree(DMATRIX matrix)
+void xdmfree(dmatrix matrix)
 {
     if (matrix != NULL) {
         bell_free_dmatrix(matrix->data,matrix->row);

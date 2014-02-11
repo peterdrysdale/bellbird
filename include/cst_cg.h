@@ -144,10 +144,10 @@ cst_wave *mlsa_resynthesis(const cst_track *t,
                            const cst_track *str, 
                            cst_cg_db *cg_db,
                            cst_audio_streaming_info *asc);
-cst_track *mlpg(const cst_track *param_track, cst_cg_db *cg_db);
 
 cst_voice *cst_cg_load_voice(const char *voxdir,
                              const cst_lang lang_table[]);
-int cst_cg_dump_voice(const cst_voice *v,const cst_string *filename);
+
+cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db);
 
 #endif

@@ -74,7 +74,7 @@ static bell_boolean isdigit_string(char *str)
       return FALSE;
 }
 
-static cst_wave * HTS_Process (char **lines, size_t num_lines, 
+static cst_wave * nitech_process (char **lines, size_t num_lines, 
 		   PStream *mceppst, PStream *lf0pst, globalP *gp, 
 		   ModelSet *ms, TreeSet *ts, VocoderSetup *vs )
 {
@@ -177,7 +177,7 @@ bell_boolean nitech_engine_synthesize_from_strings(nitech_engine * ntengine, cha
     gp.UV       = 0.5;
    
     /* generate speech */
-    w=HTS_Process(lines, num_lines, &(ntengine->mceppst), &(ntengine->lf0pst),
+    w=nitech_process(lines, num_lines, &(ntengine->mceppst), &(ntengine->lf0pst),
                        &gp, &(ntengine->ms), &(ntengine->ts), &(ntengine->vs));
 
     /* Attach waveform to utterance for data return */
@@ -276,12 +276,12 @@ void nitech_engine_initialize(nitech_engine *ntengine, const char * fn_voice)
     /* check the number of window */
     if (ntengine->lf0pst.dw.num != ntengine->ms.lf0stream) 
     {
-	cst_errmsg("Festival: HTS: dynamic window for f0 is illegal\n");
+	cst_errmsg("nitech_engine: dynamic window for f0 is illegal\n");
 	cst_error();
     }
     if (ntengine->ms.mcepvsize % ntengine->mceppst.dw.num != 0 ) 
     {
-	cst_errmsg("Festival: HTS: dynamic window for mcep is illegal\n");
+	cst_errmsg("nitech_engine: dynamic window for mcep is illegal\n");
 	cst_error();
     }
 
@@ -298,7 +298,7 @@ void nitech_engine_clear(nitech_engine * ntengine)
     FreeTrees(&(ntengine->ts), MCP);
     DeleteModelSet(&(ntengine->ms));
 
-    cst_free(ntengine->vs.c);
+    free_vocoder(&(ntengine->vs));
     for(i=1; i<ntengine->lf0pst.dw.num; i++)
     {
        cst_free(ntengine->lf0pst.dw.fn[i]);

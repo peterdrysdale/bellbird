@@ -91,16 +91,61 @@
 
 #include <math.h>
 #include "cst_alloc.h"
+#include "cst_cg.h"
 #include "cst_error.h"
 #include "cst_string.h"
 #include "cst_track.h"
 #include "cst_wave.h"
 #include "cst_vc.h"
 
-#include "cst_mlpg.h"
-
 #define	WLEFT 0
 #define	WRIGHT 1
+#define PI2             6.283185307179586477
+#define	INFTY2 ((double) 1.0e+19)
+
+typedef struct _DWin {
+    int	num;		/* number of static + deltas */
+    int **width;	/* width [0..num-1][0(left) 1(right)] */
+    double **coef;	/* coefficient [0..num-1][length[0]..length[1]] */
+    double **coef_ptrs;	/* keeps the pointers so we can free them */
+    int maxw[2];	/* max width [0(left) 1(right)] */
+} DWin;
+
+typedef struct _PStreamChol {
+    int vSize;		// size of ovserved vector
+    int order;		// order of cepstrum
+    int T;		// number of frames
+    int width;		// width of WSW
+    DWin dw;
+    double **mseq;	// sequence of mean vector
+    double **ivseq;	// sequence of invarsed covariance vector
+    double ***ifvseq;	// sequence of invarsed full covariance vector
+    double **R;		// WSW[T][range]
+    double *r;		// WSM [T]
+    double *g;		// g [T]
+    double **c;		// parameter c
+} PStreamChol;
+
+typedef struct MLPGPARA_STRUCT {
+    dvector ov;
+    dvector iuv;
+    dvector iumv;
+    dvector flkv;
+    dmatrix stm;
+    dmatrix dltm;
+    dmatrix pdf;
+    dvector detvec;
+    dmatrix wght;
+    dmatrix mean;
+    dmatrix cov;
+    lvector clsidxv;
+    dvector clsdetv;
+    dmatrix clscov;
+    double vdet;
+    dvector vm;
+    dvector vv;
+    dvector var;
+} *MLPGPARA;
 
 static MLPGPARA xmlpgpara_init(int dim, int dim2, int dnum, 
                                int clsnum)
@@ -160,9 +205,9 @@ static void xmlpgparafree(MLPGPARA param)
 }
 
 static double cal_xmcxmc(long clsidx,
-		  DVECTOR x,
-		  DMATRIX mm,	// [num class][dim]
-		  DMATRIX cm)	// [num class * dim][dim]
+		  dvector x,
+		  dmatrix mm,	// [num class][dim]
+		  dmatrix cm)	// [num class * dim][dim]
 {
     long clsnum, k, l, b, dim;
     double *vec = NULL;
@@ -190,11 +235,11 @@ static double cal_xmcxmc(long clsidx,
 }
 
 static double get_gauss_full(long clsidx,
-		      DVECTOR vec,		// [dim]
-		      DVECTOR detvec,		// [clsnum]
-		      DMATRIX weightmat,	// [clsnum][1]
-		      DMATRIX meanvec,		// [clsnum][dim]
-		      DMATRIX invcovmat)	// [clsnum * dim][dim]
+		      dvector vec,		// [dim]
+		      dvector detvec,		// [clsnum]
+		      dmatrix weightmat,	// [clsnum][1]
+		      dmatrix meanvec,		// [clsnum][dim]
+		      dmatrix invcovmat)	// [clsnum * dim][dim]
 {
     double gauss;
 
@@ -204,18 +249,18 @@ static double get_gauss_full(long clsidx,
     }
 
     gauss = weightmat->data[clsidx][0]
-	/ sqrt(pow(2.0 * PI, (double)vec->length) * detvec->data[clsidx])
+	/ sqrt(pow(PI2, (double)vec->length) * detvec->data[clsidx])
 	* exp(-1.0 * cal_xmcxmc(clsidx, vec, meanvec, invcovmat) / 2.0);
     
     return gauss;
 }
 
 static double get_gauss_dia(long clsidx,
-		     DVECTOR vec,		// [dim]
-		     DVECTOR detvec,		// [clsnum]
-		     DMATRIX weightmat,		// [clsnum][1]
-		     DMATRIX meanmat,		// [clsnum][dim]
-		     DMATRIX invcovmat)		// [clsnum][dim]
+		     dvector vec,		// [dim]
+		     dvector detvec,		// [clsnum]
+		     dmatrix weightmat,		// [clsnum][1]
+		     dmatrix meanmat,		// [clsnum][dim]
+		     dmatrix invcovmat)		// [clsnum][dim]
 {
     double gauss, sb;
     long k;
@@ -231,7 +276,7 @@ static double get_gauss_dia(long clsidx,
     }
 
     gauss = weightmat->data[clsidx][0]
-	/ sqrt(pow(2.0 * PI, (double)vec->length) * detvec->data[clsidx])
+	/ sqrt(pow(PI2, (double)vec->length) * detvec->data[clsidx])
 	* exp(-gauss / 2.0);
 
     return gauss;
@@ -307,7 +352,7 @@ static double get_like_pdfseq_vit(int dim, int dim2, int dnum,
     return like;
 }
 
-static void get_dltmat(DMATRIX mat, DWin *dw, int dno, DMATRIX dmat)
+static void get_dltmat(dmatrix mat, DWin *dw, int dno, dmatrix dmat)
 {
     int i, j, k, tmpnum;
 
@@ -531,7 +576,7 @@ static void mlpgChol(PStreamChol *pst)
    return;
 }
 
-static void mlgparaChol(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp)
+static void mlgparaChol(dmatrix pdf, PStreamChol *pst, dmatrix mlgp)
 {
     int t, d;
 
@@ -561,12 +606,12 @@ static void mlgparaChol(DMATRIX pdf, PStreamChol *pst, DMATRIX mlgp)
 }
 
 // diagonal covariance
-static DVECTOR xget_detvec_diamat2inv(DMATRIX covmat)	// [num class][dim]
+static dvector xget_detvec_diamat2inv(dmatrix covmat)	// [num class][dim]
 {
     long dim, clsnum;
     long i, j;
     double det;
-    DVECTOR detvec = NULL;
+    dvector detvec = NULL;
 
     clsnum = covmat->row;
     dim = covmat->col;
@@ -611,7 +656,7 @@ static void pst_free(PStreamChol *pst)
     return;
 }
 
-cst_track *mlpg(const cst_track *param_track, cst_cg_db *cg_db)
+cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
 {
     /* Generate an (mcep) track using Maximum Likelihood Parameter Generation */
     MLPGPARA param = NULL;

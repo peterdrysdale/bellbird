@@ -95,6 +95,7 @@ void FreeTrees(TreeSet *ts, Mtype type);
 
 void init_vocoder(int m, VocoderSetup *vs);
 void vocoder (double p, float *mc, int m, cst_wave *w, int samp_offset, globalP *gp, VocoderSetup *vs);
+void free_vocoder(VocoderSetup *vs);
 
 cst_wave * pdf2speech(PStream *, PStream *, globalP *, ModelSet *, UttModel *, VocoderSetup *);
 void ReadWin(PStream *);

@@ -1,7 +1,7 @@
 include $(top_srcdir)/Makefile.inc
 AM_CFLAGS += -I. -I$(top_srcdir)/src/commonsynth
 
-noinst_HEADERS = cst_mlsa.h cst_mlpg.h cst_vc.h cst_cg_map.h cst_spamf0.h
+noinst_HEADERS = cst_vc.h cst_cg_map.h cst_spamf0.h
 
 noinst_LTLIBRARIES = libbellbird_src_cg.la
 

@@ -51,6 +51,8 @@
 #include "cst_alloc.h"
 
 #include "nitech_hidden.h"
+
+/* NOTE NOTE NOTE - For performance reasons we "include" static code not header here */
 #include "../commonsynth/mlsafunc.c"
 
 /* mc2b : transform mel-cepstrum to MLSA digital fillter coefficients */
@@ -73,6 +75,7 @@ void init_vocoder(int m, VocoderSetup *vs)
 
    vs->next =1;
 
+   /* Pade' approximants */
    vs->pade[ 0]=1.0;
    vs->pade[ 1]=1.0; vs->pade[ 2]=0.0;
    vs->pade[ 3]=1.0; vs->pade[ 4]=0.0;      vs->pade[ 5]=0.0;
@@ -88,6 +91,11 @@ void init_vocoder(int m, VocoderSetup *vs)
    vs->p1 = -1;
    vs->sw = 0;
    vs->x  = 0x55555555;
+}
+
+void free_vocoder(VocoderSetup *vs)
+{
+   cst_free(vs->c);
 }
 
 void vocoder (double p, float *mc, int m, cst_wave *w, int samp_offset, globalP *gp, VocoderSetup *vs)
