@@ -4,7 +4,7 @@
 #include "cst_utterance.h"
 #include "cst_file.h"
 
-typedef struct _ModelSet { /* HMM set handler */
+typedef struct _ModelSet { // HMM set handler
    int nstate;
    int lf0stream;
    int mcepvsize;
@@ -15,30 +15,30 @@ typedef struct _ModelSet { /* HMM set handler */
    cst_file fp[3];
 } ModelSet;
 
-typedef struct _Pattern{  /* pattern handler for question storage */
-   char *pat;               /* pattern */
-   struct _Pattern *next;   /* link to next pattern */
+typedef struct _Pattern{ // pattern handler for question storage
+   char *pat;               // pattern
+   struct _Pattern *next;   // pointer to next pattern
 } Pattern;
 
-typedef struct _Question { /* question storage */
-   char *qName;              /* name of this question */
-   Pattern *phead;           /* link to head of pattern list */
-   Pattern *ptail;           /* link to tail of pattern list */
-   struct _Question *next;  /* link to next question */
+typedef struct _Question { // question storage
+   char *qName;              // name of this question
+   Pattern *phead;           // pointer to head of pattern list
+   Pattern *ptail;           // pointer to tail of pattern list
+   struct _Question *next;   // pointer to next question
 } Question;
 
-typedef struct _Node {     /* node of decision tree */
-   int idx;                 /* index of this node */
-   int pdf;                 /* index of pdf for this node  ( leaf node only ) */
-   struct _Node *yes;       /* link to child node (yes) */
-   struct _Node *no;        /* link to child node (no)  */
-   Question *quest;          /* question applied at this node */
+typedef struct _Node { // node of decision tree
+   int idx;                 // index of this node
+   int pdf;                 // index of pdf for this node  ( leaf node only )
+   struct _Node *yes;       // pointer to its child node (yes)
+   struct _Node *no;        // pointer to its child node (no)
+   Question *quest;         // question applied at this node
 } Node;
    
-typedef struct _Tree {      
-   int state;                 /* state position of this tree */
-   struct _Tree *next;        /* link to next tree */
-   Node *root;                 /* root node of this decision tree */
+typedef struct _Tree { // decision tree
+   int state;               // state index of this tree
+   struct _Tree *next;      // pointer to next tree
+   Node *root;              // root node of this decision tree
 } Tree;
 
 typedef struct _TreeSet {
@@ -53,46 +53,46 @@ typedef struct _TreeSet {
 } TreeSet;
 
 typedef struct _DWin {
-   int num;           /* number of static + deltas */
-   char **fn;         /* delta window coefficient file */
-   int **width;       /* width [0..num-1][0(left) 1(right)] */
-   float **coef;      /* coefficient [0..num-1][length[0]..length[1]] */
-   float **coefr;     /* pointers to the memory being allocated */
-   int maxw[2];       /* max width [0(left) 1(right)] */
+   int num;           // number of static + deltas
+   char **fn;         // filename for delta window coefficient
+   int **width;       // width [0..num-1][0(left) 1(right)]
+   float **coef;      // coefficient [0..num-1][length[0]..length[1]]
+   float **coefr;     // pointers to the memory being allocated so they can be freed
+   int maxw[2];       // max width [0(left) 1(right)]
    int max_L;
 } DWin;
 
 typedef struct _PStream {
    int vSize;
    int order;
-   int T;
+   int T;           // number of frames
    int width;
    DWin dw;
-   double **mseq;   /* sequence of mean vector */
-   double **ivseq;	 /* sequence of inversed variance vector */
+   double **mseq;   // sequence of mean vector
+   double **ivseq;  // sequence of inversed variance vector
    double **R;
    double *r;
    double *g;
-   float **c;     /* output parameter vector */
+   double **c;      // output parameter vector
 } PStream;
 
 typedef struct _VocoderSetup {
    
-   int fprd;
-   int iprd;
-   int seed;
-   int pd;
+   int fprd;        //  frame period
+   int iprd;        //  interpolation period
+   int seed;        //  random number seed holder
+   int pd;          //  Pade order
    unsigned long next;
    double p1;
    double pc;
    double pj;
-   double pade[21];
-   double *ppade;
+   double pade[21]; //  Pade approximants coefficients
+   double *ppade;   //  pointer to start of Pade approximants of required order
    double *c, *cc, *cinc, *d1;
-   double rate;
+   double rate;     //  output wave's sample rate
    
-   int sw;
-   double r1, r2, s;
+   int sw;          //  switch for Gaussian random number generator since numbers are thrown in pairs
+   double r1, r2, s;//  intermediate values of Gaussian random number generator
    
    int x;
    

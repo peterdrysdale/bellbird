@@ -47,7 +47,7 @@
 /*  link each voice type with a copy of this library (sorry).        */
 /*-------------------------------------------------------------------*/
 
-/* This source file is included in more than one compliation unit.      */
+/* This source file is included in more than one compilation unit.      */
 /* Ordinarily we might use normal functions but we use static functions */
 /* as experience has showed us this code is highly performance critical */
 /* and the compiler likes to inline and improve performance of these    */
@@ -167,4 +167,15 @@ static double nrandom (VocoderSetup *vs)
       
       return (vs->r2*vs->s);
    }
+}
+
+/* mc2b : transform mel-cepstrum to MLSA digital filter coefficients */
+static void mc2b (double *mc, double *b, int m, double a)
+{
+   b[m] = mc[m];
+
+   for (m--; m>=0; m--)
+      b[m] = mc[m] - a * b[m+1];
+
+   return;
 }

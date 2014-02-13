@@ -48,37 +48,36 @@
 #include "cst_wave.h"
 #include "nitech_engine.h"
 
-typedef struct _globalP {  
-   float   RHO      ;  /* variable for speaking rate control         */   
-   float   ALPHA    ;  /* variable for frequency warping parameter   */
-   float   UV       ;  /* variable for U/V threshold                 */
-} globalP;
+typedef struct _nitechP { // parameters of nitech_engine
+   float   rho;        // variable for speaking rate control
+   float   alpha;      // all-pass constant - a frequency warping parameter
+   float   uv;         // U/V threshold which determines voiced/unvoiced status
+} nitechP;
 
 typedef enum {DUR, LF0, MCP} Mtype;
 
-typedef struct _Model {  /* HMM handler */
-   char *name;            /* the name of this HMM */
-   int durpdf;            /* duration pdf index for this HMM */
-   int *lf0pdf;           /* mel-cepstrum pdf indexes for each state of this HMM */  
-   int *mceppdf;          /* log f0 pdf indexes for each state of this HMM */
-   int *dur;              /* duration for each state of this HMM */
-   int totaldur;          /* total duration of this HMM */
-   float **lf0mean;       /* mean vector of log f0 pdfs for each state of this HMM */
-   float **lf0variance;   /* variance (diag) elements of log f0 for each state of this HMM */
-   float **mcepmean;      /* mean vector of mel-cepstrum pdfs for each state of this HMM */
-   float **mcepvariance;  /* variance (diag) elements of mel-cepstrum for each state of this HMM */
-   bell_boolean *voiced;       /* voiced/unvoiced decision for each state of this HMM */
-   struct _Model *next;   /* pointer to next HMM */
+typedef struct _Model {  // Hidden Markov Model (HMM) handler
+   char *name;            // the name of this HMM
+   int durpdf;            // duration pdf index for this HMM
+   int *lf0pdf;           // log(f0) pdf indexes for each state
+   int *mceppdf;          // mel-cepstrum pdf indexes for each state
+   int *dur;              // duration for each state
+   int totaldur;          // total duration of this HMM
+   float **lf0mean;       // mean vector of log f0 pdfs for each state
+   float **lf0variance;   // variance (diag) elements of log f0 for each state
+   float **mcepmean;      // mean vector of mel-cepstrum pdfs for each state
+   float **mcepvariance;  // variance (diag) elements of mel-cepstrum for each state
+   bell_boolean *voiced;  // voiced/unvoiced status for each state
+   struct _Model *next;   // pointer to next HMM
 } Model; 
 
-typedef struct _UttModel { /* Utterance model handler */
-   Model *mhead;
-   Model *mtail;
-   int nModel;
+typedef struct _UttModel { // Utterance model handler
+   Model *mhead;          // pointer to head HMM
+   Model *mtail;          // pointer to tail HMM
+   int nModel;            // number of finished HMM
    int nState;
    int totalframe;
 } UttModel;
-
 
 void LoadModelFiles (ModelSet *);
 void FindDurPDF (Model *, ModelSet *, float, int );
@@ -92,12 +91,11 @@ int SearchTree (char *, Node *);
 void InitTreeSet(TreeSet *);
 void FreeTrees(TreeSet *ts, Mtype type);
 
-
 void init_vocoder(int m, VocoderSetup *vs);
-void vocoder (double p, float *mc, int m, cst_wave *w, int samp_offset, globalP *gp, VocoderSetup *vs);
+void vocoder (double p, double *mc, int m, cst_wave *w, int samp_offset, nitechP *gp, VocoderSetup *vs);
 void free_vocoder(VocoderSetup *vs);
 
-cst_wave * pdf2speech(PStream *, PStream *, globalP *, ModelSet *, UttModel *, VocoderSetup *);
+cst_wave * pdf2speech(PStream *, PStream *, nitechP *, ModelSet *, UttModel *, VocoderSetup *);
 void ReadWin(PStream *);
 void FreeWin(PStream *);
 

@@ -58,36 +58,23 @@
 #define WLEFT 0
 #define WRIGHT 1
 
-static float **ffcalloc(int x, int y)
-{
-   register int i;
-   float **ptr;
-   
-   ptr = cst_alloc(float *,x);
-	
-   for (i=0; i<x; i++)
-      ptr[i] = cst_alloc(float,y);
-   
-   return(ptr);
-}
-
 /*----------------------------------------------------------------
 	matrix calculation functions
 ----------------------------------------------------------------*/
 
-/* calc_R_and_r : calcurate R=W'U^{-1}W and r=W'U^{-1}M */
+/* calc_R_and_r : calculate R=W'U^{-1}W and r=W'U^{-1}M */
 static void calc_R_and_r(PStream *pst, int m)
 {
    register int i, j, k, l, n;
    double   wu;
    
    for (i=0; i<pst->T; i++) {
-		pst->r[i]    = pst->ivseq[i][m] * pst->mseq[i][m];
-		pst->R[i][0] = pst->ivseq[i][m];
-      
-		for (j=1; j<pst->width; j++)
+      pst->r[i] = pst->ivseq[i][m] * pst->mseq[i][m];
+      pst->R[i][0] = pst->ivseq[i][m];
+
+      for (j=1; j<pst->width; j++)
          pst->R[i][j]=0.0;
-      
+
       for (j=1; j<pst->dw.num; j++)
          for (k=pst->dw.width[j][0]; k<=pst->dw.width[j][1]; k++) {
             n = i+k;
@@ -98,12 +85,15 @@ static void calc_R_and_r(PStream *pst, int m)
             
                for (l=0; l<pst->width; l++) {
                   n = l-k;
-                  if ( (n<=pst->dw.width[j][1]) && (i+l<pst->T) && (pst->dw.coef[j][n] != 0.0) )
+                  if (n<=pst->dw.width[j][1] && i+l<pst->T &&
+                       pst->dw.coef[j][n] != 0.0)
                      pst->R[i][l] += wu * pst->dw.coef[j][n];
                }
             }
          }
    }
+
+   return;
 }
 
 /* Cholesky : Cholesky factorization of Matrix R */
@@ -116,7 +106,7 @@ static void Cholesky(PStream *pst)
    for (i=1; i<pst->width; i++)
       pst->R[0][i] /= pst->R[0][0];
 
-	for (i=1; i<pst->T; i++) {
+   for (i=1; i<pst->T; i++) {
       for (j=1; j<pst->width; j++)
          if (i-j >= 0)
             pst->R[i][0] -= pst->R[i-j][j] * pst->R[i-j][j];
@@ -124,13 +114,15 @@ static void Cholesky(PStream *pst)
       pst->R[i][0] = sqrt(pst->R[i][0]);
          
       for (j=1; j<pst->width; j++) {
-			for (k=0; k<pst->dw.max_L; k++)
+         for (k=0; k<pst->dw.max_L; k++)
             if (j!=pst->width-1)
                pst->R[i][j] -= pst->R[i-k-1][j-k]*pst->R[i-k-1][j+1];
             
          pst->R[i][j] /= pst->R[i][0];
       }
    }
+
+   return;
 }
 
 /* Cholesky_forward : forward substitution to solve linear equations */
@@ -149,6 +141,8 @@ static void Cholesky_forward(PStream *pst)
       }
       pst->g[i] = (pst->r[i]-hold)/pst->R[i][0];
    }
+
+   return;
 }
 
 /* Cholesky_backward : backward substitution to solve linear equations */
@@ -157,7 +151,7 @@ static void Cholesky_backward(PStream *pst, int m)
    register int i, j;
    double hold;
    
-   pst->c[pst->T-1][m] = pst->g[pst->T-1] / pst->R[pst->T-1][0];
+   pst->c[pst->T-1][m] = pst->g[pst->T-1]/pst->R[pst->T-1][0];
 
    for (i=pst->T-2; i>=0; i--) {
       hold = 0.0;
@@ -165,8 +159,10 @@ static void Cholesky_backward(PStream *pst, int m)
          if (pst->R[i][j] != 0.0)
             hold += pst->R[i][j]*pst->c[i+j][m];
       }
-		pst->c[i][m] = (float)((pst->g[i] - hold) / pst->R[i][0]);
+      pst->c[i][m] = (pst->g[i] - hold) / pst->R[i][0];
    }
+
+   return;
 }
 
 /* generate parameter sequence from pdf sequence */
@@ -180,6 +176,8 @@ static void nitech_mlpg(PStream *pst)
       Cholesky_forward(pst);
       Cholesky_backward(pst,m);
    }
+
+   return;
 }
 
 
@@ -193,7 +191,7 @@ static void InitPStream(PStream *pst)
    pst->g     = cst_alloc(double,pst->T);
    pst->R     = bell_alloc_dmatrix(pst->T, pst->width);
    pst->r     = cst_alloc(double,pst->T);
-   pst->c     = ffcalloc(pst->T,pst->order+1);
+   pst->c     = bell_alloc_dmatrix(pst->T,pst->order+1);
 }
 
 /* FreePStream : Free PStream */
@@ -266,7 +264,7 @@ static void InitDWin(PStream *pst)
 }
 
 /* pdf2speech : parameter generation from pdf sequence */
-cst_wave * pdf2speech(PStream *mceppst, PStream *lf0pst, globalP *gp, ModelSet *ms, UttModel *um,
+cst_wave * pdf2speech(PStream *mceppst, PStream *lf0pst, nitechP *gp, ModelSet *ms, UttModel *um,
                          VocoderSetup *vs)
 {
    cst_wave *w;
@@ -309,7 +307,7 @@ cst_wave * pdf2speech(PStream *mceppst, PStream *lf0pst, globalP *gp, ModelSet *
    w->num_channels=1;
    CST_WAVE_SET_NUM_SAMPLES(w,mceppst->T*fperiod);
    CST_WAVE_SAMPLES(w) = cst_alloc(short,CST_WAVE_NUM_SAMPLES(w));
-   CST_WAVE_SET_SAMPLE_RATE(w,16000);
+   CST_WAVE_SET_SAMPLE_RATE(w,vs->rate);
   
    InitPStream(mceppst);      
    InitPStream(lf0pst);

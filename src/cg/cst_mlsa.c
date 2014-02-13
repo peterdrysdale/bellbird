@@ -78,22 +78,22 @@ typedef enum {MFALSE, MTRUE} Boolean;
 
 typedef struct _VocoderSetup {
    
-   int fprd;
-   int iprd;
-   int seed;
-   int pd;
+   int fprd;        // frame period
+   int iprd;        // interpolation period
+   int seed;        // random number seed holder
+   int pd;          // Pade order
    unsigned long next;
    Boolean gauss;
    double p1;
    double pc;
    double pj;
-   double pade[21];
-   double *ppade;
+   double pade[21]; // Pade approximants coefficients
+   double *ppade;   // pointer to start of Pade approximants of required order
    double *c, *cc, *cinc, *d1;
-   double rate;
+   double rate;     // output wave's sample rate
    
-   int sw;
-   double r1, r2, s;
+   int sw;          // switch for Gaussian random number generator since number are thrown in pairs
+   double r1, r2, s;// intermediate values of Gaussian random number generator
    
    int x;
    
@@ -122,17 +122,6 @@ typedef struct _VocoderSetup {
 
 /* NOTE NOTE NOTE - For performance reasons we "include" static code not header here */
 #include "../commonsynth/mlsafunc.c"
-
-/* mc2b : transform mel-cepstrum to MLSA digital fillter coefficients */
-static void mc2b (double *mc, double *b, int m, double a)
-{
-   b[m] = mc[m];
-    
-   for (m--; m>=0; m--)
-      b[m] = mc[m] - a * b[m+1];
-   
-   return;
-}
 
 static void init_vocoder(double fs, int framel, int m, 
                          VocoderSetup *vs, cst_cg_db *cg_db)

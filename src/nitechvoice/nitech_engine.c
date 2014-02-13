@@ -49,10 +49,7 @@
 /*  April 2004                                                       */
 /*  Make it compile with c++ and integrate as a Festival module      */
 /*  ---------------------------------------------------------------  */
-/*  Modified by Peter Drysdale                                       */
-/*  2013                                                             */
-/*  Convert to C and integrate into bellbird                         */
-/*  ---------------------------------------------------------------  */
+
 #include <ctype.h>
 #include "cst_alloc.h"
 #include "cst_error.h"
@@ -74,9 +71,9 @@ static bell_boolean isdigit_string(char *str)
       return FALSE;
 }
 
-static cst_wave * nitech_process (char **lines, size_t num_lines, 
-		   PStream *mceppst, PStream *lf0pst, globalP *gp, 
-		   ModelSet *ms, TreeSet *ts, VocoderSetup *vs )
+static cst_wave * nitech_process (char **lines, size_t num_lines,
+		   PStream *mceppst, PStream *lf0pst, nitechP *gp,
+		   ModelSet *ms, TreeSet *ts, VocoderSetup *vs)
 {
    cst_wave *w;
    char buff[1024];
@@ -109,7 +106,7 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
       }
      
       m->durpdf = SearchTree(m->name, ts->thead[DUR]->root);   
-      FindDurPDF(m, ms, gp->RHO, diffdur);
+      FindDurPDF(m, ms, gp->rho, diffdur);
       um.totalframe += m->totaldur;
 
       /* for excitation */
@@ -120,7 +117,7 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
       
       for (tree=ts->thead[LF0],state=2; tree!=ts->ttail[LF0]; tree=tree->next,state++) {
          m->lf0pdf[state] = SearchTree(m->name, tree->root);
-         FindLF0PDF(state, m, ms, gp->UV);
+         FindLF0PDF(state, m, ms, gp->uv);
       }
 
       /* for spectrum */
@@ -142,7 +139,7 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
    
    w=pdf2speech(mceppst,lf0pst,gp,ms,&um,vs);
 
-   /* Tidy up memory */
+// Traverse HMM linked list freeing contents
    for (mm=um.mhead; mm; mm=nm)
    {
        nm = mm->next;
@@ -168,13 +165,12 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
 bell_boolean nitech_engine_synthesize_from_strings(nitech_engine * ntengine, char **lines, size_t num_lines)
 {
     cst_wave *w;
-
-    globalP      gp;
+    nitechP gp;
    
-    /* default value for control parameter */
-    gp.RHO      = 0.0; 
-    gp.ALPHA    = 0.42;
-    gp.UV       = 0.5;
+    /* default value for control parameters */
+    gp.rho      = 0.0;  // speech rate control
+    gp.alpha    = 0.42; // all-pass constant for frequency warping
+    gp.uv       = 0.5;  // UV threshold for voiced/unvoiced status
    
     /* generate speech */
     w=nitech_process(lines, num_lines, &(ntengine->mceppst), &(ntengine->lf0pst),
@@ -293,12 +289,18 @@ void nitech_engine_clear(nitech_engine * ntengine)
 {
     int i;
 
+// Free trees
     FreeTrees(&(ntengine->ts), DUR);
     FreeTrees(&(ntengine->ts), LF0);
     FreeTrees(&(ntengine->ts), MCP);
+
+// Free modelset
     DeleteModelSet(&(ntengine->ms));
 
+// Free vocoder
     free_vocoder(&(ntengine->vs));
+
+// Free windows
     for(i=1; i<ntengine->lf0pst.dw.num; i++)
     {
        cst_free(ntengine->lf0pst.dw.fn[i]);
@@ -309,7 +311,6 @@ void nitech_engine_clear(nitech_engine * ntengine)
        cst_free(ntengine->mceppst.dw.fn[i]);
     }
     cst_free(ntengine->mceppst.dw.fn);
-
     FreeWin(&(ntengine->lf0pst));
     FreeWin(&(ntengine->mceppst));
 }

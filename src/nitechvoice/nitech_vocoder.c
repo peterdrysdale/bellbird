@@ -55,23 +55,12 @@
 /* NOTE NOTE NOTE - For performance reasons we "include" static code not header here */
 #include "../commonsynth/mlsafunc.c"
 
-/* mc2b : transform mel-cepstrum to MLSA digital fillter coefficients */
-static void mc2b (float *mc, double *b, int m, double a)
-{
-   b[m] = mc[m];
-    
-   for (m--; m>=0; m--)
-      b[m] = mc[m] - a * b[m+1];
-   
-   return;
-}
-
 void init_vocoder(int m, VocoderSetup *vs)
 {
-   vs->fprd = 80;      /* Nitech voices had frame period 80 */
+   vs->fprd = 80;      // Nitech voices had frame period 80
    vs->iprd = 1;
    vs->seed = 1;
-   vs->pd   = 4;       /* Nitech voices had Pade order 4 */
+   vs->pd   = 4;       // Nitech voices had Pade order 4
 
    vs->next =1;
 
@@ -84,12 +73,12 @@ void init_vocoder(int m, VocoderSetup *vs)
    vs->pade[15]=1.0; vs->pade[16]=0.4999391; vs->pade[17]=0.1107098; vs->pade[18]=0.01369984; vs->pade[19]=0.0009564853;
    vs->pade[20]=0.00003041721;
 
-   vs->rate=16000;
+   vs->rate=16000;    // Nitech voices had output sample rate of 16000Hz
                   
    vs->c = cst_alloc(double,3*(m+1)+3*(vs->pd+1)+vs->pd*(m+2));
    
    vs->p1 = -1;
-   vs->sw = 0;
+   vs->sw = 0;        // init random number switch to unused state
    vs->x  = 0x55555555;
 }
 
@@ -98,12 +87,12 @@ void free_vocoder(VocoderSetup *vs)
    cst_free(vs->c);
 }
 
-void vocoder (double p, float *mc, int m, cst_wave *w, int samp_offset, globalP *gp, VocoderSetup *vs)
+void vocoder (double p, double *mc, int m, cst_wave *w, int samp_offset, nitechP *gp, VocoderSetup *vs)
 {
    double inc, x;
    int i, j, k; 
    short xs;
-   double a = gp->ALPHA;
+   double a = gp->alpha;
    
    if (p!=0.0) 
       p = vs->rate / p;  /* f0 -> pitch */
@@ -138,7 +127,7 @@ void vocoder (double p, float *mc, int m, cst_wave *w, int samp_offset, globalP 
 
    for (j=vs->fprd, i=(vs->iprd+1)/2; j--;) {
       if (vs->p1 == 0.0) {
-             x = (double) nrandom(vs);
+             x = nrandom(vs);
       }
       else {
           if ((vs->pc += 1.0)>=vs->p1) {

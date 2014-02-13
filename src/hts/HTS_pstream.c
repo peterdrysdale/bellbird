@@ -68,7 +68,7 @@ HTS_PSTREAM_C_START;
 /* hts_engine libraries */
 #include "HTS_hidden.h"
 
-/* HTS_PStream_calc_wuw_and_wum: calcurate W'U^{-1}W and W'U^{-1}M */
+/* HTS_PStream_calc_wuw_and_wum: calculate W'U^{-1}W and W'U^{-1}M */
 static void HTS_PStream_calc_wuw_and_wum(HTS_PStream * pst, size_t m)
 {
    size_t t, i, j;

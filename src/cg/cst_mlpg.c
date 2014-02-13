@@ -85,7 +85,7 @@
 /*  May 2008 awb@cs.cmu.edu                                          */
 /*-------------------------------------------------------------------*/
 /*                                                                   */
-/*  ML-Based Parameter Generation                                    */
+/*  Maximum Likelihood Parameter Generation                          */
 /*                                                                   */
 /*-------------------------------------------------------------------*/
 
@@ -118,8 +118,8 @@ typedef struct _PStreamChol {
     int width;		// width of WSW
     DWin dw;
     double **mseq;	// sequence of mean vector
-    double **ivseq;	// sequence of invarsed covariance vector
-    double ***ifvseq;	// sequence of invarsed full covariance vector
+    double **ivseq;	// sequence of inversed covariance vector
+    double ***ifvseq;	// sequence of inversed full covariance vector
     double **R;		// WSW[T][range]
     double *r;		// WSM [T]
     double *g;		// g [T]
@@ -473,15 +473,15 @@ static void calc_R_and_r(PStreamChol *pst, const int m)
       
 	for (j = 1; j < pst->dw.num; j++) {
 	    for (k = pst->dw.width[j][0]; k <= pst->dw.width[j][1]; k++) {
-		n = i + k;
+		n = i+k;
 		if (n >= 0 && n < pst->T && pst->dw.coef[j][-k] != 0.0) {
-		    l = j * (pst->order + 1) + m;
+		    l = j*(pst->order+1)+m;
 		    pst->r[i] += pst->dw.coef[j][-k] * pst->mseq[n][l]; 
 		    wu = pst->dw.coef[j][-k] * pst->ivseq[n][l];
             
-		    for (l = 0; l < pst->width; l++) {
+		    for (l = 0; l<pst->width; l++) {
 			n = l-k;
-			if (n <= pst->dw.width[j][1] && i + l < pst->T &&
+			if (n<=pst->dw.width[j][1] && i+l<pst->T &&
 			    pst->dw.coef[j][n] != 0.0)
 			    pst->R[i][l] += wu * pst->dw.coef[j][n];
 		    }
@@ -493,84 +493,86 @@ static void calc_R_and_r(PStreamChol *pst, const int m)
     return;
 }
 
-// Choleski: Choleski factorization of Matrix R
-static void Choleski(PStreamChol *pst)
+// Cholesky: Cholesky factorization of Matrix R
+static void Cholesky(PStreamChol *pst)
 {
-    register int t, j, k;
+    register int i, j, k;
 
     pst->R[0][0] = sqrt(pst->R[0][0]);
 
-    for (j = 1; j < pst->width; j++) pst->R[0][j] /= pst->R[0][0];
+    for (i = 1; i < pst->width; i++)
+       pst->R[0][i] /= pst->R[0][0];
 
-    for (t = 1; t < pst->T; t++) {
-	for (j = 1; j < pst->width; j++)
-	    if (t - j >= 0)
-		pst->R[t][0] -= pst->R[t - j][j] * pst->R[t - j][j];
+    for (i = 1; i < pst->T; i++) {
+	for (j=1; j < pst->width; j++)
+	    if (i-j >= 0)
+		pst->R[i][0] -= pst->R[i-j][j] * pst->R[i-j][j];
          
-	pst->R[t][0] = sqrt(pst->R[t][0]);
+	pst->R[i][0] = sqrt(pst->R[i][0]);
          
-	for (j = 1; j < pst->width; j++) {
-	    for (k = 0; k < pst->dw.maxw[WRIGHT]; k++)
-		if (j != pst->width - 1)
-		    pst->R[t][j] -=
-			pst->R[t - k - 1][j - k] * pst->R[t - k - 1][j + 1];
+	for (j=1; j<pst->width; j++) {
+	   for (k = 0; k < pst->dw.maxw[WRIGHT]; k++)
+		if (j!=pst->width-1)
+		    pst->R[i][j] -= pst->R[i-k-1][j-k]*pst->R[i-k-1][j+1];
             
-	    pst->R[t][j] /= pst->R[t][0];
+	    pst->R[i][j] /= pst->R[i][0];
 	}
     }
    
     return;
 }
 
-// Choleski_forward: forward substitution to solve linear equations
-static void Choleski_forward(PStreamChol *pst)
+// Cholesky_forward: forward substitution to solve linear equations
+static void Cholesky_forward(PStreamChol *pst)
 {
-    register int t, j;
+    register int i, j;
     double hold;
    
     pst->g[0] = pst->r[0] / pst->R[0][0];
 
-    for (t=1; t < pst->T; t++) {
+    for (i=1; i<pst->T; i++) {
 	hold = 0.0;
-	for (j = 1; j < pst->width; j++)
-	    if (t - j >= 0 && pst->R[t - j][j] != 0.0)
-		hold += pst->R[t - j][j] * pst->g[t - j];
-	pst->g[t] = (pst->r[t] - hold) / pst->R[t][0];
+	for (j=1; j<pst->width; j++) {
+	    if (i-j >= 0 && pst->R[i-j][j] != 0.0)
+		hold += pst->R[i-j][j] * pst->g[i-j];
+        }
+	pst->g[i] = (pst->r[i]-hold)/pst->R[i][0];
     }
    
     return;
 }
 
-// Choleski_backward: backward substitution to solve linear equations
-static void Choleski_backward(PStreamChol *pst, const int m)
+// Cholesky_backward: backward substitution to solve linear equations
+static void Cholesky_backward(PStreamChol *pst, const int m)
 {
-    register int t, j;
+    register int i, j;
     double hold;
    
-    pst->c[pst->T - 1][m] = pst->g[pst->T - 1] / pst->R[pst->T - 1][0];
+    pst->c[pst->T-1][m] = pst->g[pst->T-1]/pst->R[pst->T-1][0];
 
-    for (t = pst->T - 2; t >= 0; t--) {
+    for (i=pst->T-2; i>=0; i--) {
 	hold = 0.0;
-	for (j = 1; j < pst->width; j++)
-	    if (t + j < pst->T && pst->R[t][j] != 0.0)
-		hold += pst->R[t][j] * pst->c[t + j][m];
-	pst->c[t][m] = (pst->g[t] - hold) / pst->R[t][0];
+	for (j=1; j<pst->width; j++) {
+	    if (i + j < pst->T && pst->R[i][j] != 0.0)
+               hold += pst->R[i][j]*pst->c[i + j][m];
+        }
+	pst->c[i][m] = (pst->g[i] - hold) / pst->R[i][0];
    }
    
    return;
 }
 
-// generate parameter sequence from pdf sequence using Choleski decomposition
+// generate parameter sequence from pdf sequence using Cholesky decomposition
 static void mlpgChol(PStreamChol *pst)
 {
    register int m;
 
    // generating parameter in each dimension
-   for (m = 0; m <= pst->order; m++) {
+   for (m = 0; m<=pst->order; m++) {
        calc_R_and_r(pst, m);
-       Choleski(pst);
-       Choleski_forward(pst);
-       Choleski_backward(pst, m);
+       Cholesky(pst);
+       Cholesky_forward(pst);
+       Cholesky_backward(pst, m);
    }
    
    return;
@@ -658,11 +660,10 @@ static void pst_free(PStreamChol *pst)
 
 cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
 {
-    /* Generate an (mcep) track using Maximum Likelihood Parameter Generation */
+// Generate an (mcep) track using Maximum Likelihood Parameter Generation
     MLPGPARA param = NULL;
     cst_track *out;
     int dim, dim_st;
-    //    float like;
     int i,j;
     int nframes;
     PStreamChol pst;
@@ -704,16 +705,10 @@ cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
                 param_track->frames[i][(j+1)*2+1];
     param->detvec = xget_detvec_diamat2inv(param->cov);
 
-    /* global variance parameters */
-    /* TBD get_gv_mlpgpara(param, vmfile, vvfile, dim2, msg_flag); */
-
     get_dltmat(param->stm, &pst.dw, 1, param->dltm);
 
-    //like = 
     get_like_pdfseq_vit(dim, dim_st, nframes, param,
 			param_track->frames, TRUE);
-
-    /* vlike = get_like_gv(dim2, dnum, param); */
 
     mlgparaChol(param->pdf, &pst, param->stm);
 
