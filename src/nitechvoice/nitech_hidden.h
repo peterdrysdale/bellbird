@@ -95,8 +95,8 @@ void init_vocoder(int m, VocoderSetup *vs);
 void vocoder (double p, double *mc, int m, cst_wave *w, int samp_offset, nitechP *gp, VocoderSetup *vs);
 void free_vocoder(VocoderSetup *vs);
 
-cst_wave * pdf2speech(PStream *, PStream *, nitechP *, ModelSet *, UttModel *, VocoderSetup *);
-void ReadWin(PStream *);
-void FreeWin(PStream *);
+cst_wave * pdf2speech(PStreamChol *, PStreamChol *, nitechP *, ModelSet *, UttModel *, VocoderSetup *);
+void ReadWin(PStreamChol *);
+void FreeWin(PStreamChol *);
 
 #endif

@@ -109,6 +109,7 @@ typedef struct _DWin {
     double **coef;	/* coefficient [0..num-1][length[0]..length[1]] */
     double **coef_ptrs;	/* keeps the pointers so we can free them */
     int maxw[2];	/* max width [0(left) 1(right)] */
+    int max_L;
 } DWin;
 
 typedef struct _PStreamChol {
@@ -119,7 +120,6 @@ typedef struct _PStreamChol {
     DWin dw;
     double **mseq;	// sequence of mean vector
     double **ivseq;	// sequence of inversed covariance vector
-    double ***ifvseq;	// sequence of inversed full covariance vector
     double **R;		// WSW[T][range]
     double *r;		// WSM [T]
     double *g;		// g [T]
@@ -128,8 +128,6 @@ typedef struct _PStreamChol {
 
 typedef struct MLPGPARA_STRUCT {
     dvector ov;
-    dvector iuv;
-    dvector iumv;
     dvector flkv;
     dmatrix stm;
     dmatrix dltm;
@@ -147,6 +145,9 @@ typedef struct MLPGPARA_STRUCT {
     dvector var;
 } *MLPGPARA;
 
+// NOTE NOTE NOTE we are including static functions here not header files
+#include "../commonsynth/cholesky.c"
+
 static MLPGPARA xmlpgpara_init(int dim, int dim2, int dnum, 
                                int clsnum)
 {
@@ -155,8 +156,6 @@ static MLPGPARA xmlpgpara_init(int dim, int dim2, int dnum,
     // memory allocation
     param = cst_alloc(struct MLPGPARA_STRUCT,1);
     param->ov = xdvalloc(dim);
-    param->iuv = NULL;
-    param->iumv = NULL;
     param->flkv = xdvalloc(dnum);
     param->stm = NULL;
     param->dltm = xdmalloc(dnum, dim2);
@@ -182,8 +181,6 @@ static void xmlpgparafree(MLPGPARA param)
 {
     if (param != NULL) {
 	if (param->ov != NULL) xdvfree(param->ov);
-	if (param->iuv != NULL) xdvfree(param->iuv);
-	if (param->iumv != NULL) xdvfree(param->iumv);
 	if (param->flkv != NULL) xdvfree(param->flkv);
 	if (param->stm != NULL) xdmfree(param->stm);
 	if (param->dltm != NULL) xdmfree(param->dltm);
@@ -430,6 +427,8 @@ static void InitDWin(PStreamChol *pst, const float *dynwin, int fsize)
 	    pst->dw.maxw[WRIGHT] = pst->dw.width[i][WRIGHT];
     }
 
+    pst->dw.max_L = pst->dw.maxw[WRIGHT]; // Set for compatibility with nitech module
+
     return;
 }
 
@@ -491,75 +490,6 @@ static void calc_R_and_r(PStreamChol *pst, const int m)
     }
 
     return;
-}
-
-// Cholesky: Cholesky factorization of Matrix R
-static void Cholesky(PStreamChol *pst)
-{
-    register int i, j, k;
-
-    pst->R[0][0] = sqrt(pst->R[0][0]);
-
-    for (i = 1; i < pst->width; i++)
-       pst->R[0][i] /= pst->R[0][0];
-
-    for (i = 1; i < pst->T; i++) {
-	for (j=1; j < pst->width; j++)
-	    if (i-j >= 0)
-		pst->R[i][0] -= pst->R[i-j][j] * pst->R[i-j][j];
-         
-	pst->R[i][0] = sqrt(pst->R[i][0]);
-         
-	for (j=1; j<pst->width; j++) {
-	   for (k = 0; k < pst->dw.maxw[WRIGHT]; k++)
-		if (j!=pst->width-1)
-		    pst->R[i][j] -= pst->R[i-k-1][j-k]*pst->R[i-k-1][j+1];
-            
-	    pst->R[i][j] /= pst->R[i][0];
-	}
-    }
-   
-    return;
-}
-
-// Cholesky_forward: forward substitution to solve linear equations
-static void Cholesky_forward(PStreamChol *pst)
-{
-    register int i, j;
-    double hold;
-   
-    pst->g[0] = pst->r[0] / pst->R[0][0];
-
-    for (i=1; i<pst->T; i++) {
-	hold = 0.0;
-	for (j=1; j<pst->width; j++) {
-	    if (i-j >= 0 && pst->R[i-j][j] != 0.0)
-		hold += pst->R[i-j][j] * pst->g[i-j];
-        }
-	pst->g[i] = (pst->r[i]-hold)/pst->R[i][0];
-    }
-   
-    return;
-}
-
-// Cholesky_backward: backward substitution to solve linear equations
-static void Cholesky_backward(PStreamChol *pst, const int m)
-{
-    register int i, j;
-    double hold;
-   
-    pst->c[pst->T-1][m] = pst->g[pst->T-1]/pst->R[pst->T-1][0];
-
-    for (i=pst->T-2; i>=0; i--) {
-	hold = 0.0;
-	for (j=1; j<pst->width; j++) {
-	    if (i + j < pst->T && pst->R[i][j] != 0.0)
-               hold += pst->R[i][j]*pst->c[i + j][m];
-        }
-	pst->c[i][m] = (pst->g[i] - hold) / pst->R[i][0];
-   }
-   
-   return;
 }
 
 // generate parameter sequence from pdf sequence using Cholesky decomposition

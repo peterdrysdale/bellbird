@@ -72,7 +72,7 @@ static bell_boolean isdigit_string(char *str)
 }
 
 static cst_wave * nitech_process (char **lines, size_t num_lines,
-		   PStream *mceppst, PStream *lf0pst, nitechP *gp,
+		   PStreamChol *mceppst, PStreamChol *lf0pst, nitechP *gp,
 		   ModelSet *ms, TreeSet *ts, VocoderSetup *vs)
 {
    cst_wave *w;
@@ -89,8 +89,9 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
    um.mtail = um.mhead = m;  
    um.totalframe = um.nState = um.nModel = 0;
 
-   /* copy label */
    for (j = 0; j < num_lines; j++) {
+
+// copy label
       if (!isgraph((int) lines[j][0]))
          break;
       data_index = 0;
@@ -104,12 +105,13 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
       } else {
          m->name = cst_strdup(lines[j]);
       }
-     
+
+// for duration
       m->durpdf = SearchTree(m->name, ts->thead[DUR]->root);   
       FindDurPDF(m, ms, gp->rho, diffdur);
       um.totalframe += m->totaldur;
 
-      /* for excitation */
+// for excitation
       m->lf0pdf      = cst_alloc(int,ms->nstate+2);
       m->lf0mean     = cst_alloc(float *,ms->nstate+2);
       m->lf0variance =  cst_alloc(float *,ms->nstate+2);
@@ -120,7 +122,7 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
          FindLF0PDF(state, m, ms, gp->uv);
       }
 
-      /* for spectrum */
+// for spectrum
       m->mceppdf      = cst_alloc(int,ms->nstate+2);
       m->mcepmean     = cst_alloc(float *,ms->nstate+2);
       m->mcepvariance = cst_alloc(float *,ms->nstate+2);

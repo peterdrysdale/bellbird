@@ -62,7 +62,7 @@ typedef struct _DWin {
    int max_L;
 } DWin;
 
-typedef struct _PStream {
+typedef struct _PStreamChol {
    int vSize;
    int order;
    int T;           // number of frames
@@ -74,7 +74,7 @@ typedef struct _PStream {
    double *r;
    double *g;
    double **c;      // output parameter vector
-} PStream;
+} PStreamChol;
 
 typedef struct _VocoderSetup {
    
@@ -102,7 +102,7 @@ typedef struct _nitech_engine {
    cst_utterance *utt;
    ModelSet   ms;
    TreeSet    ts;
-   PStream    mceppst, lf0pst;
+   PStreamChol    mceppst, lf0pst;
    VocoderSetup vs;
 } nitech_engine;
 

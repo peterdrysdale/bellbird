@@ -533,7 +533,7 @@ static HTS_Boolean HTS_Window_load(HTS_Window * win, HTS_File ** fp, size_t size
       if (fsize % 2 == 0)
          win->r_width[i]--;
    }
-   /* calcurate max_width to determine size of band matrix */
+   /* calculate max_width to determine size of band matrix */
    win->max_width = 0;
    for (i = 0; i < win->size; i++) {
       if (win->max_width < (size_t) abs(win->l_width[i]))

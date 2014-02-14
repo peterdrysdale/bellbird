@@ -58,12 +58,15 @@
 #define WLEFT 0
 #define WRIGHT 1
 
+// NOTE NOTE NOTE we include static functions here not header files
+#include "../commonsynth/cholesky.c"
+
 /*----------------------------------------------------------------
 	matrix calculation functions
 ----------------------------------------------------------------*/
 
 /* calc_R_and_r : calculate R=W'U^{-1}W and r=W'U^{-1}M */
-static void calc_R_and_r(PStream *pst, int m)
+static void calc_R_and_r(PStreamChol *pst, int m)
 {
    register int i, j, k, l, n;
    double   wu;
@@ -96,77 +99,8 @@ static void calc_R_and_r(PStream *pst, int m)
    return;
 }
 
-/* Cholesky : Cholesky factorization of Matrix R */
-static void Cholesky(PStream *pst)
-{
-   register int i, j, k;
-	
-   pst->R[0][0] = sqrt(pst->R[0][0]);
-
-   for (i=1; i<pst->width; i++)
-      pst->R[0][i] /= pst->R[0][0];
-
-   for (i=1; i<pst->T; i++) {
-      for (j=1; j<pst->width; j++)
-         if (i-j >= 0)
-            pst->R[i][0] -= pst->R[i-j][j] * pst->R[i-j][j];
-         
-      pst->R[i][0] = sqrt(pst->R[i][0]);
-         
-      for (j=1; j<pst->width; j++) {
-         for (k=0; k<pst->dw.max_L; k++)
-            if (j!=pst->width-1)
-               pst->R[i][j] -= pst->R[i-k-1][j-k]*pst->R[i-k-1][j+1];
-            
-         pst->R[i][j] /= pst->R[i][0];
-      }
-   }
-
-   return;
-}
-
-/* Cholesky_forward : forward substitution to solve linear equations */
-static void Cholesky_forward(PStream *pst)
-{
-   register int i, j;
-   double hold;
-   
-   pst->g[0] = pst->r[0] / pst->R[0][0];
-
-   for (i=1; i<pst->T; i++) {
-      hold = 0.0;
-      for (j=1; j<pst->width; j++) {
-         if (i-j >= 0)
-            hold += pst->R[i-j][j]*pst->g[i-j];
-      }
-      pst->g[i] = (pst->r[i]-hold)/pst->R[i][0];
-   }
-
-   return;
-}
-
-/* Cholesky_backward : backward substitution to solve linear equations */
-static void Cholesky_backward(PStream *pst, int m)
-{
-   register int i, j;
-   double hold;
-   
-   pst->c[pst->T-1][m] = pst->g[pst->T-1]/pst->R[pst->T-1][0];
-
-   for (i=pst->T-2; i>=0; i--) {
-      hold = 0.0;
-      for (j=1; j<pst->width; j++) {
-         if (pst->R[i][j] != 0.0)
-            hold += pst->R[i][j]*pst->c[i+j][m];
-      }
-      pst->c[i][m] = (pst->g[i] - hold) / pst->R[i][0];
-   }
-
-   return;
-}
-
 /* generate parameter sequence from pdf sequence */
-static void nitech_mlpg(PStream *pst)
+static void nitech_mlpg(PStreamChol *pst)
 {	
    int m;
 
@@ -182,7 +116,7 @@ static void nitech_mlpg(PStream *pst)
 
 
 /* InitPStream : Initialise PStream for parameter generation */
-static void InitPStream(PStream *pst)
+static void InitPStream(PStreamChol *pst)
 {
    pst->width	   = pst->dw.max_L*2+1;  /* band width of R */
 
@@ -195,7 +129,7 @@ static void InitPStream(PStream *pst)
 }
 
 /* FreePStream : Free PStream */
-static void FreePStream(PStream *pst)
+static void FreePStream(PStreamChol *pst)
 {
    register int t;
    
@@ -216,7 +150,7 @@ static void FreePStream(PStream *pst)
 }
 
 /* InitDWin : Initialise dynamic window */
-static void InitDWin(PStream *pst)
+static void InitDWin(PStreamChol *pst)
 {   
    int i;
    int fsize, leng;
@@ -255,7 +189,7 @@ static void InitDWin(PStream *pst)
          pst->dw.maxw[WRIGHT] = pst->dw.width[i][WRIGHT];
    }
 
-   /* calcurate max_L to determine size of band matrix */
+   /* calculate max_L to determine size of band matrix */
    if ( pst->dw.maxw[WLEFT] >= pst->dw.maxw[WRIGHT] )
       pst->dw.max_L = pst->dw.maxw[WLEFT];
    else
@@ -264,7 +198,7 @@ static void InitDWin(PStream *pst)
 }
 
 /* pdf2speech : parameter generation from pdf sequence */
-cst_wave * pdf2speech(PStream *mceppst, PStream *lf0pst, nitechP *gp, ModelSet *ms, UttModel *um,
+cst_wave * pdf2speech(PStreamChol *mceppst, PStreamChol *lf0pst, nitechP *gp, ModelSet *ms, UttModel *um,
                          VocoderSetup *vs)
 {
    cst_wave *w;
@@ -370,7 +304,7 @@ cst_wave * pdf2speech(PStream *mceppst, PStream *lf0pst, nitechP *gp, ModelSet *
    return w;
 }
 
-void ReadWin(PStream *pst)
+void ReadWin(PStreamChol *pst)
 {
     int i;
     cst_file fp;
@@ -412,7 +346,7 @@ void ReadWin(PStream *pst)
     }  
 }
 
-void FreeWin(PStream *pst)
+void FreeWin(PStreamChol *pst)
 {
     int t;
 
