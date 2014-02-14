@@ -144,12 +144,12 @@ static HTS_Boolean HTS_is_num(const char *buff)
 /* HTS_name2num: convert name of node to number */
 static size_t HTS_name2num(const char *buff)
 {
-   size_t i;
+   const char *p; // for reading buff in reverse
 
-   for (i = strlen(buff) - 1; '0' <= buff[i] && buff[i] <= '9' && i >= 0; i--);
-   i++;
+   for (p = buff + strlen(buff) -1; p>= buff && '0' <= *p && *p <= '9'; p--);
+   p++;
 
-   return (size_t) atoi(&buff[i]);
+   return (size_t) atoi(p);
 }
 
 /* HTS_get_state_num: return the number of state */
