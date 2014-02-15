@@ -145,11 +145,14 @@ static HTS_Boolean HTS_is_num(const char *buff)
 static size_t HTS_name2num(const char *buff)
 {
    const char *p; // for reading buff in reverse
+   size_t len;
 
-   for (p = buff + strlen(buff) -1; p>= buff && '0' <= *p && *p <= '9'; p--);
-   p++;
+   if ( (len=strlen(buff)) == 0)
+       return 0;
+   for (p = buff+len; p>buff && '0' <= *(p-1) && *(p-1) <= '9'; p--);
 
    return (size_t) atoi(p);
+
 }
 
 /* HTS_get_state_num: return the number of state */
