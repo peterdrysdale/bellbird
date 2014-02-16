@@ -132,10 +132,6 @@ static void InitPStream(PStreamChol *pst)
 static void FreePStream(PStreamChol *pst)
 {
    register int t;
-   
-   for (t=0; t<pst->T; t++) {
-      cst_free(pst->c[t]);
-   }
 
    for (t=0; t<pst->dw.num; t++)
        cst_free(pst->dw.width[t]);
@@ -144,9 +140,11 @@ static void FreePStream(PStreamChol *pst)
    bell_free_dmatrix(pst->mseq,pst->T);
    bell_free_dmatrix(pst->ivseq,pst->T);
    bell_free_dmatrix(pst->R,pst->T);
-   cst_free(pst->g);
    cst_free(pst->r);
-   cst_free(pst->c);
+   cst_free(pst->g);
+   bell_free_dmatrix(pst->c,pst->T);
+
+   return;
 }
 
 /* InitDWin : Initialise dynamic window */
