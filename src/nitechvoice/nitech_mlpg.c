@@ -311,9 +311,9 @@ void ReadWin(PStreamChol *pst)
     pst->dw.coef= cst_alloc(float *,pst->dw.num);
     /* because the pointers are moved, keep an original of the memory
       being allocated */
-    pst->dw.coefr= cst_alloc(float *,pst->dw.num);
+    pst->dw.coef_ptrs= cst_alloc(float *,pst->dw.num);
     pst->dw.coef[0] = cst_alloc(float,1);
-    pst->dw.coefr[0] = pst->dw.coef[0];
+    pst->dw.coef_ptrs[0] = pst->dw.coef[0];
     pst->dw.coef[0][0] = 1;
 
     /* read delta coefficients */
@@ -329,14 +329,14 @@ void ReadWin(PStreamChol *pst)
        fsize = 3;
 
        /* read coefficients */
-       pst->dw.coefr[i] = cst_alloc(float,fsize);
-       bell_fread(pst->dw.coefr[i], sizeof(float), fsize, fp);
+       pst->dw.coef_ptrs[i] = cst_alloc(float,fsize);
+       bell_fread(pst->dw.coef_ptrs[i], sizeof(float), fsize, fp);
 #ifdef WORDS_BIGENDIAN
        swap_bytes_float(pst->dw.coef[i],fsize);
 #endif                          /* WORDS_BIGENDIAN */
        bell_fclose(fp);
 
-       pst->dw.coef[i] = pst->dw.coefr[i];
+       pst->dw.coef[i] = pst->dw.coef_ptrs[i];
 
        /* set pointer */
        leng = fsize / 2;
@@ -349,7 +349,7 @@ void FreeWin(PStreamChol *pst)
     int t;
 
     for (t=0; t<pst->dw.num; t++)
-        cst_free(pst->dw.coefr[t]);
-    cst_free(pst->dw.coefr);
+        cst_free(pst->dw.coef_ptrs[t]);
+    cst_free(pst->dw.coef_ptrs);
     cst_free(pst->dw.coef);
 }

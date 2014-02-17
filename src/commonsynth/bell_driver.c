@@ -99,7 +99,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
    char * seg_n;
    char * seg_nn;
    char * endtone;
-   cst_val *tmpval;
+   cst_val *tmpsyl_vowel;
 
    int sub_phrases = 0;
    int lisp_total_phrases = 0;
@@ -132,7 +132,32 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
          tmp2 = ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_words");
          lisp_total_phrases = ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_phrases");
       }
-      sprintf(label, "%s^%s-%s+%s=%s@x_x/A:%d_%d_%d/B:x-x-x@x-x&x-x#x-x$x-x!x-x;x-x|x/C:%d+%d+%d/D:%s_%d/E:x+x@x+x&x+x#x+x/F:%s_%d/G:%d_%d/H:x=x^%d=%d|%s/I:%d=%d/J:%d+%d-%d", strcmp(seg_pp, "0") == 0 ? "x" : seg_pp, strcmp(seg_p, "0") == 0 ? "x" : seg_p, seg_c, strcmp(seg_n, "0") == 0 ? "x" : seg_n, strcmp(seg_nn, "0") == 0 ? "x" : seg_nn, ffeature_int(item, "p.R:SylStructure.parent.R:Syllable.stress"), ffeature_int(item, "p.R:SylStructure.parent.R:Syllable.accented"), ffeature_int(item, "p.R:SylStructure.parent.R:Syllable.syl_numphones"), ffeature_int(item, "n.R:SylStructure.parent.R:Syllable.stress"), ffeature_int(item, "n.R:SylStructure.parent.R:Syllable.accented"), ffeature_int(item, "n.R:SylStructure.parent.R:Syllable.syl_numphones"), ffeature_string(item, "p.R:SylStructure.parent.parent.R:Word.gpos"), ffeature_int(item, "p.R:SylStructure.parent.parent.R:Word.word_numsyls"), ffeature_string(item, "n.R:SylStructure.parent.parent.R:Word.gpos"), ffeature_int(item, "n.R:SylStructure.parent.parent.R:Word.word_numsyls"), ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_syls_in_phrase"), ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_words_in_phrase"), sub_phrases + 1, lisp_total_phrases - sub_phrases, endtone, ffeature_int(item, "n.R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_syls_in_phrase"), ffeature_int(item, "n.R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_words_in_phrase"), tmp1, tmp2, lisp_total_phrases);
+      sprintf(label, "%s^%s-%s+%s=%s@x_x/A:%d_%d_%d/B:x-x-x@x-x&x-x#x-x$x-x!x-x;x-x|x/C:%d+%d+%d/D:%s_%d/E:x+x@x+x&x+x#x+x/F:%s_%d/G:%d_%d/H:x=x^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
+              strcmp(seg_pp, "0") == 0 ? "x" : seg_pp,
+              strcmp(seg_p, "0") == 0 ? "x" : seg_p,
+              seg_c,
+              strcmp(seg_n, "0") == 0 ? "x" : seg_n,
+              strcmp(seg_nn, "0") == 0 ? "x" : seg_nn,
+              ffeature_int(item, "p.R:SylStructure.parent.R:Syllable.stress"),
+              ffeature_int(item, "p.R:SylStructure.parent.R:Syllable.accented"),
+              ffeature_int(item, "p.R:SylStructure.parent.R:Syllable.syl_numphones"),
+              ffeature_int(item, "n.R:SylStructure.parent.R:Syllable.stress"),
+              ffeature_int(item, "n.R:SylStructure.parent.R:Syllable.accented"),
+              ffeature_int(item, "n.R:SylStructure.parent.R:Syllable.syl_numphones"),
+              ffeature_string(item, "p.R:SylStructure.parent.parent.R:Word.gpos"),
+              ffeature_int(item, "p.R:SylStructure.parent.parent.R:Word.word_numsyls"),
+              ffeature_string(item, "n.R:SylStructure.parent.parent.R:Word.gpos"),
+              ffeature_int(item, "n.R:SylStructure.parent.parent.R:Word.word_numsyls"),
+              ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_syls_in_phrase"),
+              ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_words_in_phrase"),
+              sub_phrases + 1,
+              lisp_total_phrases - sub_phrases,
+              endtone,
+              ffeature_int(item, "n.R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_syls_in_phrase"),
+              ffeature_int(item, "n.R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_words_in_phrase"),
+              tmp1,
+              tmp2,
+              lisp_total_phrases);
    } else {
       /* for no pause */
       tmp1 = ffeature_int(item, "R:SylStructure.pos_in_syl");
@@ -144,12 +169,64 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
       /* via ffeature_string which accidently leaks the cst_val.                 */
       /* The cst_val created by syl_vowel is dynamically allocated hence casting */
       /* away const will let us delete is when we are finished with it.          */
-      tmpval = (cst_val *) ffeature(item,"R:SylStructure.parent.R:Syllable.syl_vowel");
+      tmpsyl_vowel = (cst_val *) ffeature(item,"R:SylStructure.parent.R:Syllable.syl_vowel");
 
       sub_phrases = ffeature_int(item, "R:SylStructure.parent.R:Syllable.sub_phrases");
       lisp_total_phrases = ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_phrases");
-      sprintf(label, "%s^%s-%s+%s=%s@%d_%d/A:%d_%d_%d/B:%d-%d-%d@%d-%d&%d-%d#%d-%d$%d-%d!%d-%d;%d-%d|%s/C:%d+%d+%d/D:%s_%d/E:%s+%d@%d+%d&%d+%d#%d+%d/F:%s_%d/G:%d_%d/H:%d=%d^%d=%d|%s/I:%d=%d/J:%d+%d-%d", strcmp(seg_pp, "0") == 0 ? "x" : seg_pp, strcmp(seg_p, "0") == 0 ? "x" : seg_p, seg_c, strcmp(seg_n, "0") == 0 ? "x" : seg_n, strcmp(seg_nn, "0") == 0 ? "x" : seg_nn, tmp1 + 1, tmp2 - tmp1, ffeature_int(item, "R:SylStructure.parent.R:Syllable.p.stress"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.p.accented"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.p.syl_numphones"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.stress"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.accented"), tmp2, tmp3 + 1, tmp4 - tmp3, ffeature_int(item, "R:SylStructure.parent.R:Syllable.syl_in") + 1, ffeature_int(item, "R:SylStructure.parent.R:Syllable.syl_out") + 1, ffeature_int(item, "R:SylStructure.parent.R:Syllable.ssyl_in") + 1, ffeature_int(item, "R:SylStructure.parent.R:Syllable.ssyl_out") + 1, ffeature_int(item, "R:SylStructure.parent.R:Syllable.asyl_in") + 1, ffeature_int(item, "R:SylStructure.parent.R:Syllable.asyl_out") + 1, ffeature_int(item, "R:SylStructure.parent.R:Syllable.lisp_distance_to_p_stress"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.lisp_distance_to_n_stress"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.lisp_distance_to_p_accent"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.lisp_distance_to_n_accent"), val_string(tmpval), ffeature_int(item, "R:SylStructure.parent.R:Syllable.n.stress"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.n.accented"), ffeature_int(item, "R:SylStructure.parent.R:Syllable.n.syl_numphones"), ffeature_string(item, "R:SylStructure.parent.parent.R:Word.p.gpos"), ffeature_int(item, "R:SylStructure.parent.parent.R:Word.p.word_numsyls"), ffeature_string(item, "R:SylStructure.parent.parent.R:Word.gpos"), tmp4, ffeature_int(item, "R:SylStructure.parent.parent.R:Word.pos_in_phrase") + 1, ffeature_int(item, "R:SylStructure.parent.parent.R:Word.words_out"), ffeature_int(item, "R:SylStructure.parent.parent.R:Word.hts_content_words_in") + 1, ffeature_int(item, "R:SylStructure.parent.parent.R:Word.hts_content_words_out") + 1, ffeature_int(item, "R:SylStructure.parent.parent.R:Word.lisp_distance_to_p_content"), ffeature_int(item, "R:SylStructure.parent.parent.R:Word.lisp_distance_to_n_content"), ffeature_string(item, "R:SylStructure.parent.parent.R:Word.n.gpos"), ffeature_int(item, "R:SylStructure.parent.parent.R:Word.n.word_numsyls"), ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.p.lisp_num_syls_in_phrase"), ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.p.lisp_num_words_in_phrase"), ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_syls_in_phrase"), ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_words_in_phrase"), sub_phrases + 1, lisp_total_phrases - sub_phrases, strcmp(endtone, "0") == 0 ? "NONE" : endtone, ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.n.lisp_num_syls_in_phrase"), ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.n.lisp_num_words_in_phrase"), ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_syls"), ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_words"), lisp_total_phrases);
-      delete_val(tmpval);
+      sprintf(label, "%s^%s-%s+%s=%s@%d_%d/A:%d_%d_%d/B:%d-%d-%d@%d-%d&%d-%d#%d-%d$%d-%d!%d-%d;%d-%d|%s/C:%d+%d+%d/D:%s_%d/E:%s+%d@%d+%d&%d+%d#%d+%d/F:%s_%d/G:%d_%d/H:%d=%d^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
+              strcmp(seg_pp, "0") == 0 ? "x" : seg_pp,
+              strcmp(seg_p, "0") == 0 ? "x" : seg_p, seg_c,
+              strcmp(seg_n, "0") == 0 ? "x" : seg_n,
+              strcmp(seg_nn, "0") == 0 ? "x" : seg_nn,
+              tmp1 + 1,
+              tmp2 - tmp1,
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.p.stress"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.p.accented"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.p.syl_numphones"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.stress"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.accented"),
+              tmp2,
+              tmp3 + 1,
+              tmp4 - tmp3,
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.syl_in") + 1,
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.syl_out") + 1,
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.ssyl_in") + 1,
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.ssyl_out") + 1,
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.asyl_in") + 1,
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.asyl_out") + 1,
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.lisp_distance_to_p_stress"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.lisp_distance_to_n_stress"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.lisp_distance_to_p_accent"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.lisp_distance_to_n_accent"),
+              val_string(tmpsyl_vowel),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.n.stress"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.n.accented"),
+              ffeature_int(item, "R:SylStructure.parent.R:Syllable.n.syl_numphones"),
+              ffeature_string(item, "R:SylStructure.parent.parent.R:Word.p.gpos"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Word.p.word_numsyls"),
+              ffeature_string(item, "R:SylStructure.parent.parent.R:Word.gpos"),
+              tmp4,
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Word.pos_in_phrase") + 1,
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Word.words_out"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Word.hts_content_words_in") + 1,
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Word.hts_content_words_out") + 1,
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Word.lisp_distance_to_p_content"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Word.lisp_distance_to_n_content"),
+              ffeature_string(item, "R:SylStructure.parent.parent.R:Word.n.gpos"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Word.n.word_numsyls"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.p.lisp_num_syls_in_phrase"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.p.lisp_num_words_in_phrase"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_syls_in_phrase"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_num_words_in_phrase"),
+              sub_phrases + 1,
+              lisp_total_phrases - sub_phrases,
+              strcmp(endtone, "0") == 0 ? "NONE" : endtone,
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.n.lisp_num_syls_in_phrase"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.n.lisp_num_words_in_phrase"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_syls"),
+              ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_words"),
+              lisp_total_phrases);
+      delete_val(tmpsyl_vowel);
    }
    cst_free(seg_pp);
    cst_free(seg_p);

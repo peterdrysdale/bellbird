@@ -55,7 +55,7 @@
 
 #define RANDMAX 32767
 
-static double mlsafir (double x, double *b, int m, double a, double *d)
+static double mlsafir(const double x, const double *b, const int m, const double a, double *d)
 {  
    double y = 0.0;
    double aa;
@@ -76,7 +76,8 @@ static double mlsafir (double x, double *b, int m, double a, double *d)
    return(y);
 }
 
-static double mlsadf1(double x, double *b, int m, double a, int pd, double *d, VocoderSetup *vs)
+static double mlsadf1(double x, const double *b, const int m, const double a,
+                       const int pd, double *d, VocoderSetup *vs)
 {
    double v, out = 0.0, *pt, aa;
    register int i;
@@ -98,7 +99,8 @@ static double mlsadf1(double x, double *b, int m, double a, int pd, double *d, V
    return(out);
 }
 
-static double mlsadf2 (double x, double *b, int m, double a, int pd, double *d, VocoderSetup *vs)
+static double mlsadf2(double x, const double *b, const int m, const double a,
+                       const int pd, double *d, VocoderSetup *vs)
 {
   double v, out = 0.0, *pt;
   //  double aa;
@@ -122,7 +124,8 @@ static double mlsadf2 (double x, double *b, int m, double a, int pd, double *d, 
    return(out);
 }
 
-static double mlsadf(double x, double *b, int m, double a, int pd, double *d, VocoderSetup *vs)
+static double mlsadf(double x, const double *b, const int m, const double a,
+                      const int pd, double *d, VocoderSetup *vs)
 {
 
    vs->ppade = &(vs->pade[pd*(pd+1)/2]);
@@ -133,7 +136,7 @@ static double mlsadf(double x, double *b, int m, double a, int pd, double *d, Vo
    return(x);
 }
 
-static double rnd (unsigned long *next)
+static double rnd(unsigned long *next)
 {
    double r;
 
@@ -143,12 +146,12 @@ static double rnd (unsigned long *next)
    return(r/RANDMAX); 
 }
 
-static unsigned long srnd ( unsigned long seed )
+static unsigned long srnd( unsigned long seed )
 {
    return(seed);
 }
 
-static double nrandom (VocoderSetup *vs)
+static double nrandom(VocoderSetup *vs)
 {
    if (vs->sw == 0) {
       vs->sw = 1;
@@ -170,7 +173,7 @@ static double nrandom (VocoderSetup *vs)
 }
 
 /* mc2b : transform mel-cepstrum to MLSA digital filter coefficients */
-static void mc2b (double *mc, double *b, int m, double a)
+static void mc2b (double *mc, double *b, int m, const double a)
 {
    b[m] = mc[m];
 

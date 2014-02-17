@@ -273,6 +273,7 @@ static void c2ir (double *c, int nc, double *h, int leng)
 
 static double b2en (double *b, int m, double a, VocoderSetup *vs)
 {
+// calculate frame energy
    double en;
    int k;
    
@@ -348,7 +349,8 @@ static void vocoder(double p, double *mc,
 	vs->d1   = vs->cinc + m + 1;
 
 	mc2b(mc, vs->c, m, cg_db->mlsa_alpha);
-      
+
+// postfilter if beta is set
 	if (cg_db->mlsa_beta > 0.0 && m > 1) {
 	    e1 = b2en(vs->c, m, cg_db->mlsa_alpha, vs);
 	    vs->c[1] -= cg_db->mlsa_beta * cg_db->mlsa_alpha * mc[2];
@@ -361,7 +363,9 @@ static void vocoder(double p, double *mc,
 	return;
     }
 
-    mc2b(mc, vs->cc, m, cg_db->mlsa_alpha); 
+    mc2b(mc, vs->cc, m, cg_db->mlsa_alpha);
+
+// postfilter if beta is set
     if (cg_db->mlsa_beta>0.0 && m > 1) {
 	e1 = b2en(vs->cc, m, cg_db->mlsa_alpha, vs);
 	vs->cc[1] -= cg_db->mlsa_beta * cg_db->mlsa_alpha * mc[2];

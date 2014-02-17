@@ -146,7 +146,6 @@ static void Cholesky_forward(PStreamChol *pst)
     return;
 }
 
-// Cholesky_backward: backward substitution to solve linear equations
 static void Cholesky_backward(PStreamChol *pst, const int m)
 {
 // Cholesky backward substitution to solve matrix equation R c = r
