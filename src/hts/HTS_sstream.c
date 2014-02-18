@@ -70,7 +70,7 @@ HTS_SSTREAM_C_START;
 #include "HTS_hidden.h"
 
 /* HTS_set_default_duration: set default duration from state duration probability distribution */
-static double HTS_set_default_duration(size_t * duration, double *mean, double *vari, size_t size)
+static double HTS_set_default_duration(size_t * duration, double *mean, size_t size)
 {
    size_t i;
    double temp;
@@ -268,7 +268,7 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
             next_state = state + sss->nstate;
          } else if (i + 1 == HTS_Label_get_size(label)) {
             cst_errmsg("Warning: HTS_SStreamSet_create: The time of final label is not specified.\n");
-            HTS_set_default_duration(&sss->duration[next_state], &duration_mean[next_state], &duration_vari[next_state], state + sss->nstate - next_state);
+            HTS_set_default_duration(&sss->duration[next_state], &duration_mean[next_state], state + sss->nstate - next_state);
          }
          state += sss->nstate;
       }
@@ -282,7 +282,7 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
          frame_length = temp / speed;
          HTS_set_specified_duration(sss->duration, duration_mean, duration_vari, sss->total_state, frame_length);
       } else {
-         HTS_set_default_duration(sss->duration, duration_mean, duration_vari, sss->total_state);
+         HTS_set_default_duration(sss->duration, duration_mean, sss->total_state);
       }
    }
    cst_free(duration_mean);

@@ -757,10 +757,10 @@ static void HTS_Vocoder_end_excitation(HTS_Vocoder * v, double pitch)
 }
 
 /* HTS_Vocoder_postfilter_mcp: postfilter for MCP */
-static void HTS_Vocoder_postfilter_mcp(HTS_Vocoder * v, double *mcp, const int m, double alpha, double beta)
+static void HTS_Vocoder_postfilter_mcp(HTS_Vocoder * v, double *mcp, const size_t m, double alpha, double beta)
 {
    double e1, e2;
-   int k;
+   size_t k;
 
    if (beta > 0.0 && m > 1) {
       if (v->postfilter_size < m) {
@@ -873,7 +873,7 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean
 void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, double *rawdata)
 {
    double x;
-   int i, j;
+   size_t i,j;
    int rawidx = 0;
    double p;
 

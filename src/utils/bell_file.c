@@ -37,13 +37,13 @@ int bell_fgetc(cst_file fh)
     return fgetc(fh);
 }
 
-long bell_fwrite(const void *buf, long size, long count, cst_file fh)
+size_t bell_fwrite(const void *buf, size_t size, size_t count, cst_file fh)
 /* Bare wrapper for standard fwrite */
 {
     return fwrite(buf, size, count, fh);
 }
 
-long bell_fread(void *buf, long size, long count, cst_file fh)
+size_t bell_fread(void *buf, size_t size, size_t count, cst_file fh)
 /* Bare wrapper for standard fread */
 {
     return fread(buf, size, count, fh);

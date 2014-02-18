@@ -49,7 +49,8 @@
 #include "bell_file.h"
 
 static char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v1.5.4";
-/* This is the supported voice type for this module */
+// This is the supported voice type for this module
+// This string must not be set to greater than 199 chars
 
 static int cst_read_int(cst_file fd)
 {
@@ -276,7 +277,8 @@ static char*** cst_read_phone_states(cst_file fd)
 int cst_cg_read_header(cst_file fd)
 {
     char header[200];
-    int n, endianness;
+    size_t n;
+    int endianness;
 
     n = bell_fread(header,sizeof(char),cst_strlen(cg_voice_header_string)+1,fd);
 

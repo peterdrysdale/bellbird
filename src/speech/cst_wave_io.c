@@ -556,7 +556,8 @@ int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
     data_length = samples;
     cst_wave_resize(w,samples/hdr.num_channels,hdr.num_channels);
 
-    if ((d = bell_fread(w->samples,sizeof(short),data_length,fd)) != data_length)
+    if ((d = (int) bell_fread(w->samples,sizeof(short),data_length,fd)) != data_length)
+// the cast in line above is OK since data length is at most 4 bytes wide in the WAV file standard
     {
 	cst_errmsg("cst_wave_load_riff: %d missing samples, resized accordingly\n",
 		   data_length-d);
