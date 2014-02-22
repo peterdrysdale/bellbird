@@ -129,7 +129,7 @@ static double HTS_mlsafir(const double x, const double *b, const int m, const do
 }
 
 /* HTS_mlsadf1: sub functions for MLSA filter */
-static double HTS_mlsadf1(double x, const double *b, const int m, const double a, const double aa, const int pd, double *d, const double *ppade)
+static double HTS_mlsadf1(double x, const double *b, const double a, const double aa, const int pd, double *d, const double *ppade)
 {
    double v, out = 0.0, *pt;
    int i;
@@ -178,7 +178,7 @@ static double HTS_mlsadf(double x, const double *b, const int m, const double a,
    const double aa = 1 - a * a;
    const double *ppade = &(HTS_pade[pd * (pd + 1) / 2]);
 
-   x = HTS_mlsadf1(x, b, m, a, aa, pd, d, ppade);
+   x = HTS_mlsadf1(x, b, a, aa, pd, d, ppade);
    x = HTS_mlsadf2(x, b, m, a, aa, pd, &d[2 * (pd + 1)], ppade);
 
    return (x);

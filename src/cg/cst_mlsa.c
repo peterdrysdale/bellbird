@@ -88,7 +88,6 @@ typedef struct _VocoderSetup {
    double pc;
    double pj;
    double pade[21]; // Pade approximants coefficients
-   double *ppade;   // pointer to start of Pade approximants of required order
    double *c, *cc, *cinc, *d1;
    double rate;     // output wave's sample rate
    
@@ -184,7 +183,6 @@ static void free_vocoder(VocoderSetup *vs)
     vs->c = NULL;
     vs->mc = NULL;
     vs->d = NULL;
-    vs->ppade = NULL;
     vs->cc = NULL;
     vs->cinc = NULL;
     vs->d1 = NULL;

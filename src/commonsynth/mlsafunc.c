@@ -42,9 +42,6 @@
 /*                                                                   */
 /*  This is originally part of Heiga Zen's mlsa code.                */
 /*  It was modified by Toda and Black eventually ending up in Flite. */
-/*  Bellbird extracts these routines for common use between          */
-/*  different voice types. For performance reasons we statically     */
-/*  link each voice type with a copy of this library (sorry).        */
 /*-------------------------------------------------------------------*/
 
 /* This source file is included in more than one compilation unit.      */
@@ -55,13 +52,10 @@
 
 #define RANDMAX 32767
 
-static double mlsafir(const double x, const double *b, const int m, const double a, double *d)
+static double mlsafir(const double x, const double *b, const int m, const double a, const double aa, double *d)
 {  
    double y = 0.0;
-   double aa;
    register int i;
-
-   aa = 1 - a*a;
 
    d[0] = x;
    d[1] = aa*d[0] + a*d[1];
@@ -76,8 +70,8 @@ static double mlsafir(const double x, const double *b, const int m, const double
    return(y);
 }
 
-static double mlsadf1(double x, const double *b, const int m, const double a,
-                       const int pd, double *d, VocoderSetup *vs)
+static double mlsadf1(double x, const double *b, const double a,
+                       const int pd, double *d, const double *ppade)
 {
    double v, out = 0.0, *pt, aa;
    register int i;
@@ -88,7 +82,7 @@ static double mlsadf1(double x, const double *b, const int m, const double a,
    for (i=pd; i>=1; i--) {
       d[i] = aa*pt[i-1] + a*d[i];
       pt[i] = d[i] * b[1];
-      v = pt[i] * vs->ppade[i];
+      v = pt[i] * ppade[i];
       x += (1 & i) ? v : -v;
       out += v;
    }
@@ -100,19 +94,19 @@ static double mlsadf1(double x, const double *b, const int m, const double a,
 }
 
 static double mlsadf2(double x, const double *b, const int m, const double a,
-                       const int pd, double *d, VocoderSetup *vs)
+                       const int pd, double *d, const double *ppade)
 {
   double v, out = 0.0, *pt;
-  //  double aa;
+  double aa;
   register int i;
     
-  //aa = 1 - a*a;
+  aa = 1 - a*a;
    pt = &d[pd * (m+2)];
 
    for (i=pd; i>=1; i--) {
-       pt[i] = mlsafir (pt[i-1], b, m, a, &d[(i-1)*(m+2)]);
+       pt[i] = mlsafir (pt[i-1], b, m, a, aa, &d[(i-1)*(m+2)]);
 
-       v = pt[i] * vs->ppade[i];
+       v = pt[i] * ppade[i];
 
        x  += (1&i) ? v : -v;
        out += v;
@@ -127,17 +121,18 @@ static double mlsadf2(double x, const double *b, const int m, const double a,
 static double mlsadf(double x, const double *b, const int m, const double a,
                       const int pd, double *d, VocoderSetup *vs)
 {
-
-   vs->ppade = &(vs->pade[pd*(pd+1)/2]);
+// the MLSA filter
+   const double *ppade = &(vs->pade[pd*(pd+1)/2]);
     
-   x = mlsadf1 (x, b, m, a, pd, d, vs);
-   x = mlsadf2 (x, b, m, a, pd, &d[2*(pd+1)], vs);
+   x = mlsadf1 (x, b, a, pd, d, ppade);
+   x = mlsadf2 (x, b, m, a, pd, &d[2*(pd+1)], ppade);
 
    return(x);
 }
 
 static double rnd(unsigned long *next)
 {
+// the stock standard linear congruential random number generator
    double r;
 
    *next = *next * 1103515245L + 12345;
@@ -153,6 +148,7 @@ static unsigned long srnd( unsigned long seed )
 
 static double nrandom(VocoderSetup *vs)
 {
+// Gaussian random number generator throwing numbers in pairs with switch
    if (vs->sw == 0) {
       vs->sw = 1;
       do {
@@ -172,9 +168,9 @@ static double nrandom(VocoderSetup *vs)
    }
 }
 
-/* mc2b : transform mel-cepstrum to MLSA digital filter coefficients */
 static void mc2b (double *mc, double *b, int m, const double a)
 {
+// transform mel-cepstrum to MLSA digital filter coefficients
    b[m] = mc[m];
 
    for (m--; m>=0; m--)
