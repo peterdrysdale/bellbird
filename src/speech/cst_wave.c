@@ -63,8 +63,8 @@ void delete_wave(cst_wave *w)
 {
     if (w)
     {
-	cst_free(w->samples);
-	cst_free(w);
+        cst_free(w->samples);
+        cst_free(w);
     }
     return;
 }
@@ -75,15 +75,14 @@ void cst_wave_resize(cst_wave *w,int samples, int num_channels)
 
     if (!w)
     {
-	cst_errmsg("cst_wave_resize: null wave given to resize\n");
-	cst_error();
+        cst_errmsg("cst_wave_resize: null wave given to resize\n");
+        cst_error();
     }
     ns = cst_alloc(short,samples*num_channels);
     if (num_channels == w->num_channels)
-	memmove(ns,w->samples,
-		sizeof(short) * 
-		num_channels *
-		(samples < w->num_samples ? samples : w->num_samples));
+        memmove(ns,w->samples,
+                sizeof(short) * num_channels *
+                (samples < w->num_samples ? samples : w->num_samples));
     cst_free(w->samples);
     w->samples = ns;
     w->num_samples = samples;

@@ -238,19 +238,19 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
 
 float bell_hts_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
                            const char *filename, cst_voice *voice,
-			   const char *outtype, const int voice_type)
+                           const char *outtype, const int voice_type)
 {
     cst_tokenstream *ts;
 
     if ((ts = ts_open(filename,
-	      get_param_string(voice->features,"text_whitespace",NULL),
-	      get_param_string(voice->features,"text_singlecharsymbols",NULL),
-	      get_param_string(voice->features,"text_prepunctuation",NULL),
-	      get_param_string(voice->features,"text_postpunctuation",NULL)))
-	== NULL)
+         get_param_string(voice->features,"text_whitespace",NULL),
+         get_param_string(voice->features,"text_singlecharsymbols",NULL),
+         get_param_string(voice->features,"text_prepunctuation",NULL),
+         get_param_string(voice->features,"text_postpunctuation",NULL)))
+        == NULL)
     {
-	cst_errmsg("Failed to open file \"%s\" for reading\n",filename);
-	cst_error();
+        cst_errmsg("Failed to open file \"%s\" for reading\n",filename);
+        cst_error();
     }
     return bell_hts_ts_to_speech(engine,ntengine,ts,voice,outtype,voice_type);
 }
@@ -278,10 +278,10 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
     if (fp > 0)
         ts_set_stream_pos(ts,fp);
     if (feat_present(voice->features,"utt_break"))
-	breakfunc = val_breakfunc(feat_val(voice->features,"utt_break"));
+        breakfunc = val_breakfunc(feat_val(voice->features,"utt_break"));
 
     if (feat_present(voice->features,"utt_user_callback"))
-	utt_user_callback = val_uttfunc(feat_val(voice->features,"utt_user_callback"));
+        utt_user_callback = val_uttfunc(feat_val(voice->features,"utt_user_callback"));
 
     /* If its a file we write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
@@ -289,18 +289,18 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
         !cst_streq(outtype,"none") &&
         !cst_streq(outtype,"stream"))
     {
-	w = new_wave();
-	cst_wave_resize(w,0,1);
+        w = new_wave();
+        cst_wave_resize(w,0,1);
         if (voice_type==HTSMODE)
         {
-	   CST_WAVE_SET_SAMPLE_RATE(w,48000);
+            CST_WAVE_SET_SAMPLE_RATE(w,48000);
         } 
         else if (voice_type==NITECHMODE)
         {
-           CST_WAVE_SET_SAMPLE_RATE(w,16000);
+            CST_WAVE_SET_SAMPLE_RATE(w,16000);
         }
-	cst_wave_save_riff(w,outtype);  /* an empty wave */
-	delete_wave(w);
+        cst_wave_save_riff(w,outtype);  /* an empty wave */
+        delete_wave(w);
     }
 
     num_tokens = 0;
@@ -308,13 +308,13 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
     tokrel = utt_relation_create(utt, "Token");
     while (!ts_eof(ts) || num_tokens > 0)
     {
-	token = ts_get(ts);
-	if ((cst_strlen(token) == 0) ||
-	    (num_tokens > 500) ||  /* need an upper bound */
-	    (relation_head(tokrel) && 
-	     breakfunc(ts,token,tokrel)))
-	{
-	    /* An end of utt, so synthesize it */
+        token = ts_get(ts);
+        if ((cst_strlen(token) == 0) ||
+            (num_tokens > 500) ||  /* need an upper bound */
+            (relation_head(tokrel) &&
+             breakfunc(ts,token,tokrel)))
+        {
+            /* An end of utt, so synthesize it */
             if (utt_user_callback)
                 utt = (utt_user_callback)(utt);
 
@@ -364,26 +364,26 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
             else 
                 break;
 
-	    if (ts_eof(ts)) break;
+            if (ts_eof(ts)) break;
 
-	    utt = new_utterance();
-	    tokrel = utt_relation_create(utt, "Token");
-	    num_tokens = 0;
-	}
-	num_tokens++;
+            utt = new_utterance();
+            tokrel = utt_relation_create(utt, "Token");
+            num_tokens = 0;
+        }
+        num_tokens++;
 
-	t = relation_append(tokrel, NULL);
-	item_set_string(t,"name",token);
-	item_set_string(t,"whitespace",ts->whitespace);
-	item_set_string(t,"prepunctuation",ts->prepunctuation);
-	item_set_string(t,"punc",ts->postpunctuation);
+        t = relation_append(tokrel, NULL);
+        item_set_string(t,"name",token);
+        item_set_string(t,"whitespace",ts->whitespace);
+        item_set_string(t,"prepunctuation",ts->prepunctuation);
+        item_set_string(t,"punc",ts->postpunctuation);
         /* Mark it at the beginning of the token */
-	item_set_int(t,"file_pos",
+        item_set_int(t,"file_pos",
                      ts->file_pos-(1+ /* as we are already on the next char */
                                    cst_strlen(token)+
                                    cst_strlen(ts->prepunctuation)+
                                    cst_strlen(ts->postpunctuation)));
-	item_set_int(t,"line_number",ts->line_number);
+        item_set_int(t,"line_number",ts->line_number);
     }
 
     delete_utterance(utt);
@@ -420,8 +420,8 @@ static cst_voice *register_hts_voice(const cst_lang *lang_list)
     }
     if (lex == NULL)
     {
-	cst_errmsg("Language is not supported. \n");
-	return NULL;	
+        cst_errmsg("Language is not supported. \n");
+        return NULL;
     }
     feat_set(voice->features,"lexicon",lexicon_val(lex));
 

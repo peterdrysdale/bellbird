@@ -63,106 +63,106 @@
 
 static bell_boolean isdigit_string(char *str)
 {
-   int i;
+    int i;
 
-   if (sscanf(str, "%d", &i) == 1) {
-      return TRUE;
-   } else {
-      return FALSE;
-   }
+    if (sscanf(str, "%d", &i) == 1) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }
 
 static cst_wave * nitech_process (char **lines, size_t num_lines,
-		   PStreamChol *mceppst, PStreamChol *lf0pst, nitechP *gp,
-		   ModelSet *ms, TreeSet *ts, VocoderSetup *vs)
+                   PStreamChol *mceppst, PStreamChol *lf0pst, nitechP *gp,
+                   ModelSet *ms, TreeSet *ts, VocoderSetup *vs)
 {
-   cst_wave *w;
-   char buff[1024];
-   Tree *tree;
-   int state, diffdur=0;
-   int i;
-   size_t j;
-   size_t data_index;
-   Model *m, *mm, *nm;
-   UttModel um;
+    cst_wave *w;
+    char buff[1024];
+    Tree *tree;
+    int state, diffdur=0;
+    int i;
+    size_t j;
+    size_t data_index;
+    Model *m, *mm, *nm;
+    UttModel um;
 
-   m = cst_alloc(Model,1);
-   um.mtail = um.mhead = m;  
-   um.totalframe = um.nState = um.nModel = 0;
+    m = cst_alloc(Model,1);
+    um.mtail = um.mhead = m;
+    um.totalframe = um.nState = um.nModel = 0;
 
-   for (j = 0; j < num_lines; j++) {
+    for (j = 0; j < num_lines; j++) {
 
 // copy label
-      if (!isgraph((int) lines[j][0]))
-         break;
-      data_index = 0;
-      if (isdigit_string(lines[j])) {   /* has frame infomation */
-         HTS_get_token_from_string(lines[j], &data_index, buff);
-         /* throw away start information */
-         HTS_get_token_from_string(lines[j], &data_index, buff);
-         /* throw away end information */
-         HTS_get_token_from_string(lines[j], &data_index, buff);
-         m->name = cst_strdup(buff);
-      } else {
-         m->name = cst_strdup(lines[j]);
-      }
+        if (!isgraph((int) lines[j][0]))
+            break;
+        data_index = 0;
+        if (isdigit_string(lines[j])) {   /* has frame infomation */
+            HTS_get_token_from_string(lines[j], &data_index, buff);
+            /* throw away start information */
+            HTS_get_token_from_string(lines[j], &data_index, buff);
+            /* throw away end information */
+            HTS_get_token_from_string(lines[j], &data_index, buff);
+            m->name = cst_strdup(buff);
+        } else {
+            m->name = cst_strdup(lines[j]);
+        }
 
 // for duration
-      m->durpdf = SearchTree(m->name, ts->thead[DUR]->root);   
-      FindDurPDF(m, ms, gp->rho, diffdur);
-      um.totalframe += m->totaldur;
+        m->durpdf = SearchTree(m->name, ts->thead[DUR]->root);
+        FindDurPDF(m, ms, gp->rho, diffdur);
+        um.totalframe += m->totaldur;
 
 // for excitation
-      m->lf0pdf      = cst_alloc(int,ms->nstate+2);
-      m->lf0mean     = cst_alloc(float *,ms->nstate+2);
-      m->lf0variance =  cst_alloc(float *,ms->nstate+2);
-      m->voiced      = cst_alloc(bell_boolean, ms->nstate+2); /* added 2 to see if still overruns data */
-      
-      for (tree=ts->thead[LF0],state=2; tree!=ts->ttail[LF0]; tree=tree->next,state++) {
-         m->lf0pdf[state] = SearchTree(m->name, tree->root);
-         FindLF0PDF(state, m, ms, gp->uv);
-      }
+        m->lf0pdf      = cst_alloc(int,ms->nstate+2);
+        m->lf0mean     = cst_alloc(float *,ms->nstate+2);
+        m->lf0variance =  cst_alloc(float *,ms->nstate+2);
+        m->voiced      = cst_alloc(bell_boolean, ms->nstate+2); /* added 2 to see if still overruns data */
+
+        for (tree=ts->thead[LF0],state=2; tree!=ts->ttail[LF0]; tree=tree->next,state++) {
+            m->lf0pdf[state] = SearchTree(m->name, tree->root);
+            FindLF0PDF(state, m, ms, gp->uv);
+        }
 
 // for spectrum
-      m->mceppdf      = cst_alloc(int,ms->nstate+2);
-      m->mcepmean     = cst_alloc(float *,ms->nstate+2);
-      m->mcepvariance = cst_alloc(float *,ms->nstate+2);
-      
-      for (tree=ts->thead[MCP],state=2; tree!=ts->ttail[MCP]; tree=tree->next,state++) {
-         m->mceppdf[state] = SearchTree(m->name, tree->root);
-         FindMcpPDF(state, m, ms);
-      }
-      
+        m->mceppdf      = cst_alloc(int,ms->nstate+2);
+        m->mcepmean     = cst_alloc(float *,ms->nstate+2);
+        m->mcepvariance = cst_alloc(float *,ms->nstate+2);
+
+        for (tree=ts->thead[MCP],state=2; tree!=ts->ttail[MCP]; tree=tree->next,state++) {
+            m->mceppdf[state] = SearchTree(m->name, tree->root);
+            FindMcpPDF(state, m, ms);
+        }
+
       m->next = cst_alloc(Model,1);
       m = um.mtail = m->next;
       
       um.nModel++;
       um.nState+=ms->nstate;
-   }
+    }
    
-   w=pdf2speech(mceppst,lf0pst,gp,ms,&um,vs);
+    w=pdf2speech(mceppst,lf0pst,gp,ms,&um,vs);
 
 // Traverse HMM linked list freeing contents
-   for (mm=um.mhead; mm; mm=nm)
-   {
-       nm = mm->next;
-       for (i=0; i<ms->nstate+2; i++)
-       {
-	   if (mm->lf0mean) cst_free(mm->lf0mean[i]);
-	   if (mm->lf0variance) cst_free(mm->lf0variance[i]);
-       }
-       cst_free(mm->mcepvariance);
-       cst_free(mm->mcepmean);
-       cst_free(mm->mceppdf);
-       cst_free(mm->voiced);
-       cst_free(mm->lf0variance);
-       cst_free(mm->lf0mean);
-       cst_free(mm->lf0pdf);
-       cst_free(mm->dur);
-       cst_free(mm->name);
-       cst_free(mm);
-   }
-   return w;
+    for (mm=um.mhead; mm; mm=nm)
+    {
+        nm = mm->next;
+        for (i=0; i<ms->nstate+2; i++)
+        {
+            if (mm->lf0mean) cst_free(mm->lf0mean[i]);
+            if (mm->lf0variance) cst_free(mm->lf0variance[i]);
+        }
+        cst_free(mm->mcepvariance);
+        cst_free(mm->mcepmean);
+        cst_free(mm->mceppdf);
+        cst_free(mm->voiced);
+        cst_free(mm->lf0variance);
+        cst_free(mm->lf0mean);
+        cst_free(mm->lf0pdf);
+        cst_free(mm->dur);
+        cst_free(mm->name);
+        cst_free(mm);
+    }
+    return w;
 }
 
 bell_boolean nitech_engine_synthesize_from_strings(nitech_engine * ntengine, char **lines, size_t num_lines)
@@ -214,48 +214,48 @@ void nitech_engine_initialize(nitech_engine *ntengine, const char * fn_voice)
     cst_free(filename);
     if ((ntengine->ts).fp[DUR] == NULL)
     {
-       cst_errmsg("nitech_engine: can't open hts/trees-dur.inf file\n");
-       cst_error();
+        cst_errmsg("nitech_engine: can't open hts/trees-dur.inf file\n");
+        cst_error();
     }
     filename = bell_build_filename(fn_voice,"hts/trees-lf0.inf");
     (ntengine->ts).fp[LF0]=bell_fopen(filename,"r");
     cst_free(filename);
     if ((ntengine->ts).fp[LF0] == NULL)
     {
-       cst_errmsg("nitech_engine: can't open hts/trees-lf0.inf file\n");
-       cst_error();
+        cst_errmsg("nitech_engine: can't open hts/trees-lf0.inf file\n");
+        cst_error();
     }
     filename = bell_build_filename(fn_voice,"hts/trees-mcep.inf");
     (ntengine->ts).fp[MCP]=bell_fopen(filename,"r");
     cst_free(filename);
     if ((ntengine->ts).fp[MCP] == NULL)
     {
-       cst_errmsg("nitech_engine: can't open hts/trees-mcep.inf file\n");
-       cst_error();
+        cst_errmsg("nitech_engine: can't open hts/trees-mcep.inf file\n");
+        cst_error();
     }
     filename = bell_build_filename(fn_voice,"hts/duration.pdf");
     (ntengine->ms).fp[DUR]=bell_fopen(filename,"rb");
     cst_free(filename);
     if ((ntengine->ms).fp[DUR] == NULL)
     {
-       cst_errmsg("nitech_engine: can't open hts/duration.pdf file\n");
-       cst_error();
+        cst_errmsg("nitech_engine: can't open hts/duration.pdf file\n");
+        cst_error();
     }
     filename = bell_build_filename(fn_voice,"hts/lf0.pdf");
     (ntengine->ms).fp[LF0]=bell_fopen(filename,"rb");
     cst_free(filename);
     if ((ntengine->ms).fp[LF0] == NULL)
     {
-       cst_errmsg("nitech_engine: can't open hts/lf0.pdf file\n");
-       cst_error();
+        cst_errmsg("nitech_engine: can't open hts/lf0.pdf file\n");
+        cst_error();
     }
     filename = bell_build_filename(fn_voice,"hts/mcep.pdf");
     (ntengine->ms).fp[MCP]=bell_fopen(filename,"rb");
     cst_free(filename);
     if ((ntengine->ms).fp[MCP] == NULL)
     {
-       cst_errmsg("nitech_engine: can't open hts/mcep.pdf file\n");
-       cst_error();
+        cst_errmsg("nitech_engine: can't open hts/mcep.pdf file\n");
+        cst_error();
     }
 
     /* load tree files for duration, log f0 and mel-cepstrum */
@@ -275,13 +275,13 @@ void nitech_engine_initialize(nitech_engine *ntengine, const char * fn_voice)
     /* check the number of window */
     if (ntengine->lf0pst.dw.num != ntengine->ms.lf0stream) 
     {
-	cst_errmsg("nitech_engine: dynamic window for f0 is illegal\n");
-	cst_error();
+        cst_errmsg("nitech_engine: dynamic window for f0 is illegal\n");
+        cst_error();
     }
     if (ntengine->ms.mcepvsize % ntengine->mceppst.dw.num != 0 ) 
     {
-	cst_errmsg("nitech_engine: dynamic window for mcep is illegal\n");
-	cst_error();
+        cst_errmsg("nitech_engine: dynamic window for mcep is illegal\n");
+        cst_error();
     }
 
     /* Initialize vocoder */
@@ -306,12 +306,12 @@ void nitech_engine_clear(nitech_engine * ntengine)
 // Free windows
     for (i=1; i<ntengine->lf0pst.dw.num; i++)
     {
-       cst_free(ntengine->lf0pst.dw.fn[i]);
+        cst_free(ntengine->lf0pst.dw.fn[i]);
     }
     cst_free(ntengine->lf0pst.dw.fn);
     for (i=1; i<ntengine->mceppst.dw.num; i++)
     {
-       cst_free(ntengine->mceppst.dw.fn[i]);
+        cst_free(ntengine->mceppst.dw.fn[i]);
     }
     cst_free(ntengine->mceppst.dw.fn);
     FreeWin(&(ntengine->lf0pst));
