@@ -71,7 +71,7 @@ static int cst_wave_load_riff_header(cst_wave_header *header,cst_file fd)
 	return BELL_IO_ERROR;
     }
 
-    if(bell_fread(&d_int,4,1,fd) != 1)
+    if (bell_fread(&d_int,4,1,fd) != 1)
     {
         rv = BELL_IO_ERROR;
     }
@@ -92,7 +92,7 @@ static int cst_wave_load_riff_header(cst_wave_header *header,cst_file fd)
         cst_errmsg("cst_load_wave_riff: Unable to find sequence (fmt ) in WAV file\n");
 	return BELL_IO_ERROR;
     }
-    if(bell_fread(&d_int,4,1,fd) != 1)
+    if (bell_fread(&d_int,4,1,fd) != 1)
     {
         rv = BELL_IO_ERROR;
     }
@@ -100,7 +100,7 @@ static int cst_wave_load_riff_header(cst_wave_header *header,cst_file fd)
     d_int = SWAPINT(d_int);
 #endif
     header->hsize = d_int;
-    if(bell_fread(&d_short,2,1,fd) != 1)
+    if (bell_fread(&d_short,2,1,fd) != 1)
     {
         rv = BELL_IO_ERROR;
     }
@@ -113,7 +113,7 @@ static int cst_wave_load_riff_header(cst_wave_header *header,cst_file fd)
 	cst_errmsg("cst_load_wave_riff: unsupported sample format\n");
 	return BELL_IO_ERROR;
     }
-    if(bell_fread(&d_short,2,1,fd) != 1)
+    if (bell_fread(&d_short,2,1,fd) != 1)
     {
         rv = BELL_IO_ERROR;
     }
@@ -123,7 +123,7 @@ static int cst_wave_load_riff_header(cst_wave_header *header,cst_file fd)
 
     header->num_channels = d_short;
 
-    if(bell_fread(&d_int,4,1,fd) != 1)
+    if (bell_fread(&d_int,4,1,fd) != 1)
     {
         rv = BELL_IO_ERROR;
     }
@@ -131,20 +131,20 @@ static int cst_wave_load_riff_header(cst_wave_header *header,cst_file fd)
     d_int = SWAPINT(d_int);
 #endif
     header->sample_rate = d_int;
-    if(bell_fread(&d_int,4,1,fd) != 1)      /* avg bytes per second */
+    if (bell_fread(&d_int,4,1,fd) != 1)      /* avg bytes per second */
     {
         rv = BELL_IO_ERROR;
     }
-    if(bell_fread(&d_short,2,1,fd) != 1)    /* block align */
+    if (bell_fread(&d_short,2,1,fd) != 1)    /* block align */
     {
         rv = BELL_IO_ERROR;
     }
-    if(bell_fread(&d_short,2,1,fd) != 1)    /* bits per sample */
+    if (bell_fread(&d_short,2,1,fd) != 1)    /* bits per sample */
     {
         rv = BELL_IO_ERROR;
     }
 
-    if(rv == BELL_IO_ERROR)
+    if (rv == BELL_IO_ERROR)
     {
         cst_errmsg("cst_load_wave_riff: Unable to read header.\n");
         return BELL_IO_ERROR;
@@ -183,7 +183,7 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
       n = bell_fwrite(CST_WAVE_SAMPLES(w),sizeof(short),
 		  CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w),fd);
 #endif
-      if(n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
+      if (n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
       {
           cst_errmsg("cst_wave_append: can't write all output samples.\n");
 	  return BELL_IO_ERROR;
@@ -205,13 +205,13 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
 	  return BELL_IO_ERROR;
       }
     /* We will assume this is bellbird/flite file so it has *ONE* data part */
-      if(bell_fread(info,1,4,fd) != 4)
+      if (bell_fread(info,1,4,fd) != 4)
       {
           cst_errmsg("cst_wave_append: Unable to read part of header.\n");
           bell_fclose(fd);
           return BELL_IO_ERROR;
       }
-      if(bell_fread(&d_int,4,1,fd) != 1)
+      if (bell_fread(&d_int,4,1,fd) != 1)
       {
           cst_errmsg("cst_wave_append: Unable to read part of header.\n");
           bell_fclose(fd);
@@ -222,7 +222,7 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
 #endif
       hdr.num_samples = d_int/sizeof(short);
 
-      if(bell_fseeko(fd, bell_ftello(fd)+(hdr.hsize-16)+
+      if (bell_fseeko(fd, bell_ftello(fd)+(hdr.hsize-16)+
 	             (hdr.num_samples*hdr.num_channels*sizeof(short)),
 	             SEEK_SET) != 0)
       {
@@ -244,14 +244,14 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
       n = bell_fwrite(CST_WAVE_SAMPLES(w),sizeof(short),
 		  CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w),fd);
 #endif
-      if(n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
+      if (n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
       {
           cst_errmsg("cst_wave_append: can't write all output samples.\n");
           bell_fclose(fd);
 	  return BELL_IO_ERROR;
       }
 
-      if(bell_fseeko(fd,4,SEEK_SET) != 0)
+      if (bell_fseeko(fd,4,SEEK_SET) != 0)
       {
           cst_errmsg("cst_wave_append: Unable to seek for append.\n");
           bell_fclose(fd);
@@ -261,14 +261,14 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
 #ifdef WORDS_BIGENDIAN
       num_bytes = SWAPINT(num_bytes);
 #endif
-      if(bell_fwrite(&num_bytes,4,1,fd) != 1) /* num bytes in whole file */
+      if (bell_fwrite(&num_bytes,4,1,fd) != 1) /* num bytes in whole file */
       {
           cst_errmsg("cst_wave_append: Unable to write num bytes in whole file.\n");
           bell_fclose(fd);
           return BELL_IO_ERROR;
       }
 
-      if(bell_fseeko(fd,4+4+4+4+4+2+2+4+4+2+2+4,SEEK_SET) != 0)
+      if (bell_fseeko(fd,4+4+4+4+4+2+2+4+4+2+2+4,SEEK_SET) != 0)
       {
           cst_errmsg("cst_wave_append: Unable to seek for append.\n");
           bell_fclose(fd);
@@ -280,7 +280,7 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
 #ifdef WORDS_BIGENDIAN
       num_bytes = SWAPINT(num_bytes);
 #endif
-      if(bell_fwrite(&num_bytes,4,1,fd) != 1) /* num bytes in data */
+      if (bell_fwrite(&num_bytes,4,1,fd) != 1) /* num bytes in data */
       {
           cst_errmsg("cst_wave_append: Unable to write num bytes in data.\n");
           bell_fclose(fd);
@@ -329,7 +329,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
          return BELL_IO_ERROR;
     }
 
-    if(bell_fwrite("RIFF",4,1,fd) != 1)
+    if (bell_fwrite("RIFF",4,1,fd) != 1)
     {
          rv = BELL_IO_ERROR;
     }
@@ -339,15 +339,15 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     num_bytes = SWAPINT(num_bytes);
 #endif
-    if(bell_fwrite(&num_bytes,4,1,fd) != 1) /* num bytes in whole file */
+    if (bell_fwrite(&num_bytes,4,1,fd) != 1) /* num bytes in whole file */
     {
          rv = BELL_IO_ERROR;
     }
-    if(bell_fwrite("WAVE",1,4,fd) != 4)
+    if (bell_fwrite("WAVE",1,4,fd) != 4)
     {
          rv = BELL_IO_ERROR;
     }
-    if(bell_fwrite("fmt ",1,4,fd) != 4)
+    if (bell_fwrite("fmt ",1,4,fd) != 4)
     {
          rv = BELL_IO_ERROR;
     }
@@ -355,7 +355,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     num_bytes = SWAPINT(num_bytes);
 #endif
-    if(bell_fwrite(&num_bytes,4,1,fd) != 1)
+    if (bell_fwrite(&num_bytes,4,1,fd) != 1)
     {
          rv = BELL_IO_ERROR;
     }
@@ -363,7 +363,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     d_short = SWAPSHORT(d_short);
 #endif
-    if(bell_fwrite(&d_short,2,1,fd) != 1)
+    if (bell_fwrite(&d_short,2,1,fd) != 1)
     {
          rv = BELL_IO_ERROR;
     }
@@ -371,7 +371,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     d_short = SWAPSHORT(d_short);
 #endif
-    if(bell_fwrite(&d_short,2,1,fd) != 1)
+    if (bell_fwrite(&d_short,2,1,fd) != 1)
     {
          rv = BELL_IO_ERROR;
     }         
@@ -379,7 +379,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     d_int = SWAPINT(d_int);
 #endif
-    if(bell_fwrite(&d_int,4,1,fd) != 1)
+    if (bell_fwrite(&d_int,4,1,fd) != 1)
     {
          rv = BELL_IO_ERROR;
     }
@@ -389,7 +389,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     d_int = SWAPINT(d_int);
 #endif
-    if(bell_fwrite(&d_int,4,1,fd) != 1)
+    if (bell_fwrite(&d_int,4,1,fd) != 1)
     {
          rv = BELL_IO_ERROR;
     }
@@ -398,7 +398,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     d_short = SWAPSHORT(d_short);
 #endif
-    if(bell_fwrite(&d_short,2,1,fd) != 1)
+    if (bell_fwrite(&d_short,2,1,fd) != 1)
     {
          rv = BELL_IO_ERROR;
     }         
@@ -406,11 +406,11 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     d_short = SWAPSHORT(d_short);
 #endif
-    if(bell_fwrite(&d_short,2,1,fd) != 1)
+    if (bell_fwrite(&d_short,2,1,fd) != 1)
     {
          rv = BELL_IO_ERROR;
     }
-    if(bell_fwrite("data",1,4,fd) != 4)
+    if (bell_fwrite("data",1,4,fd) != 4)
     {
          rv = BELL_IO_ERROR;
     }
@@ -420,12 +420,12 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 #ifdef WORDS_BIGENDIAN
     d_int = SWAPINT(d_int);
 #endif
-    if(bell_fwrite(&d_int,4,1,fd) !=  1)
+    if (bell_fwrite(&d_int,4,1,fd) !=  1)
     {
          rv = BELL_IO_ERROR;
     }
 
-    if( rv == BELL_IO_ERROR )
+    if ( rv == BELL_IO_ERROR )
     {
          cst_errmsg("cst_wave_save_riff_fd: Unable to write header.\n");
          return BELL_IO_ERROR;
@@ -443,7 +443,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
     n = bell_fwrite(CST_WAVE_SAMPLES(w),sizeof(short),
 		   CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w),fd);
 #endif
-    if( n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
+    if ( n != CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w) )
     {
         cst_errmsg("cst_wave_save_riff_fd: Unable to write all output samples.\n");
 	return BELL_IO_ERROR;
@@ -487,7 +487,7 @@ int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
     if (rv != BELL_IO_SUCCESS)
 	return BELL_IO_ERROR;
 	
-    if(bell_fseeko(fd,bell_ftello(fd)+(hdr.hsize-16),SEEK_SET) != 0) /* skip rest of header */
+    if (bell_fseeko(fd,bell_ftello(fd)+(hdr.hsize-16),SEEK_SET) != 0) /* skip rest of header */
     {
         cst_errmsg("cst_wave_load_riff_fd: Unable to process header.\n");
         return BELL_IO_ERROR;
@@ -500,7 +500,7 @@ int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
 	    return BELL_IO_ERROR;
 	if (strncmp(info,"data",4) == 0)
 	{
-	    if(bell_fread(&d_int,4,1,fd) != 1)
+	    if (bell_fread(&d_int,4,1,fd) != 1)
             {
                 cst_errmsg("cst_wave_load_riff_fd: Unable to read header.\n");
                 return BELL_IO_ERROR; 
@@ -513,7 +513,7 @@ int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
 	}
 	else if (strncmp(info,"fact",4) == 0)
 	{   
-	    if(bell_fread(&d_int,4,1,fd) != 1)
+	    if (bell_fread(&d_int,4,1,fd) != 1)
             {
                 cst_errmsg("cst_wave_load_riff_fd: Unable to read header.\n");
                 return BELL_IO_ERROR;
@@ -521,7 +521,7 @@ int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
 #ifdef WORDS_BIGENDIAN
 	    d_int = SWAPINT(d_int);
 #endif
-	    if(bell_fseeko(fd,bell_ftello(fd)+d_int,SEEK_SET) != 0)
+	    if (bell_fseeko(fd,bell_ftello(fd)+d_int,SEEK_SET) != 0)
             {
                 cst_errmsg("cst_wave_load_riff_fd: Unable to seek in header.\n");
                 return BELL_IO_ERROR;
@@ -529,7 +529,7 @@ int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
 	}
 	else if (strncmp(info,"clm ",4) == 0)
 	{   /* another random chunk type -- resample puts this one in */
-	    if(bell_fread(&d_int,4,1,fd) != 1)
+	    if (bell_fread(&d_int,4,1,fd) != 1)
             {
                 cst_errmsg("cst_wave_load_riff_fd: Unable to read header.\n");
                 return BELL_IO_ERROR;
@@ -537,7 +537,7 @@ int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
 #ifdef WORDS_BIGENDIAN
 	    d_int = SWAPINT(d_int);
 #endif
-	    if(bell_fseeko(fd,bell_ftello(fd)+d_int,SEEK_SET) != 0)
+	    if (bell_fseeko(fd,bell_ftello(fd)+d_int,SEEK_SET) != 0)
             {
                 cst_errmsg("cst_wave_load_riff_fd: Unable to seek in header.\n");
                 return BELL_IO_ERROR;

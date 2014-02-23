@@ -99,7 +99,7 @@ static const void *internal_ff(const cst_item *item,
     tokens[0] = tokenstring;
     for (i=0,j=1; i<TOKENSTRINGBUF && featpath[i]; i++)
     {
-        if('.'==featpath[i])
+        if ('.'==featpath[i])
         {
             tokenstring[i] = '\0';
             tokens[j] = &tokenstring[i+1];

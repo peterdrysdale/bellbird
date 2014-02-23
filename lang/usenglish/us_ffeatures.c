@@ -175,7 +175,7 @@ const cst_val *content_words_in(const cst_item *p)
         if (!strcmp(ffeature_string(s,"gpos"),"content"))
         {i++;}
     }
-    //	if(!strcmp(ffeature_string(p,"gpos"), "content")){i++;}
+    //	if (!strcmp(ffeature_string(p,"gpos"), "content")){i++;}
     return val_string_n(i);
 }
 
@@ -190,7 +190,7 @@ const cst_val *content_words_out(const cst_item *p)
         if (!strcmp(ffeature_string(p,"gpos"),"content"))
         {i++;}
     }
-    if(!strcmp(ffeature_string(s,"gpos"), "content")){i++;}
+    if (!strcmp(ffeature_string(s,"gpos"), "content")){i++;}
     return val_string_n(i);
 }
 

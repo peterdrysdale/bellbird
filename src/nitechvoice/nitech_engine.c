@@ -65,10 +65,11 @@ static bell_boolean isdigit_string(char *str)
 {
    int i;
 
-   if (sscanf(str, "%d", &i) == 1)
+   if (sscanf(str, "%d", &i) == 1) {
       return TRUE;
-   else
+   } else {
       return FALSE;
+   }
 }
 
 static cst_wave * nitech_process (char **lines, size_t num_lines,
@@ -303,12 +304,12 @@ void nitech_engine_clear(nitech_engine * ntengine)
     free_vocoder(&(ntengine->vs));
 
 // Free windows
-    for(i=1; i<ntengine->lf0pst.dw.num; i++)
+    for (i=1; i<ntengine->lf0pst.dw.num; i++)
     {
        cst_free(ntengine->lf0pst.dw.fn[i]);
     }
     cst_free(ntengine->lf0pst.dw.fn);
-    for(i=1; i<ntengine->mceppst.dw.num; i++)
+    for (i=1; i<ntengine->mceppst.dw.num; i++)
     {
        cst_free(ntengine->mceppst.dw.fn[i]);
     }

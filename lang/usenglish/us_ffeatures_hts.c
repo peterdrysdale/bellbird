@@ -66,236 +66,282 @@ static const cst_val *gpos(const cst_item *word)
     int s,t;
 
     w = item_feat_string(word,"name");
-
     for (s=0; us_gpos[s]; s++)
     {
 	for (t=1; us_gpos[s][t]; t++)
 	    if (cst_streq(w,val_string(us_gpos[s][t])))
 		return us_gpos[s][0];
     }
-
     return (cst_val *)&val_string_content;
 }
 
-int item_after_length(const cst_item *n){
-  int i = 0;
-  if(n == NULL) return 0;
-  for(;n;n=n->n,i++);
-  return i;
+int item_after_length(const cst_item *n)
+{
+    int i = 0;
+
+    if (n == NULL) return 0;
+    for (;n;n=n->n,i++);
+    return i;
 }
 
-const cst_item *item_first(const cst_item *n){
-  if(n == 0) return 0;
-  for(;n->p != 0;n=n->p);
-  return n;
+const cst_item *item_first(const cst_item *n)
+{
+    if (n == 0) return 0;
+    for (;n->p != 0;n=n->p);
+    return n;
 }
 
 /* 21 by Toda-san */
-static const cst_val *lisp_distance_to_p_stress(const cst_item *syl){
-  const cst_item *s, *fs;
-  int c;
-  
-  s=item_as(syl,"Syllable");
-  fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
-  if (item_equal(s,fs)) return val_string_n(0);
-  s=item_prev(s);
-  for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX);
-       s=item_prev(s),c++)
-    if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
-  if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
-  else return val_string_n(0);
+static const cst_val *lisp_distance_to_p_stress(const cst_item *syl)
+{
+    const cst_item *s, *fs;
+    int c;
+
+    s=item_as(syl,"Syllable");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
+    if (item_equal(s,fs)) return val_string_n(0);
+    s=item_prev(s);
+    for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_prev(s),c++)
+    {
+        if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
+    }
+    if (strcmp("1", ffeature_string(s,"stress")) == 0)
+    {
+        return val_string_n(c);
+    }
+    else
+    {
+        return val_string_n(0);
+    }
 }
 
 /* 22 by Toda-san */
-static const cst_val *lisp_distance_to_n_stress(const cst_item *syl){
-  const cst_item *s, *fs;
-  int c;
-  
-  s=item_as(syl,"Syllable");
-  fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
-  if (item_equal(s,fs)) return val_string_n(0);
-  s=item_next(s);
-  for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX);
-       s=item_next(s),c++)
-    if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
-  if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
-  else return val_string_n(0);
+static const cst_val *lisp_distance_to_n_stress(const cst_item *syl)
+{
+    const cst_item *s, *fs;
+    int c;
+
+    s=item_as(syl,"Syllable");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
+    if (item_equal(s,fs)) return val_string_n(0);
+    s=item_next(s);
+    for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
+    {
+        if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
+    }
+    if (strcmp("1", ffeature_string(s,"stress")) == 0)
+    {
+        return val_string_n(c);
+    }
+    else
+    {
+        return val_string_n(0);
+    }
 }
 
 /* 23 by Toda-san */
-static const cst_val *lisp_distance_to_p_accent(const cst_item *syl){
-  const cst_item *s, *fs;
-  int c;
-  
-  s=item_as(syl,"Syllable");
-  fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
-  if (item_equal(s,fs)) return val_string_n(0);
-  s=item_prev(s);
-  for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX);
-       s=item_prev(s),c++)
-    if (val_int(accented(s))) return val_string_n(c);
-  if (val_int(accented(s))) return val_string_n(c);
-  else return val_string_n(0);
+static const cst_val *lisp_distance_to_p_accent(const cst_item *syl)
+{
+    const cst_item *s, *fs;
+    int c;
+
+    s=item_as(syl,"Syllable");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
+    if (item_equal(s,fs)) return val_string_n(0);
+    s=item_prev(s);
+    for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_prev(s),c++)
+    {
+        if (val_int(accented(s))) return val_string_n(c);
+    }
+    if (val_int(accented(s)))
+    {
+        return val_string_n(c);
+    }
+    else
+    {
+        return val_string_n(0);
+    }
 }
 
 /* 24 by Toda-san */
-static const cst_val *lisp_distance_to_n_accent(const cst_item *syl){
-  const cst_item *s, *fs;
-  int c;
-  
-  s=item_as(syl,"Syllable");
-  fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
-  if (item_equal(s,fs)) return val_string_n(0);
-  s=item_next(s);
-  for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX);
-       s=item_next(s),c++)
-    if (val_int(accented(s))) return val_string_n(c);
-  if (val_int(accented(s))) return val_string_n(c);
-  else return val_string_n(0);
+static const cst_val *lisp_distance_to_n_accent(const cst_item *syl)
+{
+    const cst_item *s, *fs;
+    int c;
+
+    s=item_as(syl,"Syllable");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
+    if (item_equal(s,fs)) return val_string_n(0);
+    s=item_next(s);
+    for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
+    {
+        if (val_int(accented(s))) return val_string_n(c);
+    }
+    if (val_int(accented(s)))
+    {
+        return val_string_n(c);
+    }
+    else
+    {
+        return val_string_n(0);
+    }
 }
 
 /* 33 */
-static const cst_val *words_out(const cst_item *syl){
-  const cst_item *ss,*p;
-  int c = 0;
-  
-  ss = item_as(syl,"Phrase");
-  for(p = ss;p;p=item_next(p),c++);
-  return val_string_n(c);
+static const cst_val *words_out(const cst_item *syl)
+{
+    const cst_item *ss,*p;
+    int c = 0;
+
+    ss = item_as(syl,"Phrase");
+    for (p = ss;p;p=item_next(p),c++);
+    return val_string_n(c);
 }
 
 /* 34 by Toda-san */
-static const cst_val *hts_content_words_in(const cst_item *word){
-  const cst_item *p,*fs;
-  int c;
+static const cst_val *hts_content_words_in(const cst_item *word)
+{
+    const cst_item *p,*fs;
+    int c;
   
-  fs = path_to_item(word,"R:Phrase.parent.daughter1");
-  
-  for (c=0,p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX);
-	 p=item_prev(p))
-    if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
-  
-  return val_string_n(c);  /* its used randomly as int and float */
+    fs = path_to_item(word,"R:Phrase.parent.daughter1");
+    for (c=0,p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); p=item_prev(p))
+    {
+        if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
+    }
+    return val_string_n(c);  /* its used randomly as int and float */
 }
 
 /* 35 by Toda-san */
-static const cst_val *hts_content_words_out(const cst_item *word){
-  const cst_item *p,*fs;
-  int c;
-  
-  fs = path_to_item(word,"R:Phrase.parent.daughtern");
-  
-  for (c=0, p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); 
-       p=item_next(p))
-    if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
-  
-  return val_string_n(c);  /* its used randomly as int and float */
+static const cst_val *hts_content_words_out(const cst_item *word)
+{
+    const cst_item *p,*fs;
+    int c;
+
+    fs = path_to_item(word,"R:Phrase.parent.daughtern");
+    for (c=0, p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); p=item_next(p))
+    {
+        if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
+    }
+    return val_string_n(c);  /* its used randomly as int and float */
 }
 
 /* 36 */
-static const cst_val *lisp_distance_to_p_content(const cst_item *syl){
-  const cst_item *p;
-  int c = 0;
+static const cst_val *lisp_distance_to_p_content(const cst_item *syl)
+{
+    const cst_item *p;
+    int c = 0;
 
-  for(p=item_prev(item_as(syl,"Phrase"));p;p=item_prev(p)){
-    c++;
-    if(gpos(p)==(cst_val*)&val_string_content)
-      break;
-  }
-  return val_string_n(c);
+    for (p=item_prev(item_as(syl,"Phrase"));p;p=item_prev(p))
+    {
+        c++;
+        if (gpos(p)==(cst_val*)&val_string_content)
+            break;
+    }
+    return val_string_n(c);
 }
 
 /* 37 */
-static const cst_val *lisp_distance_to_n_content(const cst_item *syl){
-  const cst_item *p;
-  int c = 0;
+static const cst_val *lisp_distance_to_n_content(const cst_item *syl)
+{
+    const cst_item *p;
+    int c = 0;
 
-  for(p=item_next(item_as(syl,"Phrase"));p;p=item_next(p)){
-    c++;
-    if (gpos(p)==(cst_val*)&val_string_content)
-      break;
-  }
-  return val_string_n(c);
+    for (p=item_next(item_as(syl,"Phrase"));p;p=item_next(p))
+    {
+        c++;
+        if (gpos(p)==(cst_val*)&val_string_content)
+            break;
+    }
+    return val_string_n(c);
 }
 
 /* 38 39 40 59 60 by Toda-san */
-static const cst_val *lisp_num_syls_in_phrase(const cst_item *phrase){
-  const cst_item *sw,*fw;
-  int c;
+static const cst_val *lisp_num_syls_in_phrase(const cst_item *phrase)
+{
+    const cst_item *sw,*fw;
+    int c;
   
-  sw = path_to_item(phrase,"daughter1");
-  fw = path_to_item(phrase,"daughtern");
-  
-  for (c=0; sw && (!item_equal(sw,fw)) && (c < CST_CONST_INT_MAX);
-       sw=item_next(sw)) c += ffeature_int(sw, "word_numsyls");
-  c += ffeature_int(sw, "word_numsyls");
-  
-  return val_string_n(c);
+    sw = path_to_item(phrase,"daughter1");
+    fw = path_to_item(phrase,"daughtern");
+    for (c=0; sw && (!item_equal(sw,fw)) && (c < CST_CONST_INT_MAX); sw=item_next(sw))
+    {
+        c += ffeature_int(sw, "word_numsyls");
+    }
+    c += ffeature_int(sw, "word_numsyls");
+    return val_string_n(c);
 }
 
 /* 41 42 43 61 62 by Toda-san */
-static const cst_val *lisp_num_words_in_phrase(const cst_item *phrase){
-  const cst_item *sw,*fw;
-  int c;
+static const cst_val *lisp_num_words_in_phrase(const cst_item *phrase)
+{
+    const cst_item *sw,*fw;
+    int c;
   
-  sw = path_to_item(phrase,"daughter1");
-  fw = path_to_item(phrase,"daughtern");
-  
-  for (c=1; sw && (!item_equal(sw,fw)) && (c < CST_CONST_INT_MAX);
-       sw=item_next(sw)) c++;
-  
-  return val_string_n(c);
+    sw = path_to_item(phrase,"daughter1");
+    fw = path_to_item(phrase,"daughtern");
+    for (c=1; sw && (!item_equal(sw,fw)) && (c < CST_CONST_INT_MAX); sw=item_next(sw))
+    {
+        c++;
+    }
+    return val_string_n(c);
 }
 
 /* 46 by Toda-san */
-static const cst_val *lisp_total_syls(const cst_item *phrase){
-  const cst_item *sp, *fp;
-  int c;
-  
-  sp = phrase;
-  while (item_prev(sp) != NULL) sp = item_prev(sp);
-  fp = phrase;
-  while (item_next(fp) != NULL) fp = item_next(fp);
-  
-  for (c = 0; sp && (!item_equal(sp, fp)) && (c < CST_CONST_INT_MAX);
-       sp = item_next(sp)) c += ffeature_int(sp, "lisp_num_syls_in_phrase");
-  c += ffeature_int(sp, "lisp_num_syls_in_phrase");
-  return val_string_n(c);
+static const cst_val *lisp_total_syls(const cst_item *phrase)
+{
+    const cst_item *sp, *fp;
+    int c;
+
+    sp = phrase;
+    while (item_prev(sp) != NULL) sp = item_prev(sp);
+    fp = phrase;
+    while (item_next(fp) != NULL) fp = item_next(fp);
+    for (c = 0; sp && (!item_equal(sp, fp)) && (c < CST_CONST_INT_MAX); sp = item_next(sp))
+    {
+        c += ffeature_int(sp, "lisp_num_syls_in_phrase");
+    }
+    c += ffeature_int(sp, "lisp_num_syls_in_phrase");
+    return val_string_n(c);
 }
 
 /* 47 by Toda-san */
-static const cst_val *lisp_total_words(const cst_item *phrase){
-  const cst_item *sp, *fp;
-  int c;
+static const cst_val *lisp_total_words(const cst_item *phrase)
+{
+    const cst_item *sp, *fp;
+    int c;
   
-  sp = phrase;
-  while (item_prev(sp) != NULL) sp = item_prev(sp);
-  fp = phrase;
-  while (item_next(fp) != NULL) fp = item_next(fp);
-  
-  for (c = 0; sp && (!item_equal(sp, fp)) && (c < CST_CONST_INT_MAX);
-       sp = item_next(sp)) c += ffeature_int(sp, "lisp_num_words_in_phrase");
-  c += ffeature_int(sp, "lisp_num_words_in_phrase");
-  return val_string_n(c);
+    sp = phrase;
+    while (item_prev(sp) != NULL) sp = item_prev(sp);
+    fp = phrase;
+    while (item_next(fp) != NULL) fp = item_next(fp);
+    for (c = 0; sp && (!item_equal(sp, fp)) && (c < CST_CONST_INT_MAX); sp = item_next(sp))
+    {
+        c += ffeature_int(sp, "lisp_num_words_in_phrase");
+    }
+    c += ffeature_int(sp, "lisp_num_words_in_phrase");
+    return val_string_n(c);
 }
 
 /* 48 by Toda-san */
-static const cst_val *lisp_total_phrases(const cst_item *phrase){
-  const cst_item *sp, *fp;
-  int c;
-  
-  sp = phrase;
-  while (item_prev(sp) != NULL) sp = item_prev(sp);
-  fp = phrase;
-  while (item_next(fp) != NULL) fp = item_next(fp);
-  
-  for (c = 1; sp && (!item_equal(sp, fp)) && (c < CST_CONST_INT_MAX);
-       sp = item_next(sp)) c++;
-  
-  return val_string_n(c);
+static const cst_val *lisp_total_phrases(const cst_item *phrase)
+{
+    const cst_item *sp, *fp;
+    int c;
+
+    sp = phrase;
+    while (item_prev(sp) != NULL) sp = item_prev(sp);
+    fp = phrase;
+    while (item_next(fp) != NULL) fp = item_next(fp);
+    for (c = 1; sp && (!item_equal(sp, fp)) && (c < CST_CONST_INT_MAX); sp = item_next(sp))
+    {
+        c++;
+    }
+    return val_string_n(c);
 }
 
-void us_ff_register_hts(cst_features *ffunctions){
+void us_ff_register_hts(cst_features *ffunctions)
+{
     us_ff_register(ffunctions);
 
     ff_register(ffunctions, "lisp_distance_to_p_stress",lisp_distance_to_p_stress); /* 21 */

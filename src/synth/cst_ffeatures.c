@@ -252,7 +252,7 @@ const cst_val *syl_vowel(const cst_item *p)
 	const cst_item *s,*ls;
 	s=item_as(path_to_item(p,"R:SylStructure.daughter1"),"Segment");
 	ls=item_as(path_to_item(p,"R:SylStructure.daughtern"),"Segment");
-	for(;s && !item_equal(s,ls);s=item_next(s))
+	for (;s && !item_equal(s,ls);s=item_next(s))
 	{
 		if (cst_streq("+",val_string(ph_vc(s)))){ return string_val(ITEM_NAME(s));}
 	}
@@ -266,7 +266,7 @@ const cst_val *syl_numphones(const cst_item *p)
 	const cst_item *s,*ls;
 	s=item_as(path_to_item(p,"R:SylStructure.daughter1"),"Segment");
 	ls=item_as(path_to_item(p,"R:SylStructure.daughtern"),"Segment");
-	for(i=1;s && !item_equal(s,ls);s=item_next(s)){i++;}
+	for (i=1;s && !item_equal(s,ls);s=item_next(s)){i++;}
 	return val_string_n(i);
 }
 
@@ -290,7 +290,7 @@ const cst_val *cg_syl_ratio(const cst_item *p)
 const cst_val *cg_phrase_ratio(const cst_item *p)
 {
 	const cst_item *lp=p;
-	while(item_next(lp)){lp=item_next(lp);}
+	while (item_next(lp)){lp=item_next(lp);}
 	return float_val ((1 + ffeature_float(p,"lisp_cg_find_phrase_number"))/(1 + ffeature_float(lp,"lisp_cg_find_phrase_number")));
 }
 

@@ -66,7 +66,7 @@ void delete_relation(cst_relation *r)
     if (r != NULL)
     {
 	/* This needs to traverse the *all* items */
-	for(p=r->head; p; p=np)
+	for (p=r->head; p; p=np)
 	{
 	    np = item_next(p);
 	    delete_item(p);  /* this *does* go down daughters too */

@@ -74,7 +74,7 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
     for (s = UTT_REL_HEAD(utt,"Segment"); s; s=item_next(s))
     {
         end = ffeature_float(s,"end");
-        if(cst_streq("pau",ffeature_string(s,"name")))
+        if (cst_streq("pau",ffeature_string(s,"name")))
         {
             f0val=0;
         }

@@ -58,7 +58,7 @@ static int cst_read_int(cst_file fd)
     int n;
 
     n = bell_fread(&val,sizeof(int),1,fd);
-    if(n != 1)
+    if (n != 1)
     {
         cst_errmsg("cst_read_int: Unable to read in int from file.\n");
         cst_error();
@@ -72,7 +72,7 @@ static float cst_read_float(cst_file fd)
     int n;
 
     n = bell_fread(&val,sizeof(float),1,fd);
-    if(n != 1)
+    if (n != 1)
     {
         cst_errmsg("cst_read_float: Unable to read in float from file.\n");
         cst_error();
@@ -88,7 +88,7 @@ static void *cst_read_padded(cst_file fd, int *numbytes)
     *numbytes = cst_read_int(fd);
     ret = (void *)cst_alloc(char,*numbytes);
     n = bell_fread(ret,sizeof(char),*numbytes,fd);
-    if(n != (*numbytes))
+    if (n != (*numbytes))
     {
         cst_errmsg("cst_read_padded: Unable to read in bytes from file.\n");
         cst_error();
@@ -123,7 +123,7 @@ static void** cst_read_2d_array(cst_file fd)
     {
         arrayrows = cst_alloc(void *,numrows);
 
-        for(i=0;i<numrows;i++)
+        for (i=0;i<numrows;i++)
             arrayrows[i] = cst_read_array(fd);
     }
 
@@ -139,7 +139,7 @@ static char **cst_read_db_types(cst_file fd)
     numtypes = cst_read_int(fd);
     types = cst_alloc(char*,numtypes+1);
   
-    for(i=0;i<numtypes;i++)
+    for (i=0;i<numtypes;i++)
     {
         types[i] = cst_read_string(fd);
     }
@@ -192,7 +192,7 @@ static char** cst_read_tree_feats(cst_file fd)
     numfeats = cst_read_int(fd);
     feats = cst_alloc(char *,numfeats+1);
 
-    for(i=0;i<numfeats;i++)
+    for (i=0;i<numfeats;i++)
         feats[i] = cst_read_string(fd);
     feats[i] = 0;
   
@@ -222,7 +222,7 @@ static cst_cart** cst_read_tree_array(cst_file fd)
     {
         trees = cst_alloc(cst_cart *,numtrees+1);
 
-        for(i=0;i<numtrees;i++)
+        for (i=0;i<numtrees;i++)
             trees[i] = cst_read_tree(fd);
         trees[i] = 0;
     }
@@ -240,7 +240,7 @@ static dur_stat** cst_read_dur_stats(cst_file fd)
     ds = cst_alloc(dur_stat *,(1+numstats));
 
     /* load structuer values */
-    for(i=0;i<numstats;i++)
+    for (i=0;i<numstats;i++)
     {
         ds[i] = cst_alloc(dur_stat,1);
         ds[i]->mean = cst_read_float(fd);
@@ -259,11 +259,11 @@ static char*** cst_read_phone_states(cst_file fd)
 
     count1 = cst_read_int(fd);
     ps = cst_alloc(char **,count1+1);
-    for(i=0;i<count1;i++)
+    for (i=0;i<count1;i++)
     {
         count2 = cst_read_int(fd);
         ps[i] = cst_alloc(char *,count2+1);
-        for(j=0;j<count2;j++)
+        for (j=0;j<count2;j++)
 	{
             ps[i][j]=cst_read_padded(fd,&temp);
 	}

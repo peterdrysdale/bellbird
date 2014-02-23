@@ -112,7 +112,7 @@ static char *regularize(const char *unregex,int match)
     if (match && *ex != '^')
 	*(r++) = '^';
 
-    for(e=ex; *e ; e++)
+    for (e=ex; *e ; e++)
     {
 	if (*e == '\\' && !last_was_bs)
 	{

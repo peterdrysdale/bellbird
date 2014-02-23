@@ -83,7 +83,7 @@ static bell_boolean DPMatch (char *str, char *pat, int pos, int max)
 static bell_boolean PMatch (char *str, char *pat)
 {
    int i, max = 0;
-   for(i=0; i < (int)cst_strlen(pat); i++)
+   for (i=0; i < (int)cst_strlen(pat); i++)
       if (pat[i] != '*') max++;
          
    return DPMatch(str, pat, 0, cst_strlen(str)-max);

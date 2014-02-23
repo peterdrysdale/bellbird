@@ -202,7 +202,7 @@ cst_utterance *default_tokenization(cst_utterance *u)
 	get_param_string(u->features,"text_prepunctuation",NULL),
         get_param_string(u->features,"text_postpunctuation",NULL));
     
-    while(!ts_eof(fd))
+    while (!ts_eof(fd))
     {
 	token = ts_get(fd);
 	if (cst_strlen(token) > 0)
