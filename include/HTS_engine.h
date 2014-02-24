@@ -250,7 +250,7 @@ typedef struct _HTS_GStreamSet {
    size_t total_frame;          /* total frame */
    size_t nstream;              /* # of streams */
    HTS_GStream *gstream;        /* generated parameter streams */
-   double *gspeech;             /* generated speech */
+   short *gspeech;             /* generated speech */
 } HTS_GStreamSet;
 
 /* engine ---------------------------------------------------------- */

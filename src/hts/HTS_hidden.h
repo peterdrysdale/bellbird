@@ -283,8 +283,8 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
 /* HTS_GStreamSet_get_total_nsamples: get total number of sample */
 size_t HTS_GStreamSet_get_total_nsamples(HTS_GStreamSet * gss);
 
-/* HTS_GStreamSet_get_speech: get synthesized speech parameter */
-double HTS_GStreamSet_get_speech(HTS_GStreamSet * gss, size_t sample_index);
+// Transfer ownership of generated speech array to caller
+short * HTS_GStreamSet_get_speech_array(HTS_GStreamSet * gss);
 
 /* HTS_GStreamSet_clear: free generated parameter stream set */
 void HTS_GStreamSet_clear(HTS_GStreamSet * gss);
@@ -368,7 +368,7 @@ typedef struct _HTS_Vocoder {
 void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean use_log_gain, size_t rate, size_t fperiod);
 
 /* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA/MGLSA filster based waveform synthesis */
-void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, double *rawdata);
+void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, short *wavedata);
 
 /* HTS_Vocoder_clear: clear vocoder */
 void HTS_Vocoder_clear(HTS_Vocoder * v);

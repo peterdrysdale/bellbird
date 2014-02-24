@@ -870,11 +870,11 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean
 }
 
 /* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA/MGLSA filster based waveform synthesis */
-void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, double *rawdata)
+void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, short *wavedata)
 {
    double x;
    size_t i,j;
-   int rawidx = 0;
+   int waveidx = 0;
    double p;
 
    /* lf0 -> pitch */
@@ -935,8 +935,8 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
       x *= volume;
 
       /* output */
-      if (rawdata)
-         rawdata[rawidx++] = x;
+      if (wavedata)
+         wavedata[waveidx++] = (short) x;
 
       for (i = 0; i <= m; i++)
          v->c[i] += v->cinc[i];

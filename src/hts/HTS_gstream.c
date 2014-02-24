@@ -103,7 +103,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
       for (j = 0; j < gss->total_frame; j++)
          gss->gstream[i].par[j] = cst_alloc(double,gss->gstream[i].vector_length);
    }
-   gss->gspeech = cst_alloc(double,gss->total_nsample);
+   gss->gspeech = cst_alloc(short,gss->total_nsample);
 
    /* copy generated parameter */
    for (i = 0; i < gss->nstream; i++) {
@@ -164,10 +164,16 @@ size_t HTS_GStreamSet_get_total_nsamples(HTS_GStreamSet * gss)
    return gss->total_nsample;
 }
 
-/* HTS_GStreamSet_get_speech: get synthesized speech parameter */
-double HTS_GStreamSet_get_speech(HTS_GStreamSet * gss, size_t sample_index)
+short * HTS_GStreamSet_get_speech_array(HTS_GStreamSet * gss)
 {
-   return gss->gspeech[sample_index];
+// Transfer ownership of generated speech array to caller
+// Call HTS_GStreamSet_get_total_nsamples() first to know how many samples are received by caller
+    short * retval;
+
+    retval = gss->gspeech;
+    gss->gspeech = NULL; // GStreamSet no longer owns this array
+    gss->total_nsample = 0; // number of samples now stored in gspeech is zero
+    return retval;
 }
 
 /* HTS_GStreamSet_clear: free generated parameter stream set */

@@ -70,22 +70,16 @@
 #include "../hts/HTS_hidden.h"
 #include "../lang/cmulex/cmu_lex.h"
 
-static void bell_hts_copyto_wave(HTS_Engine * engine,cst_utterance * utt)
+static void bell_hts_get_wave(HTS_Engine * engine,cst_utterance * utt)
 {
     /* Extract synthesized wave data from hts engine for use with bellbird's */
     /* existing output routines.                                             */
     cst_wave* wave;
-    int i;
-    HTS_GStreamSet *gss = &engine->gss;
 
     wave = new_wave();
     wave->num_channels=1;
-    CST_WAVE_SET_NUM_SAMPLES(wave,HTS_GStreamSet_get_total_nsamples(gss));
-    CST_WAVE_SAMPLES(wave) = cst_alloc(short,CST_WAVE_NUM_SAMPLES(wave));
-    for (i = 0; i < CST_WAVE_NUM_SAMPLES(wave); i++)
-    {
-       CST_WAVE_SAMPLES(wave)[i] = HTS_GStreamSet_get_speech(gss, i);
-    }
+    CST_WAVE_SET_NUM_SAMPLES(wave,HTS_GStreamSet_get_total_nsamples(&engine->gss));
+    CST_WAVE_SAMPLES(wave) = HTS_GStreamSet_get_speech_array(&engine->gss);
     CST_WAVE_SET_SAMPLE_RATE(wave,HTS_Engine_get_sampling_frequency(engine));
     utt_set_wave(utt,wave);
     return;
@@ -343,7 +337,7 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
                 {
                     HTS_Engine_synthesize_from_strings(engine,
                                               label_data, label_size);
-                    bell_hts_copyto_wave(engine,utt);
+                    bell_hts_get_wave(engine,utt);
                     HTS_Engine_refresh(engine);
                 }
                 else if (voice_type==NITECHMODE)
