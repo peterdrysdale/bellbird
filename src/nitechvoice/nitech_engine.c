@@ -61,17 +61,6 @@
 #include "HTS_misc.h"
 #include "bell_file.h"
 
-static bell_boolean isdigit_string(char *str)
-{
-    int i;
-
-    if (sscanf(str, "%d", &i) == 1) {
-        return TRUE;
-    } else {
-        return FALSE;
-    }
-}
-
 static cst_wave * nitech_process (char **lines, size_t num_lines,
                    PStreamChol *mceppst, PStreamChol *lf0pst, nitechP *gp,
                    ModelSet *ms, TreeSet *ts, VocoderSetup *vs)
@@ -96,7 +85,7 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
         if (!isgraph((int) lines[j][0]))
             break;
         data_index = 0;
-        if (isdigit_string(lines[j])) {   /* has frame infomation */
+        if (bell_isdigit_string(lines[j])) {   /* has frame information */
             HTS_get_token_from_string(lines[j], &data_index, buff);
             /* throw away start information */
             HTS_get_token_from_string(lines[j], &data_index, buff);

@@ -424,5 +424,6 @@ int main(int argc, char **argv)
     } /* end of voice_type==CLUSTERGENMODE */
 
     bell_voice_unload(voice,voice_type,&engine,&ntengine);
+    voice=NULL;
     return 0;
 }

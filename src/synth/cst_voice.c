@@ -66,6 +66,5 @@ void delete_voice(cst_voice *v)
 	delete_features(v->features);
 	delete_features(v->ffunctions);
 	cst_free(v);
-        v = NULL;
     }
 }

@@ -46,6 +46,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
+#include <errno.h>
 #include "cst_alloc.h"
 #include "cst_string.h"
 
@@ -126,4 +128,23 @@ int cst_member_string(const char *str, const char * const *slist)
 	    break;
 
     return *p != NULL;
+}
+
+int bell_isdigit_string(char *str)
+{
+// Check for int at beginning of string
+    char *end;
+
+    const long sl = strtol(str, &end, 10);
+
+    if (end==str)
+        return FALSE;
+    else if ((LONG_MIN==sl || LONG_MAX==sl) && ERANGE==errno)
+        return FALSE;
+    else if (sl>INT_MAX || sl<INT_MIN)
+        return FALSE;
+    else
+        return TRUE;
+
+    return FALSE;
 }

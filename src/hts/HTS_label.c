@@ -62,23 +62,13 @@
 HTS_LABEL_C_START;
 
 #include <stdlib.h>             /* for atof() */
-#include <ctype.h>              /* for isgraph(),isdigit() */
+#include <ctype.h>              /* for isgraph() */
 
 #include "cst_alloc.h"
 #include "cst_error.h"
 #include "cst_string.h"
 /* hts_engine libraries */
 #include "HTS_hidden.h"
-
-static HTS_Boolean isdigit_string(char *str)
-{
-   int i;
-
-   if (sscanf(str, "%d", &i) == 1)
-      return TRUE;
-   else
-      return FALSE;
-}
 
 /* HTS_Label_initialize: initialize label */
 void HTS_Label_initialize(HTS_Label * label)
@@ -140,7 +130,7 @@ void HTS_Label_load_from_strings(HTS_Label * label, size_t sampling_rate, size_t
          label->head = lstring;
       }
       data_index = 0;
-      if (isdigit_string(lines[i])) {   /* has frame infomation */
+      if (bell_isdigit_string(lines[i])) {   /* has frame infomation */
          HTS_get_token_from_string(lines[i], &data_index, buff);
          start = atof(buff);
          HTS_get_token_from_string(lines[i], &data_index, buff);

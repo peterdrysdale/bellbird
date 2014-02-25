@@ -67,4 +67,6 @@ char *cst_substr(const char *str,int start, int length);
 cst_string *cst_downcase(const cst_string *str);
 cst_string *cst_upcase(const cst_string *str);
 
+int bell_isdigit_string(char *str);
+
 #endif

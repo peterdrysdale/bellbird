@@ -308,7 +308,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             /* printf("awb_debug tag is %s\n",tag); */
             if (cst_streq("/",tag)) /* an end tag */
             {
-                cst_free(tag); tag=NULL;
+                cst_free(tag);
                 tag = cst_upcase(ts_get(ts));
                 attributes = ssml_get_attributes(ts);
                 feat_set_string(attributes,"_type","end");
@@ -366,7 +366,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             if (utt_user_callback)
                 utt = (utt_user_callback)(utt);
             durs += flite_process_output(utt,outtype,TRUE);
-            delete_utterance(utt); utt = NULL;
+            delete_utterance(utt);
 
             utt = new_utterance();
             tokrel = utt_relation_create(utt, "Token");
