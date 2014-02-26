@@ -68,10 +68,6 @@
 #include "cst_wave.h"
 #include "cst_audio.h"
 
-#ifdef ANDROID
-#define SPEED_HACK
-#endif
-
 #include "cst_cg.h"
 
 typedef enum {MFALSE, MTRUE} Boolean;
@@ -129,7 +125,7 @@ static void init_vocoder(double fs, int framel, int m,
     vs->fprd = framel;
     vs->iprd = 1;
     vs->seed = 1;
-#ifdef SPEED_HACK
+#ifdef ANDROID
     /* This makes it about 25% faster and sounds basically the same */
     vs->pd   = 4;
 #else

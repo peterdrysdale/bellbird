@@ -69,6 +69,14 @@ HTS_PSTREAM_C_START;
 /* hts_engine libraries */
 #include "HTS_hidden.h"
 
+// Parameters for global variance (GV)
+#define STEPINIT 0.1
+#define STEPDEC  0.5
+#define STEPINC  1.2
+#define W1       1.0
+#define W2       1.0
+#define GV_MAX_ITERATION 5
+
 /* HTS_PStream_calc_wuw_and_wum: calculate W'U^{-1}W and W'U^{-1}M */
 static void HTS_PStream_calc_wuw_and_wum(HTS_PStream * pst, size_t m)
 {

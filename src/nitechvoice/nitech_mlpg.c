@@ -75,13 +75,12 @@ static void calc_R_and_r(PStreamChol *pst, int m)
       pst->r[i] = pst->ivseq[i][m] * pst->mseq[i][m];
       pst->R[i][0] = pst->ivseq[i][m];
 
-      for (j=1; j<pst->width; j++)
-         pst->R[i][j]=0.0;
+      for (j=1; j<pst->width; j++) pst->R[i][j] = 0.0;
 
       for (j=1; j<pst->dw.num; j++)
          for (k=pst->dw.width[j][0]; k<=pst->dw.width[j][1]; k++) {
             n = i+k;
-            if ( (n>=0) && (n<pst->T) && (pst->dw.coef[j][-k]!=0.0) ) {
+            if ( n >= 0 && n < pst->T && pst->dw.coef[j][-k] != 0.0 ) {
                l = j*(pst->order+1)+m;
                wu = pst->dw.coef[j][-k] * pst->ivseq[n][l];
                pst->r[i] += wu*pst->mseq[n][l]; 
@@ -319,8 +318,7 @@ void ReadWin(PStreamChol *pst)
             cst_error();
         }
 
-        /* All six nitech voices have 3 coefficients */
-        fsize = 3;
+        fsize = 3; // All six nitech voices have 3 coefficients
 
         /* read coefficients */
         pst->dw.coef_ptrs[i] = cst_alloc(float,fsize);

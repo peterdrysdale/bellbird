@@ -67,6 +67,22 @@ HTS_VOCODER_C_START;
 /* hts_engine libraries */
 #include "HTS_hidden.h"
 
+#ifndef LZERO
+#define LZERO (-1.0e+10)        /* ~log(0) */
+#endif                          /* !LZERO */
+
+#ifndef PI
+#define PI  3.14159265358979323846
+#endif                          /* !PI */
+
+#define RANDMAX 32767
+
+#define PADEORDER 5    // Pade order
+#define IRLENG    576  // Interpolation length
+
+#define CHECK_LSP_STABILITY_MIN 0.25
+#define CHECK_LSP_STABILITY_NUM 4
+
 static const double HTS_pade[21] = {
    1.00000000000,
    1.00000000000,
@@ -211,28 +227,6 @@ static double HTS_nrandom(HTS_Vocoder * v)
       v->sw = 0;
       return (v->r2 * v->s);
    }
-}
-
-/* HTS_mceq: function for M-sequence random noise generation */
-static int HTS_mseq(HTS_Vocoder * v)
-{
-   int x0, x28;
-
-   v->x >>= 1;
-   if (v->x & B0)
-      x0 = 1;
-   else
-      x0 = -1;
-   if (v->x & B28)
-      x28 = 1;
-   else
-      x28 = -1;
-   if (x0 + x28)
-      v->x &= B31_;
-   else
-      v->x |= B31;
-
-   return (x0);
 }
 
 /* HTS_mc2b: transform mel-cepstrum to MLSA digital fillter coefficients */
@@ -511,30 +505,21 @@ static void HTS_mgc2mgc(HTS_Vocoder * v, double *c1, const int m1, const double 
 /* HTS_lsp2mgc: transform LSP to MGC */
 static void HTS_lsp2mgc(HTS_Vocoder * v, double *lsp, double *mgc, const int m, const double alpha)
 {
-   int i;
-   /* lsp2lpc */
-   HTS_lsp2lpc(v, lsp + 1, mgc, m);
-   if (v->use_log_gain)
-      mgc[0] = exp(lsp[0]);
-   else
-      mgc[0] = lsp[0];
+    int i;
 
-   /* mgc2mgc */
-   if (NORMFLG1)
-      HTS_ignorm(mgc, mgc, m, v->gamma);
-   else if (MULGFLG1)
-      mgc[0] = (1.0 - mgc[0]) * ((double) v->stage);
-   if (MULGFLG1)
-      for (i = m; i >= 1; i--)
-         mgc[i] *= -((double) v->stage);
-   HTS_mgc2mgc(v, mgc, m, alpha, v->gamma, mgc, m, alpha, v->gamma);
-   if (NORMFLG2)
-      HTS_gnorm(mgc, mgc, m, v->gamma);
-   else if (MULGFLG2)
-      mgc[0] = mgc[0] * v->gamma + 1.0;
-   if (MULGFLG2)
-      for (i = m; i >= 1; i--)
-         mgc[i] *= v->gamma;
+    /* lsp2lpc */
+    HTS_lsp2lpc(v, lsp + 1, mgc, m);
+    if (v->use_log_gain)
+        mgc[0] = exp(lsp[0]);
+    else
+        mgc[0] = lsp[0];
+
+    /* mgc2mgc */
+    HTS_ignorm(mgc, mgc, m, v->gamma);
+    mgc[0] = (1.0 - mgc[0]) * ((double) v->stage);
+    for (i = m; i >= 1; i--)
+        mgc[i] *= -((double) v->stage);
+    HTS_mgc2mgc(v, mgc, m, alpha, v->gamma, mgc, m, alpha, v->gamma);
 }
 
 /* HTS_mglsadff: sub functions for MGLSA filter */
@@ -604,47 +589,35 @@ static void HTS_check_lsp_stability(double *lsp, size_t m)
 /* HTS_lsp2en: calculate frame energy */
 static double HTS_lsp2en(HTS_Vocoder * v, double *lsp, size_t m, double alpha)
 {
-   size_t i;
-   double en = 0.0;
-   double *buff;
+    size_t i;
+    double en = 0.0;
+    double *buff;
 
-   if (v->spectrum2en_size < m) {
-      if (v->spectrum2en_buff != NULL)
-         cst_free(v->spectrum2en_buff);
-      v->spectrum2en_buff = cst_alloc(double,(m + 1 + IRLENG));
-      v->spectrum2en_size = m;
-   }
-   buff = v->spectrum2en_buff + m + 1;
+    if (v->spectrum2en_size < m) {
+        if (v->spectrum2en_buff != NULL)
+            cst_free(v->spectrum2en_buff);
+        v->spectrum2en_buff = cst_alloc(double,(m + 1 + IRLENG));
+        v->spectrum2en_size = m;
+    }
+    buff = v->spectrum2en_buff + m + 1;
 
-   /* lsp2lpc */
-   HTS_lsp2lpc(v, lsp + 1, v->spectrum2en_buff, m);
-   if (v->use_log_gain)
-      v->spectrum2en_buff[0] = exp(lsp[0]);
-   else
-      v->spectrum2en_buff[0] = lsp[0];
+    /* lsp2lpc */
+    HTS_lsp2lpc(v, lsp + 1, v->spectrum2en_buff, m);
+    if (v->use_log_gain)
+        v->spectrum2en_buff[0] = exp(lsp[0]);
+    else
+        v->spectrum2en_buff[0] = lsp[0];
 
-   /* mgc2mgc */
-   if (NORMFLG1)
-      HTS_ignorm(v->spectrum2en_buff, v->spectrum2en_buff, m, v->gamma);
-   else if (MULGFLG1)
-      v->spectrum2en_buff[0] = (1.0 - v->spectrum2en_buff[0]) * ((double) v->stage);
-   if (MULGFLG1)
-      for (i = 1; i <= m; i++)
-         v->spectrum2en_buff[i] *= -((double) v->stage);
+    /* mgc2mgc */
+    HTS_ignorm(v->spectrum2en_buff, v->spectrum2en_buff, m, v->gamma);
+    v->spectrum2en_buff[0] = (1.0 - v->spectrum2en_buff[0]) * ((double) v->stage);
+    for (i = 1; i <= m; i++)
+        v->spectrum2en_buff[i] *= -((double) v->stage);
    HTS_mgc2mgc(v, v->spectrum2en_buff, m, alpha, v->gamma, buff, IRLENG - 1, 0.0, 1);
 
-   for (i = 0; i < IRLENG; i++)
-      en += buff[i] * buff[i];
-   return en;
-}
-
-/* HTS_white_noise: return white noise */
-static double HTS_white_noise(HTS_Vocoder * v)
-{
-   if (v->gauss)
-      return (double) HTS_nrandom(v);
-   else
-      return (double) HTS_mseq(v);
+    for (i = 0; i < IRLENG; i++)
+        en += buff[i] * buff[i];
+    return en;
 }
 
 /* HTS_Vocoder_initialize_excitation: initialize excitation */
@@ -714,7 +687,7 @@ static double HTS_Vocoder_get_excitation(HTS_Vocoder * v, const double *lpf)
    double noise, pulse = 0.0;
 
    if (v->excite_buff_size > 0) {
-      noise = HTS_white_noise(v);
+      noise = HTS_nrandom(v);
       pulse = 0.0;
       if (v->pitch_of_curr_point == 0.0) {
          HTS_Vocoder_excite_unvoiced_frame(v, noise);
@@ -734,7 +707,7 @@ static double HTS_Vocoder_get_excitation(HTS_Vocoder * v, const double *lpf)
          v->excite_buff_index = 0;
    } else {
       if (v->pitch_of_curr_point == 0.0) {
-         x = HTS_white_noise(v);
+         x = HTS_nrandom(v);
       } else {
          v->pitch_counter += 1.0;
          if (v->pitch_counter >= v->pitch_of_curr_point) {
@@ -834,8 +807,7 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean
       v->gamma = 0.0;
    v->use_log_gain = use_log_gain;
    v->fprd = fperiod;
-   v->next = SEED;
-   v->gauss = GAUSS;
+   v->next = 1;
    v->rate = rate;
    v->pitch_of_curr_point = 0.0;
    v->pitch_counter = 0.0;
@@ -928,8 +900,7 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
             x *= exp(v->c[0]);
          x = HTS_mlsadf(x, v->c, m, alpha, PADEORDER, v->d1);
       } else {                  /* for LSP */
-         if (!NGAIN)
-            x *= v->c[0];
+         x *= v->c[0];
          x = HTS_mglsadf(x, v->c, m, alpha, v->stage, v->d1);
       }
       x *= volume;

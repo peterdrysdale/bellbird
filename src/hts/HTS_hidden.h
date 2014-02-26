@@ -80,7 +80,6 @@ HTS_HIDDEN_H_START;
 #define MAX_LF0   9.9034875525361280454891979401956     /* log(20000.0) */
 #define MIN_LF0   2.9957322735539909934352235761425     /* log(20.0) */
 #define HALF_TONE 0.05776226504666210911810267678818    /* log(2.0) / 12.0 */
-#define DB        0.11512925464970228420089957273422    /* log(10.0) / 20.0 */
 
 /* model ----------------------------------------------------------- */
 
@@ -237,14 +236,6 @@ void HTS_SStreamSet_clear(HTS_SStreamSet * sss);
 
 /* pstream --------------------------------------------------------- */
 
-/* GV */
-#define STEPINIT 0.1
-#define STEPDEC  0.5
-#define STEPINC  1.2
-#define W1       1.0
-#define W2       1.0
-#define GV_MAX_ITERATION 5
-
 /* HTS_PStreamSet_initialize: initialize parameter stream set */
 void HTS_PStreamSet_initialize(HTS_PStreamSet * pss);
 
@@ -254,7 +245,7 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
 /* HTS_PStreamSet_get_nstream: get number of stream */
 size_t HTS_PStreamSet_get_nstream(HTS_PStreamSet * pss);
 
-/* HTS_PStreamSet_get_static_length: get features length */
+/* HTS_PStreamSet_get_vector_length: get features length */
 size_t HTS_PStreamSet_get_vector_length(HTS_PStreamSet * pss, size_t stream_index);
 
 /* HTS_PStreamSet_get_total_frame: get total number of frame */
@@ -291,47 +282,6 @@ void HTS_GStreamSet_clear(HTS_GStreamSet * gss);
 
 /* vocoder --------------------------------------------------------- */
 
-#ifndef LZERO
-#define LZERO (-1.0e+10)        /* ~log(0) */
-#endif                          /* !LZERO */
-
-#ifndef ZERO
-#define ZERO  (1.0e-10)         /* ~(0) */
-#endif                          /* !ZERO */
-
-#ifndef PI
-#define PI  3.14159265358979323846
-#endif                          /* !PI */
-
-#define RANDMAX 32767
-
-#define SEED    1
-#define B0      0x00000001
-#define B28     0x10000000
-#define B31     0x80000000
-#define B31_    0x7fffffff
-#define Z       0x00000000
-
-#ifdef HTS_EMBEDDED
-#define GAUSS     FALSE
-#define PADEORDER 4             /* pade order (for MLSA filter) */
-#define IRLENG    384           /* length of impulse response */
-#else
-#define GAUSS     TRUE
-#define PADEORDER 5
-#define IRLENG    576
-#endif                          /* HTS_EMBEDDED */
-
-#define CHECK_LSP_STABILITY_MIN 0.25
-#define CHECK_LSP_STABILITY_NUM 4
-
-/* for MGLSA filter */
-#define NORMFLG1 TRUE
-#define NORMFLG2 FALSE
-#define MULGFLG1 TRUE
-#define MULGFLG2 FALSE
-#define NGAIN    FALSE
-
 /* HTS_Vocoder: structure for setting of vocoder */
 typedef struct _HTS_Vocoder {
    HTS_Boolean is_first;
@@ -340,7 +290,6 @@ typedef struct _HTS_Vocoder {
    HTS_Boolean use_log_gain;    /* log gain flag (for LSP) */
    size_t fprd;                 /* frame shift */
    unsigned long next;          /* temporary variable for random generator */
-   HTS_Boolean gauss;           /* flag to use Gaussian noise */
    double rate;                 /* sampling rate */
    double pitch_of_curr_point;  /* used in excitation generation */
    double pitch_counter;        /* used in excitation generation */
@@ -367,7 +316,7 @@ typedef struct _HTS_Vocoder {
 /* HTS_Vocoder_initialize: initialize vocoder */
 void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean use_log_gain, size_t rate, size_t fperiod);
 
-/* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA/MGLSA filster based waveform synthesis */
+/* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA/MGLSA filter based waveform synthesis */
 void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, short *wavedata);
 
 /* HTS_Vocoder_clear: clear vocoder */
