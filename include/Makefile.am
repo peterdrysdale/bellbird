@@ -12,7 +12,7 @@ FLITEHEADERS = cst_alloc.h cst_audio.h \
 	cst_utt_utils.h cst_utterance.h \
 	cst_val.h cst_val_const.h cst_val_defs.h \
 	cst_voice.h cst_wave.h \
-        flite.h HTS_misc.h
+        flite.h HTS_misc.h pstreamchol.h
 HTSENGINEHEADERS = HTS_engine.h
 
 BELLBIRDHEADERS = bell_driver.h bell_file.h nitech_engine.h

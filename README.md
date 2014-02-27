@@ -130,7 +130,7 @@ packaging for festival. Originating as a toy program it had no clear design goal
 The preferred features for bellbird are:
  1. dynamic (only) loading of clustergen, hts and nitech voices,
  2. input and output allowed via STDIN and STDOUT,
- 3. ability to be compiled with warn on error,
+ 3. compile clean using gcc and clang with -Wall and -Wextra,
  4. only one load of nitech voices per execution,
  5. UTF-8 directional apostrophe support for contraction type words,
  6. rapid full tree rebuilds.

@@ -28,7 +28,7 @@ if( ENABLE_O2 )
 endif( ENABLE_O2 )
 
 if( ENABLE_WALL )
-    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 endif( ENABLE_WALL )
 
 if( ENABLE_CLANG )

@@ -258,9 +258,10 @@ static void HTS_b2mc(const double *b, double *mc, int m, const double a)
 }
 
 /* HTS_freqt: frequency transformation */
-static void HTS_freqt(HTS_Vocoder * v, const double *c1, const int m1, double *c2, const int m2, const double a)
+static void HTS_freqt(HTS_Vocoder * v, const double *c1, const int m1, double *c2, const size_t m2, const double a)
 {
-   int i, j;
+   int i;
+   size_t j;
    const double b = 1 - a * a;
    double *g;
 
@@ -272,12 +273,11 @@ static void HTS_freqt(HTS_Vocoder * v, const double *c1, const int m1, double *c
    }
    g = v->freqt_buff + v->freqt_size + 1;
 
-   for (i = 0; i < m2 + 1; i++)
-      g[i] = 0.0;
+   for (j = 0; j < m2 + 1; j++)
+      g[j] = 0.0;
 
    for (i = -m1; i <= 0; i++) {
-      if (0 <= m2)
-         g[0] = c1[-i] + a * (v->freqt_buff[0] = g[0]);
+      g[0] = c1[-i] + a * (v->freqt_buff[0] = g[0]);
       if (1 <= m2)
          g[1] = b * v->freqt_buff[0] + a * (v->freqt_buff[1] = g[1]);
       for (j = 2; j <= m2; j++)
@@ -304,9 +304,9 @@ static void HTS_c2ir(const double *c, const int nc, double *h, const int leng)
 }
 
 /* HTS_b2en: calculate frame energy */
-static double HTS_b2en(HTS_Vocoder * v, const double *b, const int m, const double a)
+static double HTS_b2en(HTS_Vocoder * v, const double *b, const size_t m, const double a)
 {
-   int i;
+   size_t i;
    double en = 0.0;
    double *cep;
    double *ir;
@@ -361,9 +361,10 @@ static void HTS_gnorm(double *c1, double *c2, int m, const double g)
 }
 
 /* HTS_lsp2lpc: transform LSP to LPC */
-static void HTS_lsp2lpc(HTS_Vocoder * v, double *lsp, double *a, const int m)
+static void HTS_lsp2lpc(HTS_Vocoder * v, double *lsp, double *a, const size_t m)
 {
-   int i, k, mh1, mh2, flag_odd;
+   size_t i, k, mh1, mh2;
+   int flag_odd;
    double xx, xf, xff;
    double *p, *q;
    double *a0, *a1, *a2, *b0, *b1, *b2;
@@ -446,15 +447,15 @@ static void HTS_lsp2lpc(HTS_Vocoder * v, double *lsp, double *a, const int m)
       xx = 0.0;
    }
 
-   for (i = m - 1; i >= 0; i--)
-      a[i + 1] = -a[i];
+   for (i = m; i > 0; i--)
+      a[i] = -a[i-1];
    a[0] = 1.0;
 }
 
 /* HTS_gc2gc: generalized cepstral transformation */
-static void HTS_gc2gc(HTS_Vocoder * v, double *c1, const int m1, const double g1, double *c2, const int m2, const double g2)
+static void HTS_gc2gc(HTS_Vocoder * v, double *c1, const size_t m1, const double g1, double *c2, const size_t m2, const double g2)
 {
-   int i, min, k, mk;
+   size_t i, min, k, mk;
    double ss1, ss2, cc;
 
    if (m1 > v->gc2gc_size) {
@@ -469,7 +470,7 @@ static void HTS_gc2gc(HTS_Vocoder * v, double *c1, const int m1, const double g1
    c2[0] = v->gc2gc_buff[0];
    for (i = 1; i <= m2; i++) {
       ss1 = ss2 = 0.0;
-      min = m1 < i ? m1 : i - 1;
+      min = (m1 < i ? m1 : i - 1);
       for (k = 1; k <= min; k++) {
          mk = i - k;
          cc = v->gc2gc_buff[k] * c2[mk];

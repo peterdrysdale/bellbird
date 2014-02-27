@@ -88,6 +88,9 @@ int audio_stream_chunk(const cst_wave *w, int start, int size,
         ad = NULL;
     }
 
+    asi->userdata = NULL;// This is pointless stub to silence unused parameter warning
+                         // Remove is you are you are converting this function to
+                         // something useful
     /* if you want to stop return CST_AUDIO_STREAM_STOP */
     return CST_AUDIO_STREAM_CONT;
 }

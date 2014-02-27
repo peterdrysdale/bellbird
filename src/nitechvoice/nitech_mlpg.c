@@ -298,16 +298,20 @@ cst_wave * pdf2speech(PStreamChol *mceppst, PStreamChol *lf0pst, nitechP *gp, Mo
 
 void ReadWin(PStreamChol *pst)
 {
-    int i;
+    int i,j;
     cst_file fp;
-    int fsize, leng;
+    int fsize = 3; // All six nitech voices have 3 coefficients
+    int leng = fsize /2;
+    float* readincoef; // temp array for reading data in
 
-    pst->dw.coef= cst_alloc(float *,pst->dw.num);
+    pst->dw.coef= cst_alloc(double *,pst->dw.num);
     /* because the pointers are moved, keep an original */
-    pst->dw.coef_ptrs= cst_alloc(float *,pst->dw.num);
-    pst->dw.coef[0] = cst_alloc(float,1);
+    pst->dw.coef_ptrs= cst_alloc(double *,pst->dw.num);
+    pst->dw.coef[0] = cst_alloc(double,1);
     pst->dw.coef_ptrs[0] = pst->dw.coef[0];
     pst->dw.coef[0][0] = 1;
+
+    readincoef = cst_alloc(float,fsize);
 
     /* read delta coefficients */
     for (i=1; i<pst->dw.num; i++)
@@ -318,20 +322,23 @@ void ReadWin(PStreamChol *pst)
             cst_error();
         }
 
-        fsize = 3; // All six nitech voices have 3 coefficients
-
-        /* read coefficients */
-        pst->dw.coef_ptrs[i] = cst_alloc(float,fsize);
-        bell_fread(pst->dw.coef_ptrs[i], sizeof(float), fsize, fp);
+        // read coefficients
+        bell_fread(readincoef, sizeof(float), fsize, fp);
 #ifdef WORDS_BIGENDIAN
-        swap_bytes_float(pst->dw.coef[i],fsize);
+        swap_bytes_float(readincoef,fsize);
 #endif                          /* WORDS_BIGENDIAN */
         bell_fclose(fp);
 
+        // convert to doubles for use
+        pst->dw.coef_ptrs[i] = cst_alloc(double,fsize);
+        for (j=0; j<fsize; j++)
+        {
+            pst->dw.coef_ptrs[i][j] = (double) readincoef[j];
+        }
+
         pst->dw.coef[i] = pst->dw.coef_ptrs[i];
 
-        /* set pointer */
-        leng = fsize / 2;
+        // set pointer
         pst->dw.coef[i] += leng;
     }  
 }

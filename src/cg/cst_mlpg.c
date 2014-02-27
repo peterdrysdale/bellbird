@@ -97,34 +97,12 @@
 #include "cst_track.h"
 #include "cst_wave.h"
 #include "cst_vc.h"
+#include "pstreamchol.h"
 
 #define	WLEFT 0
 #define	WRIGHT 1
 #define PI2             6.283185307179586477
 #define	INFTY2 ((double) 1.0e+19)
-
-typedef struct _DWin {
-    int	num;		/* number of static + deltas */
-    int **width;	/* width [0..num-1][0(left) 1(right)] */
-    double **coef;	/* coefficient [0..num-1][length[0]..length[1]] */
-    double **coef_ptrs;	/* keeps the pointers so we can free them */
-    int maxw[2];	/* max width [0(left) 1(right)] */
-    int max_L;
-} DWin;
-
-typedef struct _PStreamChol {
-    int vSize;		// size of ovserved vector
-    int order;		// order of cepstrum
-    int T;		// number of frames
-    int width;		// width of WSW
-    DWin dw;
-    double **mseq;	// sequence of mean vector
-    double **ivseq;	// sequence of inversed covariance vector
-    double **R;		// WSW[T][range]
-    double *r;		// WSM [T]
-    double *g;		// g [T]
-    double **c;		// parameter c
-} PStreamChol;
 
 typedef struct MLPGPARA_STRUCT {
     dvector ov;
