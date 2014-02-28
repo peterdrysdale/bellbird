@@ -130,15 +130,9 @@ cst_voice *cst_cg_load_voice(const char *filename,
     /* Things that weren't filled in already. */
     vox->name = cg_db->name;
     feat_set_string(vox->features,"name",cg_db->name);
-    feat_set_string(vox->features,"pathname",filename);
     
     feat_set(vox->features,"lexicon",lexicon_val(lex));
     feat_set(vox->features,"postlex_func",uttfunc_val(lex->postlex));
-
-    /* No standard segment durations are needed as its done at the */
-    /* HMM state level */
-    feat_set_string(vox->features,"no_segment_duration_model","1");
-    feat_set_string(vox->features,"no_f0_target_model","1");
 
     /* Waveform synthesis */
     feat_set(vox->features,"wave_synth_func",uttfunc_val(&cg_synth));

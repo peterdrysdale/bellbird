@@ -104,10 +104,8 @@ SET(SRC_LIBBELLBIRD
 SET(SRC_LIBBELLBIRD_USENGLISH
     lang/usenglish/us_int_accent_cart.c
     lang/usenglish/us_int_tone_cart.c
-    lang/usenglish/us_f0_model.c
     lang/usenglish/us_dur_stats.c
     lang/usenglish/us_durz_cart.c
-    lang/usenglish/us_f0lr.c
     lang/usenglish/us_phoneset.c
     lang/usenglish/us_ffeatures.c
     lang/usenglish/us_ffeatures_hts.c

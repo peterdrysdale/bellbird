@@ -86,7 +86,6 @@ cst_utterance *default_lexical_insertion(cst_utterance *u);
 cst_utterance *default_pause_insertion(cst_utterance *u);
 
 cst_utterance *cart_intonation(cst_utterance *u);
-cst_utterance *cart_duration(cst_utterance *u);
 
 cst_utterance *flat_prosody(cst_utterance *u);
 

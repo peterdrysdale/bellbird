@@ -44,7 +44,6 @@
 
 #include "flite.h"
 #include "usenglish.h"
-#include "us_f0.h"
 #include "us_text.h"
 #include "us_ffeatures.h"
 #include "us_ffeatures_hts.h"
@@ -54,11 +53,6 @@ static const char * const us_english_punctuation = "\"'`.,:;!?(){}[]";
 static const char * const us_english_prepunctuation = "\"'`({[";
 static const char * const us_english_singlecharsymbols = "";
 static const char * const us_english_whitespace = " \t\n\r";
-
-static cst_utterance *identitysynthmethod(cst_utterance *u)
-{
-    return u;
-}
 
 void usenglish_init(cst_voice *v)
 {
@@ -92,9 +86,6 @@ void usenglish_init(cst_voice *v)
     if (v->name && cst_streq(v->name,"hts"))
     {
       feat_set(v->features,"phrasing_func",uttfunc_val(&hts_phrasing));
-      /* mask synth methods which are not needed by hts voices */
-      feat_set(v->features,"duration_model_func",uttfunc_val(&identitysynthmethod));
-      feat_set(v->features,"f0_model_func",uttfunc_val(&identitysynthmethod));
 
       /* Add ffunctions which are needed by hts voices */
       us_ff_register_hts(v->ffunctions);
@@ -105,9 +96,6 @@ void usenglish_init(cst_voice *v)
       /* Duration */
       feat_set(v->features,"dur_cart",cart_val(&us_durz_cart));
       feat_set(v->features,"dur_stats",dur_stats_val((dur_stats *)us_dur_stats));
-
-      /* f0 model */
-      feat_set(v->features,"f0_model_func",uttfunc_val(&us_f0_model));
 
       us_ff_register(v->ffunctions);
     }

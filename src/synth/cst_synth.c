@@ -75,8 +75,6 @@ static const cst_synth_module synth_method_text[] = {
     { "pause_insertion_func", default_pause_insertion },
     { "intonation_func", cart_intonation },
     { "postlex_func", NULL },
-    { "duration_model_func", cart_duration },
-    { "f0_model_func", NULL },
     { "wave_synth_func", NULL },
     { "post_synth_hook_func", NULL },
     { NULL, NULL }
@@ -90,8 +88,6 @@ static const cst_synth_module synth_method_tokens[] = {
     { "pause_insertion_func", default_pause_insertion },
     { "intonation_func", cart_intonation },
     { "postlex_func", NULL },
-    { "duration_model_func", cart_duration },
-    { "f0_model_func", NULL },
     { "wave_synth_func", NULL },
     { "post_synth_hook_func", NULL },
     { NULL, NULL }
@@ -102,8 +98,6 @@ static const cst_synth_module synth_method_phones[] = {
     { "textanalysis_func", tokentosegs },
     { "pos_tagger_func", default_pos_tagger },
     { "intonation_func", NULL },
-    { "duration_model_func", cart_duration },
-    { "f0_model_func", flat_prosody },
     { "wave_synth_func", NULL },
     { "post_synth_hook_func", NULL },
     { NULL, NULL }
@@ -402,49 +396,6 @@ const dur_stat *phone_dur_stat(const dur_stats *ds,const char *ph)
     return ds[0];
 }
 
-cst_utterance *cart_duration(cst_utterance *u)
-{
-    cst_cart *dur_tree;
-    cst_item *s;
-    float zdur, dur_stretch, local_dur_stretch, dur;
-    float end;
-    dur_stats *ds;
-    const dur_stat *dur_stat;
-
-    end = 0;
-
-    if (feat_present(u->features,"no_segment_duration_model"))
-        return u;  /* not all methods need segment durations */
-
-    dur_tree = val_cart(feat_val(u->features,"dur_cart"));
-    dur_stretch = get_param_float(u->features,"duration_stretch", 1.0);
-    ds = val_dur_stats(feat_val(u->features,"dur_stats"));
-    
-    for (s=relation_head(utt_relation(u,"Segment")); s; s=item_next(s))
-    {
-	zdur = val_float(cart_interpret(s,dur_tree));
-	dur_stat = phone_dur_stat(ds,ITEM_NAME(s));
-
-	local_dur_stretch = ffeature_float(s, "R:SylStructure.parent.parent."
-					   "R:Token.parent.local_duration_stretch");
-	if (local_dur_stretch)
-	    local_dur_stretch *= dur_stretch;
-	else
-	    local_dur_stretch = dur_stretch;
-
-	dur = local_dur_stretch * ((zdur*dur_stat->stddev)+dur_stat->mean);
-	DPRINTF(0,("phone %s accent %s stress %s pdur %f stretch %f mean %f std %f dur %f\n",
-		   ITEM_NAME(s),
-		   ffeature_string(s,"R:SylStructure.parent.accented"),
-		   ffeature_string(s,"R:SylStructure.parent.stress"),
-		   zdur, local_dur_stretch, dur_stat->mean,
-		   dur_stat->stddev, dur));
-	end += dur;
-	item_set_float(s,"end",end);
-    }
-    return u;
-}
-
 cst_utterance *default_pos_tagger(cst_utterance *u)
 {
     cst_item *word;
@@ -579,32 +530,6 @@ cst_utterance *default_lexical_insertion(cst_utterance *u)
             phones = NULL;
         }
     }
-
-    return u;
-}
-
-/* Dummy F0 modelling for phones, copied directly from us_f0_model.c */
-cst_utterance *flat_prosody(cst_utterance *u)
-{
-    /* F0 target model */
-    cst_item *s,*t;
-    cst_relation *targ_rel;
-    float mean, stddev;
-
-    targ_rel = utt_relation_create(u,"Target");
-    mean = get_param_float(u->features,"target_f0_mean", 100.0);
-    mean *= get_param_float(u->features,"f0_shift", 1.0);
-    stddev = get_param_float(u->features,"target_f0_stddev", 12.0);
-
-    t = relation_append(targ_rel,NULL);
-    item_set_float(t,"pos",0.0);
-    item_set_float(t,"f0",mean+stddev);
-
-    s=relation_tail(utt_relation(u,"Segment"));
-    t = relation_append(targ_rel,NULL);
-
-    item_set_float(t,"pos",item_feat_float(s,"end"));
-    item_set_float(t,"f0",mean-stddev);
 
     return u;
 }
