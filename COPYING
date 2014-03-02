@@ -229,15 +229,11 @@ src/regex/regsub.c
  *      3. Altered versions must be plainly marked as such, and must not
  *              be misrepresented as being the original software.
 
-lang/usenglish/us_durz_cart.c
-lang/usenglish/us_durz_cart.h
 lang/usenglish/us_int_accent_cart.c
 lang/usenglish/us_int_accent_cart.h
 lang/usenglish/us_int_tone_cart.c
 lang/usenglish/us_int_tone_cart.h
 lang/usenglish/us_phoneset.c
-lang/usenglish/us_f0lr.c
    These are directly (or indirectly) compiled/derived from files that are
    part of the Festival Speech Synthesis System (1.4.1).  Hence they have
    a joint copyright CMU/Edinburgh but with the same free licence
-

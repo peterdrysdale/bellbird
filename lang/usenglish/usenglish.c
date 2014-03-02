@@ -93,9 +93,6 @@ void usenglish_init(cst_voice *v)
     else
     {
       feat_set(v->features,"phrasing_func",uttfunc_val(&default_phrasing));
-      /* Duration */
-      feat_set(v->features,"dur_cart",cart_val(&us_durz_cart));
-      feat_set(v->features,"dur_stats",dur_stats_val((dur_stats *)us_dur_stats));
 
       us_ff_register(v->ffunctions);
     }
