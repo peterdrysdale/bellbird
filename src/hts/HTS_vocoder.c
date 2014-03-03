@@ -907,8 +907,14 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
       x *= volume;
 
       /* output */
-      if (wavedata)
-         wavedata[waveidx++] = (short) x;
+      if (wavedata) {
+         if (x > 32767.0)
+            wavedata[waveidx++] = 32767;
+         else if (x < -32768.0)
+            wavedata[waveidx++] = -32768;
+         else
+            wavedata[waveidx++] = (short) x;
+      }
 
       for (i = 0; i <= m; i++)
          v->c[i] += v->cinc[i];
