@@ -298,7 +298,6 @@ typedef struct _HTS_Vocoder {
    size_t excite_buff_size;     /* used in excitation generation */
    size_t excite_buff_index;    /* used in excitation generation */
    unsigned char sw;            /* switch used in random generator */
-   int x;                       /* excitation signal */
    double *freqt_buff;          /* used in freqt */
    size_t freqt_size;           /* buffer size for freqt */
    double *spectrum2en_buff;    /* used in spectrum2en */

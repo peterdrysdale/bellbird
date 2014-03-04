@@ -79,7 +79,6 @@ void init_vocoder(int m, VocoderSetup *vs)
    
    vs->p1 = -1;
    vs->sw = 0;        // init random number switch to unused state
-   vs->x  = 0x55555555;
 }
 
 void free_vocoder(VocoderSetup *vs)

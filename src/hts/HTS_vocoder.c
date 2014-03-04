@@ -817,7 +817,6 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean
    v->excite_buff_size = 0;
    v->excite_buff_index = 0;
    v->sw = 0;
-   v->x = 0x55555555;
    /* init buffer */
    v->freqt_buff = NULL;
    v->freqt_size = 0;

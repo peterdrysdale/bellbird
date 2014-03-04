@@ -89,9 +89,7 @@ typedef struct _VocoderSetup {
    
    int sw;          // switch for Gaussian random number generator since number are thrown in pairs
    double r1, r2, s;// intermediate values of Gaussian random number generator
-   
-   int x;
-   
+
    /* for postfiltering */
    int size;
    double *d; 
@@ -149,7 +147,6 @@ static void init_vocoder(double fs, int framel, int m,
    
     vs->p1 = -1;
     vs->sw = 0;
-    vs->x  = 0x55555555;
    
     /* for postfiltering */
     vs->mc = NULL;

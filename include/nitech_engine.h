@@ -69,9 +69,7 @@ typedef struct _VocoderSetup {
    
    int sw;          //  switch for Gaussian random number generator since numbers are thrown in pairs
    double r1, r2, s;//  intermediate values of Gaussian random number generator
-   
-   int x;
-   
+
 } VocoderSetup;
 
 typedef struct _nitech_engine {
