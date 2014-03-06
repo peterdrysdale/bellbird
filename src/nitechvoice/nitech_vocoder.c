@@ -64,14 +64,10 @@ void init_vocoder(int m, VocoderSetup *vs)
 
    vs->next =1;
 
-   /* Pade' approximants */
-   vs->pade[ 0]=1.0;
-   vs->pade[ 1]=1.0; vs->pade[ 2]=0.0;
-   vs->pade[ 3]=1.0; vs->pade[ 4]=0.0;      vs->pade[ 5]=0.0;
-   vs->pade[ 6]=1.0; vs->pade[ 7]=0.0;      vs->pade[ 8]=0.0;      vs->pade[ 9]=0.0;
-   vs->pade[10]=1.0; vs->pade[11]=0.4999273; vs->pade[12]=0.1067005; vs->pade[13]=0.01170221; vs->pade[14]=0.0005656279;
-   vs->pade[15]=1.0; vs->pade[16]=0.4999391; vs->pade[17]=0.1107098; vs->pade[18]=0.01369984; vs->pade[19]=0.0009564853;
-   vs->pade[20]=0.00003041721;
+   /* Pade' approximants 4th and 5th order */
+   vs->pade[0]=1.0; vs->pade[1]=0.4999273; vs->pade[2]=0.1067005; vs->pade[3]=0.01170221; vs->pade[4]=0.0005656279;
+   vs->pade[5]=1.0; vs->pade[6]=0.4999391; vs->pade[7]=0.1107098; vs->pade[8]=0.01369984; vs->pade[9]=0.0009564853;
+   vs->pade[10]=0.00003041721;
 
    vs->rate=16000;    // Nitech voices had output sample rate of 16000Hz
                   

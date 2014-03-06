@@ -449,8 +449,6 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
         item_set_float(mcep,"voicing",
                        CG_MODEL_VECTOR(cg_db,model_vectors0,f,
                                        cg_db->num_channels0-2));
-
-        param_track->times[i] = i * cg_db->frame_advance;
     }
 
     cg_smooth_F0(utt,cg_db,param_track);

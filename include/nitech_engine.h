@@ -63,7 +63,7 @@ typedef struct _VocoderSetup {
    double p1;
    double pc;
    double pj;
-   double pade[21]; //  Pade approximants coefficients
+   double pade[11]; //  Pade approximants coefficients
    double *c, *cc, *cinc, *d1;
    double rate;     //  output wave's sample rate
    

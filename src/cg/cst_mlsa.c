@@ -83,7 +83,7 @@ typedef struct _VocoderSetup {
    double p1;
    double pc;
    double pj;
-   double pade[21]; // Pade approximants coefficients
+   double pade[11]; // Pade approximants coefficients
    double *c, *cc, *cinc, *d1;
    double rate;     // output wave's sample rate
    
@@ -133,14 +133,10 @@ static void init_vocoder(double fs, int framel, int m,
     vs->next =1;
     vs->gauss = MTRUE;
 
-    /* Pade' approximants */
-    vs->pade[ 0]=1.0;
-    vs->pade[ 1]=1.0; vs->pade[ 2]=0.0;
-    vs->pade[ 3]=1.0; vs->pade[ 4]=0.0;      vs->pade[ 5]=0.0;
-    vs->pade[ 6]=1.0; vs->pade[ 7]=0.0;      vs->pade[ 8]=0.0;      vs->pade[ 9]=0.0;
-    vs->pade[10]=1.0; vs->pade[11]=0.4999273; vs->pade[12]=0.1067005; vs->pade[13]=0.01170221; vs->pade[14]=0.0005656279;
-    vs->pade[15]=1.0; vs->pade[16]=0.4999391; vs->pade[17]=0.1107098; vs->pade[18]=0.01369984; vs->pade[19]=0.0009564853;
-    vs->pade[20]=0.00003041721;
+    /* Pade' approximants of 4th and 5th order */
+    vs->pade[0]=1.0; vs->pade[1]=0.4999273; vs->pade[2]=0.1067005; vs->pade[3]=0.01170221; vs->pade[4]=0.0005656279;
+    vs->pade[5]=1.0; vs->pade[6]=0.4999391; vs->pade[7]=0.1107098; vs->pade[8]=0.01369984; vs->pade[9]=0.0009564853;
+    vs->pade[10]=0.00003041721;
 
     vs->rate = fs;
     vs->c = cst_alloc(double,3 * (m + 1) + 3 * (vs->pd + 1) + vs->pd * (m + 2));
@@ -533,9 +529,13 @@ cst_wave *mlsa_resynthesis(const cst_track *params,
     double shift;
 
     if (params->num_frames > 1)
-        shift = 1000.0*(params->times[1]-params->times[0]);
+    {
+        shift = 1000.0*cg_db->frame_advance;
+    }
     else
+    {
         shift = 5.0;
+    }
 
     wave = synthesis_body(params,str,sr,shift,cg_db,asi);
 

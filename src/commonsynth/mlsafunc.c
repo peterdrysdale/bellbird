@@ -122,7 +122,7 @@ static double mlsadf(double x, const double *b, const int m, const double a,
                       const int pd, double *d, VocoderSetup *vs)
 {
 // the MLSA filter
-   const double *ppade = &(vs->pade[pd*(pd+1)/2]);
+   const double *ppade = &(vs->pade[(pd-4)*5]);
     
    x = mlsadf1 (x, b, a, pd, d, ppade);
    x = mlsadf2 (x, b, m, a, pd, &d[2*(pd+1)], ppade);

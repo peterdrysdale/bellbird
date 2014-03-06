@@ -49,29 +49,7 @@
 /* vector and matrix code for mlpg */
 
 #include "cst_alloc.h"
-#include "cst_string.h"
 #include "cst_vc.h"
-
-lvector xlvalloc(long length)
-{
-    lvector x;
-
-    x = cst_alloc(struct lvector_struct,1);
-    x->data = cst_alloc(long,length);
-    x->length = length;
-
-    return x;
-}
-
-void xlvfree(lvector x)
-{
-    if (x != NULL) {
-        cst_free(x->data);
-        cst_free(x);
-    }
-
-    return;
-}
 
 dvector xdvalloc(long length)
 {

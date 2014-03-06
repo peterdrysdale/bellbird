@@ -48,11 +48,6 @@
 #ifndef __CST_VC_H
 #define __CST_VC_H
 
-typedef struct lvector_struct {
-    long length;
-    long *data;
-} *lvector;
-
 typedef struct dvector_struct {
     long length;
     double *data;
@@ -64,8 +59,6 @@ typedef struct dmatrix_struct {
     double **data;
 } *dmatrix;
 
-lvector xlvalloc(long length);
-void xlvfree(lvector x);
 dvector xdvalloc(long length);
 void xdvfree(dvector vector);
 dmatrix xdmalloc(long row, long col);

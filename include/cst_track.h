@@ -52,7 +52,6 @@ typedef struct  cst_track_struct {
     const char *type;
     int num_frames;
     int num_channels;
-    float *times;
     float **frames;
 } cst_track;
 

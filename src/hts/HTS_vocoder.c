@@ -83,17 +83,7 @@ HTS_VOCODER_C_START;
 #define CHECK_LSP_STABILITY_MIN 0.25
 #define CHECK_LSP_STABILITY_NUM 4
 
-static const double HTS_pade[21] = {
-   1.00000000000,
-   1.00000000000,
-   0.00000000000,
-   1.00000000000,
-   0.00000000000,
-   0.00000000000,
-   1.00000000000,
-   0.00000000000,
-   0.00000000000,
-   0.00000000000,
+static const double HTS_pade[11] = {
    1.00000000000,
    0.49992730000,
    0.10670050000,
@@ -192,7 +182,7 @@ static double HTS_mlsadf2(double x, const double *b, const int m, const double a
 static double HTS_mlsadf(double x, const double *b, const int m, const double a, const int pd, double *d)
 {
    const double aa = 1 - a * a;
-   const double *ppade = &(HTS_pade[pd * (pd + 1) / 2]);
+   const double *ppade = &(HTS_pade[(pd-4)*5]);
 
    x = HTS_mlsadf1(x, b, a, aa, pd, d, ppade);
    x = HTS_mlsadf2(x, b, m, a, aa, pd, &d[2 * (pd + 1)], ppade);
