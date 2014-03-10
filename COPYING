@@ -87,8 +87,6 @@ src/cg/cst_mlpg.h
 src/cg/cst_mlpg.c
 src/cg/cst_mlsa.h
 src/cg/cst_mlsa.c
-src/cg/cst_vc.h
-src/cg/cst_vc.c
 /*********************************************************************/
 /*                                                                   */
 /*            Nagoya Institute of Technology, Aichi, Japan,          */

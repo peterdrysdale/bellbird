@@ -93,215 +93,14 @@
 #include "cst_alloc.h"
 #include "cst_cg.h"
 #include "cst_error.h"
-#include "cst_string.h"
 #include "cst_track.h"
-#include "cst_wave.h"
-#include "cst_vc.h"
 #include "pstreamchol.h"
 
 #define	WLEFT 0
 #define	WRIGHT 1
-#define PI2             6.283185307179586477
-#define	INFTY2 ((double) 1.0e+19)
-
-typedef struct MLPGPARA_STRUCT {
-    dvector ov;
-    dvector flkv;
-    dmatrix stm;
-    dmatrix dltm;
-    dmatrix pdf;
-    dvector detvec;
-    dvector wght;
-    dmatrix mean;
-    dmatrix cov;
-    double  clsdet;
-    dvector clscov;
-} *MLPGPARA;
 
 // NOTE NOTE NOTE we are including static functions here not header files
 #include "../commonsynth/cholesky.c"
-
-static MLPGPARA xmlpgpara_init(int dim, int dim_st, int nframes)
-{
-    MLPGPARA param;
-    
-    // memory allocation
-    param = cst_alloc(struct MLPGPARA_STRUCT,1);
-    param->ov = xdvalloc(dim);
-    param->flkv = xdvalloc(nframes);
-    param->stm = NULL;
-    param->dltm = xdmalloc(nframes, dim_st);
-    param->pdf = NULL;
-    param->detvec = NULL;
-    param->wght = xdvalloc(nframes);
-    param->mean = xdmalloc(nframes, dim);
-    param->cov = NULL;
-    param->clscov = xdvalloc(dim);
-
-    return param;
-}
-
-static void xmlpgparafree(MLPGPARA param)
-{
-    if (param != NULL)
-    {
-        if (param->ov != NULL) xdvfree(param->ov);
-        if (param->flkv != NULL) xdvfree(param->flkv);
-        if (param->stm != NULL) xdmfree(param->stm);
-        if (param->dltm != NULL) xdmfree(param->dltm);
-        if (param->pdf != NULL) xdmfree(param->pdf);
-        if (param->detvec != NULL) xdvfree(param->detvec);
-        if (param->wght != NULL) xdvfree(param->wght);
-        if (param->mean != NULL) xdmfree(param->mean);
-        if (param->cov != NULL) xdmfree(param->cov);
-        if (param->clscov != NULL) xdvfree(param->clscov);
-        cst_free(param);
-    }
-
-    return;
-}
-
-static double get_gauss_dia(dvector ov,   // [dim]
-                     double clsdet,
-                     dvector wght,        // [nframes]
-                     dmatrix mean,        // [nframes][dim]
-                     dvector clscov)      // [dim]
-{
-    double gauss, sb;
-    long k;
-
-    if (clsdet <= 0.0)
-    {
-        cst_errmsg("#error: det <= 0.0\n");
-        cst_error();
-    }
-
-    for (k = 0, gauss = 0.0; k < ov->length; k++)
-    {
-        sb = ov->data[k] - mean->data[0][k];
-        gauss += sb * clscov->data[k] * sb;
-    }
-
-    gauss = wght->data[0]
-        / sqrt(pow(PI2, (double)ov->length) * clsdet)
-        * exp(-gauss / 2.0);
-
-    return gauss;
-}
-
-static double get_like_pdfseq_vit(int dim, int dim_st, int nframes,
-                                  MLPGPARA param, float **model)
-{
-    long d, c, k, j;
-    double sumgauss;
-    double like = 0.0;
-
-    for (d = 0, like = 0.0; d < nframes; d++)
-    {
-        // read weight and mean sequences
-        param->wght->data[0] = 0.9; /* FIXME weights */
-        for (j=0; j<dim; j++)
-        {
-            param->mean->data[0][j] = model[d][(j+1)*2];
-        }
-
-        // observation vector
-        for (k = 0; k < dim_st; k++)
-        {
-            param->ov->data[k] = param->stm->data[d][k];
-            param->ov->data[k + dim_st] = param->dltm->data[d][k];
-	}
-
-        // mixture index
-        c = d;
-        param->clsdet = param->detvec->data[c];
-
-        // calculating likelihood
-        for (k = 0; k < param->clscov->length; k++)
-        {
-            param->clscov->data[k] = param->cov->data[c][k];
-        }
-        sumgauss = get_gauss_dia(param->ov, param->clsdet,
-                                  param->wght, param->mean, param->clscov);
-
-        if (sumgauss <= 0.0)
-        {
-            param->flkv->data[d] = -1.0 * INFTY2;
-        } else
-        {
-            param->flkv->data[d] = log(sumgauss);
-        }
-        like += param->flkv->data[d];
-
-        // estimating U', U'*M
-        // PDF [U'*M U']
-        for (k = 0; k < dim; k++)
-        {
-            param->pdf->data[d][k] = param->clscov->data[k] * param->mean->data[0][k];
-            param->pdf->data[d][k + dim] = param->clscov->data[k];
-        }
-    }
-
-    like /= (double)nframes;
-
-    return like;
-}
-
-static void get_dltmat(dmatrix mat, DWin *dw, int dno, dmatrix dmat)
-{
-    int i, j, k, tmpnum;
-
-    tmpnum = (int)mat->row - dw->width[dno][WRIGHT];
-    for (k = dw->width[dno][WRIGHT]; k < tmpnum; k++)  // time index
-    {
-        for (i = 0; i < (int)mat->col; i++)	// dimension index
-        {
-            for (j = dw->width[dno][WLEFT], dmat->data[k][i] = 0.0;
-                   j <= dw->width[dno][WRIGHT]; j++)
-            {
-                dmat->data[k][i] += mat->data[k + j][i] * dw->coef[dno][j];
-            }
-        }
-    }
-    for (i = 0; i < (int)mat->col; i++)                  // dimension index
-    {
-        for (k = 0; k < dw->width[dno][WRIGHT]; k++)     // time index
-        {
-            for (j = dw->width[dno][WLEFT], dmat->data[k][i] = 0.0;
-                  j <= dw->width[dno][WRIGHT]; j++)
-            {
-                if (k + j >= 0)
-                {
-                    dmat->data[k][i] += mat->data[k + j][i] * dw->coef[dno][j];
-                }
-                else
-                {
-                    dmat->data[k][i] += (2.0 * mat->data[0][i] - mat->data[-k - j][i])
-                                           * dw->coef[dno][j];
-                }
-            }
-        }
-        for (k = tmpnum; k < (int)mat->row; k++)	// time index
-        {
-            for (j = dw->width[dno][WLEFT], dmat->data[k][i] = 0.0;
-                   j <= dw->width[dno][WRIGHT]; j++)
-            {
-                if (k + j < (int)mat->row)
-                {
-                    dmat->data[k][i] += mat->data[k + j][i] * dw->coef[dno][j];
-                }
-                else
-                {
-                    dmat->data[k][i] += (2.0 * mat->data[mat->row-1][i]
-                                             - mat->data[mat->row-k-j + mat->row-2][i])
-                                             * dw->coef[dno][j];
-                }
-            }
-        }
-    }
-
-    return;
-}
 
 /////////////////////////////////////
 // ML using Choleski decomposition //
@@ -441,71 +240,6 @@ static void mlpgChol(PStreamChol *pst)
    return;
 }
 
-static void mlgparaChol(dmatrix pdf, PStreamChol *pst, dmatrix mlgp)
-{
-    int t, d;
-
-    // error check
-    if (pst->vSize * 2 != pdf->col || pst->order + 1 != mlgp->col)
-    {
-	cst_errmsg("Error mlgparaChol: Different dimension\n");
-        cst_error();
-    }
-
-    // mseq: U^{-1}*M,	ifvseq: U^{-1}
-    for (t = 0; t < pst->T; t++)
-    {
-        for (d = 0; d < pst->vSize; d++)
-        {
-            pst->mseq[t][d] = pdf->data[t][d];
-            pst->ivseq[t][d] = pdf->data[t][pst->vSize + d];
-        }
-    } 
-
-    // ML parameter generation
-    mlpgChol(pst);
-
-    // extracting parameters
-    for (t = 0; t < pst->T; t++)
-    {
-        for (d = 0; d <= pst->order; d++) mlgp->data[t][d] = pst->c[t][d];
-    }
-
-    return;
-}
-
-// diagonal covariance
-static dvector xget_detvec_diamat2inv(dmatrix covmat)	// [nframes][dim]
-{
-    long dim, nframes;
-    long i, j;
-    double det;
-    dvector detvec = NULL;
-
-    nframes = covmat->row;
-    dim = covmat->col;
-    // memory allocation
-    detvec = xdvalloc(nframes);
-    for (i = 0; i < nframes; i++)
-    {
-        for (j = 0, det = 1.0; j < dim; j++)
-        {
-            det *= covmat->data[i][j];
-            if (det > 0.0)
-            {
-		covmat->data[i][j] = 1.0 / covmat->data[i][j];
-	    } else {
-                cst_errmsg("error:(class %ld) determinant <= 0, det = %f\n", i, det);
-                xdvfree(detvec);
-                return NULL;
-            }
-        }
-        detvec->data[i] = det;
-    }
-
-    return detvec;
-}
-
 static void pst_free(PStreamChol *pst)
 {
     int i;
@@ -529,7 +263,6 @@ static void pst_free(PStreamChol *pst)
 cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
 {
 // Generate an (mcep) track using Maximum Likelihood Parameter Generation
-    MLPGPARA param = NULL;
     cst_track *out;
     int dim, dim_st;
     int i,j;
@@ -542,46 +275,22 @@ cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
     out = new_track();
     cst_track_resize(out,nframes,dim_st+1);
 
-    param = xmlpgpara_init(dim,dim_st,nframes);
-
-    // initial static feature sequence
-    param->stm = xdmalloc(nframes,dim_st);
-    for (i=0; i<nframes; i++)
-    {
-        for (j=0; j<dim_st; j++)
-        {
-            param->stm->data[i][j] = param_track->frames[i][(j+1)*2];
-        }
-    }
-
-    /* Load cluster means */
-    for (i=0; i<nframes; i++)
-    {
-        for (j=0; j<dim_st; j++)
-        {
-            param->mean->data[i][j] = param_track->frames[i][(j+1)*2];
-        }
-    }
-    
     /* GMM parameters diagonal covariance */
     InitPStreamChol(&pst, cg_db->dynwin, cg_db->dynwinsize, dim_st-1, nframes);
-    param->pdf = xdmalloc(nframes,dim*2);
-    param->cov = xdmalloc(nframes,dim);
     for (i=0; i<nframes; i++)
     {
         for (j=0; j<dim; j++)
         {
-            param->cov->data[i][j] = param_track->frames[i][(j+1)*2+1] *
-                                       param_track->frames[i][(j+1)*2+1];
+            // estimating U', U'*M
+            // PDF [U'*M U']
+            pst.ivseq[i][j] = 1.0 /(param_track->frames[i][(j+1)*2+1] *
+                                param_track->frames[i][(j+1)*2+1]);
+            pst.mseq[i][j] = pst.ivseq[i][j] * param_track->frames[i][(j+1)*2];
+                                          //Latter term in product is mean
         }
     }
-    param->detvec = xget_detvec_diamat2inv(param->cov);
 
-    get_dltmat(param->stm, &pst.dw, 1, param->dltm);
-
-    get_like_pdfseq_vit(dim, dim_st, nframes, param, param_track->frames);
-
-    mlgparaChol(param->pdf, &pst, param->stm);
+    mlpgChol(&pst);
 
     /* Put the answer back into the output track */
     for (i=0; i<nframes; i++)
@@ -589,12 +298,11 @@ cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
         out->frames[i][0] = param_track->frames[i][0]; /* F0 */
         for (j=0; j<dim_st; j++)
         {
-            out->frames[i][j+1] = param->stm->data[i][j];
+            out->frames[i][j+1] = pst.c[i][j];
         }
     }
 
     // memory free
-    xmlpgparafree(param);
     pst_free(&pst);
 
     return out;
