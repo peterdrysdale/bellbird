@@ -61,10 +61,6 @@
 // NOTE NOTE NOTE we include static functions here not header files
 #include "../commonsynth/cholesky.c"
 
-/*----------------------------------------------------------------
-        matrix calculation functions
-----------------------------------------------------------------*/
-
 /* calc_R_and_r : calculate R=W'U^{-1}W and r=W'U^{-1}M */
 static void calc_R_and_r(PStreamChol *pst, int m)
 {
@@ -105,9 +101,7 @@ static void nitech_mlpg(PStreamChol *pst)
 
     for (m=0; m<=pst->order; m++) {
         calc_R_and_r(pst,m);
-        Cholesky(pst);
-        Cholesky_forward(pst);
-        Cholesky_backward(pst,m);
+        solvemateqn(pst,m);
    }
 
    return;

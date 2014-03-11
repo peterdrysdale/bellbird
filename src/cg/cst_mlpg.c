@@ -232,9 +232,7 @@ static void mlpgChol(PStreamChol *pst)
    for (m = 0; m<=pst->order; m++)
    {
        calc_R_and_r(pst, m);
-       Cholesky(pst);
-       Cholesky_forward(pst);
-       Cholesky_backward(pst, m);
+       solvemateqn(pst,m);
    }
    
    return;
