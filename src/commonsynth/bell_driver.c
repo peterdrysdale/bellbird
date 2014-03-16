@@ -49,6 +49,7 @@
 /* ----------------------------------------------------------------- */
 
 #include <math.h>
+#include <limits.h>
 #include "cst_alloc.h"
 #include "cst_audio.h"
 #include "cst_cg.h"
@@ -287,7 +288,12 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
         cst_wave_resize(w,0,1);
         if (voice_type==HTSMODE)
         {
-            CST_WAVE_SET_SAMPLE_RATE(w,48000);
+            if (HTS_Engine_get_sampling_frequency(engine) > INT_MAX)
+            {
+                cst_errmsg("HTS sample rate appears unusually high");
+                cst_error();
+            }
+            CST_WAVE_SET_SAMPLE_RATE(w,(int)HTS_Engine_get_sampling_frequency(engine));
         } 
         else if (voice_type==NITECHMODE)
         {
