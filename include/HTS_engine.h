@@ -303,14 +303,8 @@ void HTS_Engine_initialize(HTS_Engine * engine);
 /* HTS_Engine_load: load HTS voices */
 HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices, size_t num_voices);
 
-/* HTS_Engine_set_sampling_frequency: set sampling fraquency */
-void HTS_Engine_set_sampling_frequency(HTS_Engine * engine, size_t i);
-
 /* HTS_Engine_get_sampling_frequency: get sampling frequency */
 size_t HTS_Engine_get_sampling_frequency(HTS_Engine * engine);
-
-/* HTS_Engine_set_fperiod: set frame period */
-void HTS_Engine_set_fperiod(HTS_Engine * engine, size_t i);
 
 /* HTS_Egnine_set_msd_threshold: set MSD threshold */
 void HTS_Engine_set_msd_threshold(HTS_Engine * engine, size_t stream_index, double f);
@@ -320,9 +314,6 @@ void HTS_Engine_set_gv_weight(HTS_Engine * engine, size_t stream_index, double f
 
 /* HTS_Engine_set_speed: set speech speed */
 void HTS_Engine_set_speed(HTS_Engine * engine, double f);
-
-/* HTS_Engine_set_alpha: set alpha */
-void HTS_Engine_set_alpha(HTS_Engine * engine, double f);
 
 /* HTS_Engine_set_beta: set beta */
 void HTS_Engine_set_beta(HTS_Engine * engine, double f);

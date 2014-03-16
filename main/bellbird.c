@@ -137,9 +137,6 @@ static void bellbird_usage()
           "  -t TEXT        Explicitly set input textstring\n"
           "  -p PHONES      Explicitly set input textstring and synthesize as phones\n"
           " HTS specific options:                                         [  def][ min--max]\n"
-          "  -s  i           sampling frequency                           [16000][   1--48000]\n"
-          "  -p  i           frame period (point)                         [   80][   1--]\n"
-          "  -a  f           all-pass constant                            [ 0.42][ 0.0--1.0]\n"
           "  -b  f           postfiltering coefficient                    [  0.0][-0.8--0.8]\n"
           "  -r  f           speech speed rate                            [  1.0][ 0.0--    ]\n"
           "  -fm             additional half-tone                         [  0.0][    --    ]\n"
@@ -338,19 +335,7 @@ int main(int argc, char **argv)
 	}          
         else if (voice_type==HTSMODE) /* hts specific options */
         {
-           if ( cst_streq(argv[i],"-s") && (i+1 < argc) )
-           {
-               HTS_Engine_set_sampling_frequency(&engine, (size_t) atoi(argv[++i]));
-           }
-           else if ( cst_streq(argv[i],"-p") && (i+1 < argc) )
-           {
-               HTS_Engine_set_fperiod(&engine, (size_t) atoi(argv[++i]));
-           }
-           else if ( cst_streq(argv[i],"-a") && (i+1 < argc) )
-           {
-               HTS_Engine_set_alpha(&engine, atof(argv[++i]));
-           }
-           else if ( cst_streq(argv[i],"-b") && (i+1 < argc) )
+           if ( cst_streq(argv[i],"-b") && (i+1 < argc) )
            {
                HTS_Engine_set_beta(&engine, atof(argv[++i]));
            }

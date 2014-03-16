@@ -171,26 +171,10 @@ HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices, size_t num_voice
    return TRUE;
 }
 
-/* HTS_Engine_set_sampling_frequency: set sampling frequency */
-void HTS_Engine_set_sampling_frequency(HTS_Engine * engine, size_t i)
-{
-   if (i < 1)
-      i = 1;
-   engine->condition.sampling_frequency = i;
-}
-
 /* HTS_Engine_get_sampling_frequency: get sampling frequency */
 size_t HTS_Engine_get_sampling_frequency(HTS_Engine * engine)
 {
    return engine->condition.sampling_frequency;
-}
-
-/* HTS_Engine_set_fperiod: set frame period */
-void HTS_Engine_set_fperiod(HTS_Engine * engine, size_t i)
-{
-   if (i < 1)
-      i = 1;
-   engine->condition.fperiod = i;
 }
 
 /* HTS_Egnine_set_msd_threshold: set MSD threshold */
@@ -217,16 +201,6 @@ void HTS_Engine_set_speed(HTS_Engine * engine, double f)
    if (f < 1.0E-06)
       f = 1.0E-06;
    engine->condition.speed = f;
-}
-
-/* HTS_Engine_set_alpha: set alpha */
-void HTS_Engine_set_alpha(HTS_Engine * engine, double f)
-{
-   if (f < 0.0)
-      f = 0.0;
-   if (f > 1.0)
-      f = 1.0;
-   engine->condition.alpha = f;
 }
 
 /* HTS_Engine_set_beta: set beta */
