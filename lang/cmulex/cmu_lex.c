@@ -49,7 +49,6 @@
 
 #include "cmu_lex.h"
 
-extern const int cmu_lex_entry[];
 extern const unsigned char cmu_lex_data[];
 extern const int cmu_lex_num_entries;
 extern const int cmu_lex_num_bytes;
@@ -348,11 +347,9 @@ cst_lexicon *cmu_lex_init()
 
     cmu_lts_rules.name = "cmu";
     cmu_lts_rules.letter_index = cmu_lts_letter_index;
-#ifdef CST_NO_STATIC_LTS_MODEL
-    /* cmu_lts_rules.models will be set elsewhere */
-#else
+
     cmu_lts_rules.models = cmu_lts_model;
-#endif
+
     cmu_lts_rules.phone_table = cmu_lts_phone_table;
     cmu_lts_rules.context_window_size = 4;
     cmu_lts_rules.context_extra_feats = 1;
@@ -360,12 +357,10 @@ cst_lexicon *cmu_lex_init()
 
     cmu_lex.name = "cmu";
     cmu_lex.num_entries = cmu_lex_num_entries;
-#ifdef CST_NO_STATIC_LEX
-    /* cmu_lex.data will be set elsewhere */
-#else
+
     /* as the data is const, we cast it through void * */
     cmu_lex.data = (unsigned char *)(void *)cmu_lex_data;
-#endif
+
     cmu_lex.num_bytes = cmu_lex_num_bytes;
     cmu_lex.phone_table = (char **) cmu_lex_phone_table;
     cmu_lex.syl_boundary = cmu_syl_boundary_mo;
