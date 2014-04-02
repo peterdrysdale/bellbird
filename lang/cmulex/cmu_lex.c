@@ -50,9 +50,8 @@
 #include "cmu_lex.h"
 
 extern const unsigned char cmu_lex_data[];
-extern const int cmu_lex_num_entries;
 extern const int cmu_lex_num_bytes;
-extern const char * const cmu_lex_phone_table[54];
+extern const char * const cmu_lex_phone_table[];
 extern const char * const cmu_lex_phones_huff_table[];
 extern const char * const cmu_lex_entries_huff_table[];
 
@@ -74,35 +73,17 @@ static const char * const addenda8[] = { "p:", NULL };
 static const char * const addenda9[] = { "p;", NULL };
 static const char * const addenda10[] = { "p?", NULL};
 static const char * const addenda11[] = { "p!", NULL };
-static const char * const addenda12[] = { "n@", "ae1", "t", NULL };
-static const char * const addenda13[] = { "n#", "hh", "ae1","sh", NULL };
-static const char * const addenda14[] = { "n$", "d", "aa1", "l", "er", NULL };
-static const char * const addenda15[] = { "n%", "p", "er", "s", "eh1", "n", "t", NULL };
-static const char * const addenda16[] = { "n^", "k", "eh1", "r", "eh1", "t",  NULL };
-static const char * const addenda17[] = { "n&","ae1","m","p","er","s","ae1","n","d", NULL };
-static const char * const addenda18[] = { "n*","ae1","s","t","er","ih1","s","k",NULL };
-static const char * const addenda19[] = { "n|","b","aa1","r",NULL };
-static const char * const addenda20[] = { "n\\","b","ae1","k","s","l","ae1","sh",NULL };
-static const char * const addenda21[] = { "n=","iy1","k","w","ax","l","z",NULL};
-static const char * const addenda22[] = { "n+","p","l","ah1","s",NULL};
-static const char * const addenda23[] = { "n~","t","ih1","l","d","ax",NULL};
-static const char * const addenda24[] = { "p'",NULL};
-static const char * const addenda25[] = { "p`",NULL};
-static const char * const addenda26[] = { "p\"",NULL};
-static const char * const addenda27[] = { "p-",NULL};
-static const char * const addenda28[] = { "p<",NULL};
-static const char * const addenda29[] = { "p>",NULL};
-static const char * const addenda30[] = { "n_","ah1","n","d","er","s","k","ao1","r",NULL};
-static const char * const addenda31[] = { "s's","z",NULL};
-static const char * const addenda32[] = { "nim","ay1","m",NULL};
-static const char * const addenda33[] = { "vdoesnt","d","ah1","z","n","t",NULL};
-static const char * const addenda34[] = { "vyoull","y","uw1","l",NULL};
-static const char * const addenda35[] = { "n/","s","l","ae1","sh",NULL};
-
-static const char * const addenda36[] = { "nin","ih","n",NULL};
-static const char * const addenda37[] = { "nto","t","ax",NULL};
-static const char * const addenda38[] = { "0_a","ey",NULL};
-static const char * const addenda39[] = { "vhavent","hh","ae1","v","ax","n","t",NULL};
+static const char * const addenda12[] = { "p'",NULL};
+static const char * const addenda13[] = { "p`",NULL};
+static const char * const addenda14[] = { "p\"",NULL};
+static const char * const addenda15[] = { "p-",NULL};
+static const char * const addenda16[] = { "p<",NULL};
+static const char * const addenda17[] = { "p>",NULL};
+static const char * const addenda18[] = { "s's","z",NULL};
+static const char * const addenda19[] = { "nim","ay1","m",NULL};
+static const char * const addenda20[] = { "nin","ih","n",NULL};
+static const char * const addenda21[] = { "nto","t","ax",NULL};
+static const char * const addenda22[] = { "0_a","ey",NULL};
 
 static const char * const * const addenda[] = {
     addenda0,
@@ -128,24 +109,6 @@ static const char * const * const addenda[] = {
     addenda20,
     addenda21,
     addenda22,
-    addenda23,
-    addenda24,
-    addenda25,
-    addenda26,
-    addenda27,
-    addenda28,
-    addenda29,
-    addenda30,
-    addenda31,
-    addenda32,
-    addenda33,
-    addenda34,
-    addenda35,
-
-    addenda36,
-    addenda37,
-    addenda38,
-    addenda39,
     NULL };
 
 static int cmu_is_silence(const char *p)
@@ -356,7 +319,6 @@ cst_lexicon *cmu_lex_init()
     cmu_lts_rules.letter_table = 0 /* cmu_lts_letter_table */;
 
     cmu_lex.name = "cmu";
-    cmu_lex.num_entries = cmu_lex_num_entries;
 
     /* as the data is const, we cast it through void * */
     cmu_lex.data = (unsigned char *)(void *)cmu_lex_data;

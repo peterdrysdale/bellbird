@@ -45,7 +45,6 @@
 
 typedef struct lexicon_struct {
     char *name;
-    int num_entries;
     /* Entries are centered around bytes with value 255 */
     /* entries and forward (compressed) pronunciations and backwards */
     /* each are terminated (preceeded in pron case) by 0 */
