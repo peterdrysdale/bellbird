@@ -69,39 +69,6 @@ cst_lts_rules *new_lts_rules()
     return lt;
 }
 
-cst_val *lts_apply_val(const cst_val *wlist,const char *feats,const cst_lts_rules *r)
-{
-    /* for symbol to symbol mapping */
-    const cst_val *v;
-    cst_val *p;
-    char *word;
-    int i,j;
-
-    word = cst_alloc(char,val_length(wlist)+1);
-
-    for (v=wlist,i=0; v; v=val_cdr(v),i++)
-    {
-	for (j=0; r->letter_table[j]; j++)
-	    if (cst_streq(val_string(val_car(v)),r->letter_table[j]))
-	    {
-		word[i] = j;
-		break;
-	    }
-        if (!r->letter_table[j])
-        {
-#if 0
-            printf("awb_debug unknown letter >%s<\n",val_string(val_car(v)));
-#endif
-            i--;  /* can't find this letter so skip it */
-        }
-    }
-
-    p = lts_apply(word,feats,r);
-    cst_free(word);
-
-    return p;
-}
-
 cst_val *lts_apply(const char *word,const char *feats,const cst_lts_rules *r)
 {
     int pos, index, i;

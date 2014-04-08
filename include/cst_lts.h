@@ -75,7 +75,6 @@ typedef struct cst_lts_rule_struct {
 cst_lts_rules *new_lts_rules();
 
 cst_val *lts_apply(const char *word,const char *feats,const cst_lts_rules *r);
-cst_val *lts_apply_val(const cst_val *wlist,const char *feats,const cst_lts_rules *r);
 
 #endif
 
