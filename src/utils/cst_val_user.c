@@ -52,22 +52,21 @@
 CST_VAL_REG_TD_TYPE(utterance,cst_utterance,7)
 CST_VAL_REG_TD_TYPE(wave,cst_wave,9)
 CST_VAL_REG_TD_TYPE(track,cst_track,11)
-CST_VAL_REG_TD_FUNCPTR(uttfunc,cst_uttfunc,15)
-CST_VAL_REG_TD_FUNCPTR(ffunc,cst_ffunction,17)
-CST_VAL_REG_TD_TYPE_NODEL(relation,cst_relation,19)
-CST_VAL_REG_TD_TYPE_NODEL(item,cst_item,21)
-CST_VAL_REG_TD_TYPE_NODEL(cart,cst_cart,23)
-CST_VAL_REG_TD_TYPE_NODEL(phoneset,cst_phoneset,25)
-CST_VAL_REG_TD_TYPE_NODEL(lexicon,cst_lexicon,27)
-CST_VAL_REG_TD_TYPE_NODEL(dur_stats,dur_stats,29)
-CST_VAL_REG_TD_TYPE_NODEL(userdata,cst_userdata,41)
+CST_VAL_REG_TD_FUNCPTR(uttfunc,cst_uttfunc,13)
+CST_VAL_REG_TD_FUNCPTR(ffunc,cst_ffunction,15)
+CST_VAL_REG_TD_TYPE_NODEL(relation,cst_relation,17)
+CST_VAL_REG_TD_TYPE_NODEL(item,cst_item,19)
+CST_VAL_REG_TD_TYPE_NODEL(cart,cst_cart,21)
+CST_VAL_REG_TD_TYPE_NODEL(phoneset,cst_phoneset,23)
+CST_VAL_REG_TD_TYPE_NODEL(lexicon,cst_lexicon,25)
+CST_VAL_REG_TD_TYPE_NODEL(userdata,cst_userdata,27)
 CST_VAL_REGISTER_TYPE_NODEL(userdata,cst_userdata)
-CST_VAL_REG_TD_FUNCPTR(itemfunc,cst_itemfunc,43)
-CST_VAL_REG_TD_TYPE(features,cst_features,45)
-CST_VAL_REG_TD_FUNCPTR(breakfunc,cst_breakfunc,47)
-CST_VAL_REG_TD_TYPE(cg_db,cst_cg_db,49)
-CST_VAL_REG_TD_TYPE(voice,cst_voice,51)
-CST_VAL_REG_TD_TYPE(audio_streaming_info,cst_audio_streaming_info,53)
+CST_VAL_REG_TD_FUNCPTR(itemfunc,cst_itemfunc,29)
+CST_VAL_REG_TD_TYPE(features,cst_features,31)
+CST_VAL_REG_TD_FUNCPTR(breakfunc,cst_breakfunc,33)
+CST_VAL_REG_TD_TYPE(cg_db,cst_cg_db,35)
+CST_VAL_REG_TD_TYPE(voice,cst_voice,37)
+CST_VAL_REG_TD_TYPE(audio_streaming_info,cst_audio_streaming_info,39)
 
 const cst_val_def cst_val_defs[] = {
     /* These ones are never called */
@@ -78,26 +77,19 @@ const cst_val_def cst_val_defs[] = {
     { "utterance", val_delete_utterance }, /*  7 utterance */
     { "wave", val_delete_wave },           /*  9 wave */
     { "track", val_delete_track },         /* 11 track */
-    { NULL, NULL },                        /* 13 (lpcres reserved) */
-    { "uttfunc", val_delete_uttfunc },     /* 15 uttfunc */
-    { "ffunc", val_delete_ffunc },         /* 17 ffunc */
-    { "relation", val_delete_relation },   /* 19 relation */
-    { "item", val_delete_item },           /* 21 item */
-    { "cart", val_delete_cart },           /* 23 cart */
-    { "phoneset", val_delete_phoneset },   /* 25 phoneset */
-    { "lexicon", val_delete_lexicon },     /* 27 lexicon */
-    { "dur_stats", val_delete_dur_stats }, /* 29 dur_stats */
-    { NULL, NULL },                        /* 31 (diphone_db reserved) */
-    { NULL, NULL },                        /* 33 (clunit_db reserved) */
-    { NULL, NULL },                        /* 35 (vit_cand reserved) */
-    { NULL, NULL },                        /* 37 (sts_list reserved) */
-    { NULL, NULL },                        /* 39 (reserved) */
-    { "userdata", val_delete_userdata },   /* 41 userdata */
-    { "itemfunc", val_delete_itemfunc },   /* 43 itemfunc */
-    { "features", val_delete_features },   /* 45 itemfunc */
-    { "breakfunc", val_delete_breakfunc }, /* 47 breakfunc */
-    { "cg_db", val_delete_cg_db },         /* 49 cg_db */
-    { "voice", val_delete_voice },         /* 51 cst_voice */
-    { "audio_streaming_info", val_delete_audio_streaming_info }, /* 53 asi */
+    { "uttfunc", val_delete_uttfunc },     /* 13 uttfunc */
+    { "ffunc", val_delete_ffunc },         /* 15 ffunc */
+    { "relation", val_delete_relation },   /* 17 relation */
+    { "item", val_delete_item },           /* 19 item */
+    { "cart", val_delete_cart },           /* 21 cart */
+    { "phoneset", val_delete_phoneset },   /* 23 phoneset */
+    { "lexicon", val_delete_lexicon },     /* 25 lexicon */
+    { "userdata", val_delete_userdata },   /* 27 userdata */
+    { "itemfunc", val_delete_itemfunc },   /* 29 itemfunc */
+    { "features", val_delete_features },   /* 31 features */
+    { "breakfunc", val_delete_breakfunc }, /* 33 breakfunc */
+    { "cg_db", val_delete_cg_db },         /* 35 cg_db */
+    { "voice", val_delete_voice },         /* 37 cst_voice */
+    { "audio_streaming_info", val_delete_audio_streaming_info }, /* 39 asi */
     { NULL, NULL } /* NULLs at end of list */
 };

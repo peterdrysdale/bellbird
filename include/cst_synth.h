@@ -71,8 +71,6 @@ typedef struct cst_dur_stats_struct {
     float mean;
     float stddev;
 } dur_stat;
-typedef dur_stat *dur_stats; /* only one star, due to funky cst_val magic */
-CST_VAL_USER_TYPE_DCLS(dur_stats,dur_stats)
 
 cst_utterance *default_segmentanalysis(cst_utterance *u);
 
@@ -95,4 +93,3 @@ typedef struct cst_synth_module_struct {
 } cst_synth_module;
 
 #endif
-
