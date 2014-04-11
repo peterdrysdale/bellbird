@@ -73,9 +73,6 @@ void delete_cg_db(cst_cg_db *db)
 {
     int i,j;
 
-    if (db->freeable == 0)
-        return;  /* its in the data segment, so not freeable */
-
     /* Woo Hoo!  We're gonna free this garbage with a big mallet */
     /* In spite of what the const qualifiers say ... */
     cst_free((void *)db->name);

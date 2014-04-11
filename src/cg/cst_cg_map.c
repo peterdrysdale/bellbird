@@ -299,8 +299,6 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
 {
     cst_cg_db* db = cst_alloc(cst_cg_db,1);
 
-    db->freeable = 1;  /* somebody can free this if they want */
-
     db->name = cst_read_string(fd);
     db->types = (const char**)cst_read_db_types(fd);
 

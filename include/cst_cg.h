@@ -128,8 +128,6 @@ typedef struct cst_cg_db_struct {
     int spamf0;
     float gain;
 
-    int freeable;  /* doesn't get dumped, but 1 when this a freeable struct */
-
 } cst_cg_db;
 
 /* Access model parameters, unpacking them as required */
