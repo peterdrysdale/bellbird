@@ -66,12 +66,6 @@ cst_utterance *utt_synth_phones(cst_utterance *u);
 cst_utterance *utt_synth_tokens(cst_utterance *u);
 cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v);
 
-typedef struct cst_dur_stats_struct {
-    char *phone;
-    float mean;
-    float stddev;
-} dur_stat;
-
 cst_utterance *default_segmentanalysis(cst_utterance *u);
 
 cst_utterance *default_tokenization(cst_utterance *u);

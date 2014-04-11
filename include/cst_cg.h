@@ -54,9 +54,15 @@
 
 #include "cst_cart.h"
 #include "cst_track.h"
+#include "cst_voice.h"
 #include "cst_wave.h"
 #include "cst_audio.h"
-#include "cst_synth.h" /* for dur_stat */
+
+typedef struct cst_dur_stats_struct {
+    char *phone;
+    float mean;
+    float stddev;
+} dur_stat;
 
 typedef struct cst_cg_db_struct {
     /* Please do not change this structure, but if you do only add things

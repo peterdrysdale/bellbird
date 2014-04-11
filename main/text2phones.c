@@ -160,6 +160,7 @@ int main(int argc, char **argv)
     delete_utterance(u);
     delete_features(args);
     delete_val(files);
+    delete_voice(v);
     
     return 0;
 }

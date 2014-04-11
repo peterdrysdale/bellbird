@@ -47,6 +47,7 @@
 #include "cst_cg.h"
 #include "cst_error.h"
 #include "cst_tokenstream.h"
+#include "cst_synth.h"
 #include "cst_utt_utils.h"
 #include "flite.h"
 
