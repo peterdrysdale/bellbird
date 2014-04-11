@@ -72,7 +72,7 @@ int phone_id(const cst_phoneset *ps,const char* phonename)
     return 0;
 }
 
-int phone_feat_id(const cst_phoneset *ps,const char* featname)
+static int phone_feat_id(const cst_phoneset *ps,const char* featname)
 {
     int i;
 

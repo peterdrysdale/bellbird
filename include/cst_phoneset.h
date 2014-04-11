@@ -72,7 +72,6 @@ const char *phone_feature_string(const cst_phoneset *ps,
 				 const char* phonename,
 				 const char *featname);
 int phone_id(const cst_phoneset *ps,const char* phonename);
-int phone_feat_id(const cst_phoneset *ps,const char* featname);
 
 const cst_phoneset *item_phoneset(const cst_item *i);
 
