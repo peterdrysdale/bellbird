@@ -144,7 +144,7 @@ static cst_tokenstream *new_tokenstream(const cst_string *whitespace,
     return ts;
 }
 
-void delete_tokenstream(cst_tokenstream *ts)
+static void delete_tokenstream(cst_tokenstream *ts)
 {
     cst_free(ts->whitespace);
     cst_free(ts->token);
