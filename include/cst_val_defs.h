@@ -75,11 +75,6 @@ cst_val *NAME##_val(const TYPE *v)                     \
  		         (void *)v);                   \
 }                                                      \
 
-#define CST_VAL_REG_TD_TYPE(NAME,TYPE,NUM)             \
-extern const int cst_val_type_##NAME;                  \
-const int cst_val_type_##NAME=NUM;                     \
-void val_delete_##NAME(void *v);                       \
-
 /* When objects of this type can never be owned by vals */
 #define CST_VAL_REGISTER_TYPE_NODEL(NAME,TYPE)         \
 TYPE *val_##NAME(const cst_val *v)                     \
@@ -93,11 +88,6 @@ cst_val *NAME##_val(const TYPE *v)                     \
  		         (void *)v);                   \
 }                                                      \
 
-#define CST_VAL_REG_TD_TYPE_NODEL(NAME,TYPE,NUM)       \
-extern const int cst_val_type_##NAME;                  \
-const int cst_val_type_##NAME=NUM;                     \
-void val_delete_##NAME(void *v) { (void)v; }           \
-
 #define CST_VAL_REGISTER_FUNCPTR(NAME,TYPE)            \
 TYPE val_##NAME(const cst_val *v)                      \
 {                                                      \
@@ -109,10 +99,5 @@ cst_val *NAME##_val(const TYPE v)                      \
     return val_new_typed(cst_val_type_##NAME,          \
  		         (void *)v);                   \
 }                                                      \
-
-#define CST_VAL_REG_TD_FUNCPTR(NAME,TYPE,NUM)          \
-extern const int cst_val_type_##NAME;                  \
-const int cst_val_type_##NAME=NUM;                     \
-void val_delete_##NAME(void *v) { (void)v; }           \
 
 #endif

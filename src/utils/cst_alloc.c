@@ -40,7 +40,7 @@
 /*               Date:  July 1999                                        */
 /*************************************************************************/
 /*                                                                       */
-/*  Basic wraparounds for malloc and free                                */
+/*  Basic wraparounds for calloc and free                                */
 /*                                                                       */
 /*************************************************************************/
 #include "cst_file.h"

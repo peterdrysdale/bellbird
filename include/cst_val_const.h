@@ -115,8 +115,6 @@
 #ifndef _CST_VAL_CONSTS_H__
 #define _CST_VAL_CONSTS_H__
 
-#include "cst_val_defs.h"
-
 #ifdef HAVE_CONFIG_H
    #include "config.h" /* defines NO_UNION_INITIALIZATION */
 #endif

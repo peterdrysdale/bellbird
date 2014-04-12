@@ -47,8 +47,6 @@
 #include "cst_voice.h"
 #include "flite.h"
 
-CST_VAL_REGISTER_TYPE(voice,cst_voice)
-
 cst_voice *new_voice()
 {
     cst_voice *v = cst_alloc(struct cst_voice_struct,1);
