@@ -21,6 +21,8 @@ option( ENABLE_CLANG "Build using clang compiler" OFF)
 
 if( ENABLE_ALSA )
     ADD_DEFINITIONS (-DCST_AUDIO_ALSA)
+else( ENABLE_ALSA )
+    ADD_DEFINITIONS (-DCST_AUDIO_NONE)
 endif( ENABLE_ALSA )
 
 if( ENABLE_O2 )
