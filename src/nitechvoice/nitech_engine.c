@@ -66,7 +66,7 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
                    ModelSet *ms, TreeSet *ts, VocoderSetup *vs)
 {
     cst_wave *w;
-    char buff[1024];
+    char buff[HTS_MAXBUFLEN];
     Tree *tree;
     int state, diffdur=0;
     int i;
@@ -86,11 +86,11 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
             break;
         data_index = 0;
         if (bell_isdigit_string(lines[j])) {   /* has frame information */
-            HTS_get_token_from_string(lines[j], &data_index, buff);
+            bell_get_token_from_string(lines[j], &data_index, buff, HTS_MAXBUFLEN);
             /* throw away start information */
-            HTS_get_token_from_string(lines[j], &data_index, buff);
+            bell_get_token_from_string(lines[j], &data_index, buff, HTS_MAXBUFLEN);
             /* throw away end information */
-            HTS_get_token_from_string(lines[j], &data_index, buff);
+            bell_get_token_from_string(lines[j], &data_index, buff, HTS_MAXBUFLEN);
             m->name = cst_strdup(buff);
         } else {
             m->name = cst_strdup(lines[j]);

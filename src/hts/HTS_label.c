@@ -131,11 +131,11 @@ void HTS_Label_load_from_strings(HTS_Label * label, size_t sampling_rate, size_t
       }
       data_index = 0;
       if (bell_isdigit_string(lines[i])) {   /* has frame infomation */
-         HTS_get_token_from_string(lines[i], &data_index, buff);
+         bell_get_token_from_string(lines[i], &data_index, buff, HTS_MAXBUFLEN);
          start = atof(buff);
-         HTS_get_token_from_string(lines[i], &data_index, buff);
+         bell_get_token_from_string(lines[i], &data_index, buff, HTS_MAXBUFLEN);
          end = atof(buff);
-         HTS_get_token_from_string(lines[i], &data_index, buff);
+         bell_get_token_from_string(lines[i], &data_index, buff, HTS_MAXBUFLEN);
          lstring->name = cst_strdup(buff);
          lstring->start = rate * start;
          lstring->end = rate * end;

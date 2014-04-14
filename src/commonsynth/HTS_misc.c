@@ -62,7 +62,7 @@
 HTS_MISC_C_START;
 
 #include <stdarg.h>             /* for va_list */
-#include <string.h>             /* for strcpy() */
+#include <string.h>             /* for memcpy */
 
 #include "cst_alloc.h"
 #include "cst_error.h"
@@ -332,8 +332,8 @@ size_t HTS_fread_little_endian(void *buf, size_t size, size_t n, HTS_File * fp)
    return block;
 }
 
-/* HTS_get_pattern_token: get pattern token (single/double quote can be used) */
-bell_boolean HTS_get_pattern_token(HTS_File * fp, char *buff)
+/* bell_get_pattern_token: get pattern token (single/double quote can be used) */
+bell_boolean bell_get_pattern_token(HTS_File * fp, char *buff, size_t bufflen)
 {
    char c;
    size_t i;
@@ -363,13 +363,14 @@ bell_boolean HTS_get_pattern_token(HTS_File * fp, char *buff)
       dquote = TRUE;
    }
 
-   if (c == ',') {              /*special character ',' */
-      strcpy(buff, ",");
+   if (c == ',' && bufflen > 1) {    /*special character ',' */
+      buff[0] = ',';
+      buff[1] = '\0';
       return TRUE;
    }
 
    i = 0;
-   while (1) {
+   while (i < bufflen) {
       buff[i++] = c;
       c = HTS_fgetc(fp);
       if (squote && c == '\'')
@@ -385,13 +386,18 @@ bell_boolean HTS_get_pattern_token(HTS_File * fp, char *buff)
             break;
       }
    }
+   if (i == bufflen)
+   {
+      cst_errmsg("bell_get_pattern_token: Overflow of buffer probably due to malformed voice file\n");
+      cst_error();
+   }
 
    buff[i] = '\0';
    return TRUE;
 }
 
-/* HTS_get_token: get token from file pointer (separators are space, tab, and line break) */
-bell_boolean HTS_get_token_from_fp(HTS_File * fp, char *buff)
+/* bell_get_token_from_fp: get token from file pointer (separators are space, tab, and line break) */
+bell_boolean bell_get_token_from_fp(HTS_File * fp, char *buff, size_t bufflen)
 {
    char c;
    size_t i;
@@ -407,7 +413,7 @@ bell_boolean HTS_get_token_from_fp(HTS_File * fp, char *buff)
          return FALSE;
    }
 
-   for (i = 0; c != ' ' && c != '\n' && c != '\t';) {
+   for (i = 0; (i < bufflen) && c != ' ' && c != '\n' && c != '\t';) {
       buff[i++] = c;
       if (HTS_feof(fp))
          break;
@@ -415,13 +421,18 @@ bell_boolean HTS_get_token_from_fp(HTS_File * fp, char *buff)
       if (c == EOF)
          break;
    }
+   if (i == bufflen)
+   {
+      cst_errmsg("bell_get_token_from_fp: Overflow of buffer probably due to malformed voice file\n");
+      cst_error();
+   }
 
    buff[i] = '\0';
    return TRUE;
 }
 
-/* HTS_get_token_with_separator: get token from file pointer with specified separator */
-bell_boolean HTS_get_token_from_fp_with_separator(HTS_File * fp, char *buff, char separator)
+/* bell_get_token_from_fp_with_separator: get token from file pointer with specified separator */
+bell_boolean bell_get_token_from_fp_with_separator(HTS_File * fp, char *buff, size_t bufflen, char separator)
 {
    char c;
    size_t i;
@@ -437,7 +448,7 @@ bell_boolean HTS_get_token_from_fp_with_separator(HTS_File * fp, char *buff, cha
          return FALSE;
    }
 
-   for (i = 0; c != separator;) {
+   for (i = 0; (i < bufflen) && c != separator;) {
       buff[i++] = c;
       if (HTS_feof(fp))
          break;
@@ -445,13 +456,18 @@ bell_boolean HTS_get_token_from_fp_with_separator(HTS_File * fp, char *buff, cha
       if (c == EOF)
          break;
    }
+   if (i == bufflen)
+   {
+      cst_errmsg("bell_get_token_from_fp_with_separator: Overflow of buffer probably due to malformed voice file\n");
+      cst_error();
+   }
 
    buff[i] = '\0';
    return TRUE;
 }
 
-/* HTS_get_token_from_string: get token from string (separators are space, tab, and line break) */
-bell_boolean HTS_get_token_from_string(const char *string, size_t * index, char *buff)
+/* bell_get_token_from_string: get token from string (separators are space, tab, and line break) */
+bell_boolean bell_get_token_from_string(const char *string, size_t * index, char *buff, size_t bufflen)
 {
    char c;
    size_t i;
@@ -467,20 +483,25 @@ bell_boolean HTS_get_token_from_string(const char *string, size_t * index, char 
          return FALSE;
       c = string[(*index)++];
    }
-   for (i = 0; c != ' ' && c != '\n' && c != '\t' && c != '\0'; i++) {
+   for (i = 0; (i < bufflen) && c != ' ' && c != '\n' && c != '\t' && c != '\0'; i++) {
       buff[i] = c;
       c = string[(*index)++];
+   }
+   if (i == bufflen)
+   {
+      cst_errmsg("bell_get_token_from_string: Overflow of buffer probably due to malformed labels\n");
+      cst_error();
    }
 
    buff[i] = '\0';
    return TRUE;
 }
 
-/* HTS_get_token_from_string_with_separator: get token from string with specified separator */
-bell_boolean HTS_get_token_from_string_with_separator(const char *str, size_t * index, char *buff, char separator)
+/* bell_get_token_from_string_with_separator: get token from string with specified separator */
+bell_boolean bell_get_token_from_string_with_separator(const char *str, size_t * index, char *buff, size_t bufflen, char separator)
 {
    char c;
-   size_t len = 0;
+   size_t i = 0;
 
    if (str == NULL)
       return FALSE;
@@ -494,17 +515,22 @@ bell_boolean HTS_get_token_from_string_with_separator(const char *str, size_t * 
       (*index)++;
       c = str[(*index)];
    }
-   while (c != separator && c != '\0') {
-      buff[len++] = c;
+   while ((i < bufflen) && c != separator && c != '\0') {
+      buff[i++] = c;
       (*index)++;
       c = str[(*index)];
+   }
+   if (i == bufflen)
+   {
+      cst_errmsg("bell_get_token_from_string: Overflow of buffer probably due to malformed voice file\n");
+      cst_error();
    }
    if (c != '\0')
       (*index)++;
 
-   buff[len] = '\0';
+   buff[i] = '\0';
 
-   if (len > 0)
+   if (i > 0)
       return TRUE;
    else
       return FALSE;

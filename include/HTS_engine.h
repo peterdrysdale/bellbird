@@ -330,9 +330,6 @@ void HTS_Engine_refresh(HTS_Engine * engine);
 /* HTS_Engine_clear: free engine */
 void HTS_Engine_clear(HTS_Engine * engine);
 
-/*    Extra stuff we need */
-#define HTS_MAXBUFLEN 1024
-
 HTS_ENGINE_H_END;
 
 #endif                          /* !HTS_ENGINE_H */

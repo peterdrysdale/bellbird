@@ -207,12 +207,12 @@ static HTS_Boolean HTS_Question_load(HTS_Question * question, HTS_File * fp)
    HTS_Question_clear(question);
 
    /* get question name */
-   if (HTS_get_pattern_token(fp, buff) == FALSE)
+   if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE)
       return FALSE;
    question->string = cst_strdup(buff);
 
    /* get pattern list */
-   if (HTS_get_pattern_token(fp, buff) == FALSE) {
+   if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
       HTS_Question_clear(question);
       return FALSE;
    }
@@ -220,7 +220,7 @@ static HTS_Boolean HTS_Question_load(HTS_Question * question, HTS_File * fp)
    last_pattern = NULL;
    if (strcmp(buff, "{") == 0) {
       while (1) {
-         if (HTS_get_pattern_token(fp, buff) == FALSE) {
+         if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
             HTS_Question_clear(question);
             return FALSE;
          }
@@ -231,7 +231,7 @@ static HTS_Boolean HTS_Question_load(HTS_Question * question, HTS_File * fp)
             question->head = pattern;
          pattern->string = cst_strdup(buff);
          pattern->next = NULL;
-         if (HTS_get_pattern_token(fp, buff) == FALSE) {
+         if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
             HTS_Question_clear(question);
             return FALSE;
          }
@@ -371,7 +371,7 @@ static HTS_Boolean HTS_Tree_load(HTS_Tree * tree, HTS_File * fp, HTS_Question * 
    if (tree == NULL || fp == NULL)
       return FALSE;
 
-   if (HTS_get_pattern_token(fp, buff) == FALSE) {
+   if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
       HTS_Tree_clear(tree);
       return FALSE;
    }
@@ -380,14 +380,14 @@ static HTS_Boolean HTS_Tree_load(HTS_Tree * tree, HTS_File * fp, HTS_Question * 
    tree->root = last_node = node;
 
    if (strcmp(buff, "{") == 0) {
-      while (HTS_get_pattern_token(fp, buff) == TRUE && strcmp(buff, "}") != 0) {
+      while (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == TRUE && strcmp(buff, "}") != 0) {
          node = HTS_Node_find(last_node, atoi(buff));
          if (node == NULL) {
             cst_errmsg("HTS_Tree_load: Cannot find node %d.\n", atoi(buff));
             HTS_Tree_clear(tree);
             return FALSE;
          }
-         if (HTS_get_pattern_token(fp, buff) == FALSE) {
+         if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
             HTS_Tree_clear(tree);
             return FALSE;
          }
@@ -402,7 +402,7 @@ static HTS_Boolean HTS_Tree_load(HTS_Tree * tree, HTS_File * fp, HTS_Question * 
          HTS_Node_initialize(node->yes);
          HTS_Node_initialize(node->no);
 
-         if (HTS_get_pattern_token(fp, buff) == FALSE) {
+         if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
             node->quest = NULL;
             free(node->yes);
             free(node->no);
@@ -416,7 +416,7 @@ static HTS_Boolean HTS_Tree_load(HTS_Tree * tree, HTS_File * fp, HTS_Question * 
          node->no->next = last_node;
          last_node = node->no;
 
-         if (HTS_get_pattern_token(fp, buff) == FALSE) {
+         if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
             node->quest = NULL;
             free(node->yes);
             free(node->no);
@@ -508,7 +508,7 @@ static HTS_Boolean HTS_Window_load(HTS_Window * win, HTS_File ** fp, size_t size
    win->coefficient = cst_alloc(double *,win->size);
    /* set delta coefficents */
    for (i = 0; i < win->size; i++) {
-      if (HTS_get_token_from_fp(fp[i], buff) == FALSE) {
+      if (bell_get_token_from_fp(fp[i], buff, HTS_MAXBUFLEN) == FALSE) {
          result = FALSE;
          fsize = 1;
       } else {
@@ -521,7 +521,7 @@ static HTS_Boolean HTS_Window_load(HTS_Window * win, HTS_File ** fp, size_t size
       /* read coefficients */
       win->coefficient[i] = cst_alloc(double,fsize);
       for (j = 0; j < fsize; j++) {
-         if (HTS_get_token_from_fp(fp[i], buff) == FALSE) {
+         if (bell_get_token_from_fp(fp[i], buff, HTS_MAXBUFLEN) == FALSE) {
             result = FALSE;
             win->coefficient[i][j] = 0.0;
          } else {
@@ -623,7 +623,7 @@ static HTS_Boolean HTS_Model_load_tree(HTS_Model * model, HTS_File * fp)
    last_question = NULL;
    last_tree = NULL;
    while (!HTS_feof(fp)) {
-      HTS_get_pattern_token(fp, buff);
+      bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN);
       /* parse questions */
       if (strcmp(buff, "QS") == 0) {
          question = cst_alloc(HTS_Question,1);
@@ -973,7 +973,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
       temp_fullcontext_format = NULL;
       temp_fullcontext_version = NULL;
       temp_gv_off_context = NULL;
-      if (HTS_get_token_from_fp_with_separator(fp, buff1, '\n') != TRUE) {
+      if (bell_get_token_from_fp_with_separator(fp, buff1, HTS_MAXBUFLEN, '\n') != TRUE) {
          error = TRUE;
          break;
       }
@@ -983,7 +983,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          break;
       }
       while (1) {
-         if (HTS_get_token_from_fp_with_separator(fp, buff1, '\n') != TRUE) {
+         if (bell_get_token_from_fp_with_separator(fp, buff1, HTS_MAXBUFLEN, '\n') != TRUE) {
             error = TRUE;
             break;
          }
@@ -1067,7 +1067,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
       if (i == 0) {
          stream_type_list = cst_alloc(char *,ms->num_streams);
          for (j = 0, matched_size = 0; j < ms->num_streams; j++) {
-            if (HTS_get_token_from_string_with_separator(ms->stream_type, &matched_size, buff2, ',') == TRUE) {
+            if (bell_get_token_from_string_with_separator(ms->stream_type, &matched_size, buff2, HTS_MAXBUFLEN, ',') == TRUE) {
                stream_type_list[j] = cst_strdup(buff2);
             } else {
                stream_type_list[j] = NULL;
@@ -1097,14 +1097,14 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          temp_option[j] = NULL;
       /* load STREAM options */
       while (1) {
-         if (HTS_get_token_from_fp_with_separator(fp, buff1, '\n') != TRUE) {
+         if (bell_get_token_from_fp_with_separator(fp, buff1, HTS_MAXBUFLEN, '\n') != TRUE) {
             error = TRUE;
             break;
          }
          if (strcmp(buff1, "[POSITION]") == 0) {
             break;
          } else if (HTS_match_head_string(buff1, "VECTOR_LENGTH[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1114,7 +1114,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                }
             }
          } else if (HTS_match_head_string(buff1, "IS_MSD[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1124,7 +1124,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                }
             }
          } else if (HTS_match_head_string(buff1, "NUM_WINDOWS[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1134,7 +1134,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                }
             }
          } else if (HTS_match_head_string(buff1, "USE_GV[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1144,7 +1144,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                }
             }
          } else if (HTS_match_head_string(buff1, "OPTION[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1218,7 +1218,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          temp_gv_tree[j] = NULL;
       /* load POSITION */
       while (1) {
-         if (HTS_get_token_from_fp_with_separator(fp, buff1, '\n') != TRUE) {
+         if (bell_get_token_from_fp_with_separator(fp, buff1, HTS_MAXBUFLEN, '\n') != TRUE) {
             error = TRUE;
             break;
          }
@@ -1233,12 +1233,12 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                free(temp_duration_tree);
             temp_duration_tree = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "STREAM_WIN[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
                         for (k = 0; k < num_windows[j]; k++) {
-                           if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ',') == TRUE)
+                           if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ',') == TRUE)
                               temp_stream_win[j][k] = cst_strdup(buff2);
                            else
                               error = TRUE;
@@ -1249,7 +1249,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                }
             }
          } else if (HTS_match_head_string(buff1, "STREAM_PDF[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1262,7 +1262,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                }
             }
          } else if (HTS_match_head_string(buff1, "STREAM_TREE[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1275,7 +1275,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                }
             }
          } else if (HTS_match_head_string(buff1, "GV_PDF[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1288,7 +1288,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                }
             }
          } else if (HTS_match_head_string(buff1, "GV_TREE[", &matched_size) == TRUE) {
-            if (HTS_get_token_from_string_with_separator(buff1, &matched_size, buff2, ']') == TRUE) {
+            if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
@@ -1340,7 +1340,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
       pdf_fp = NULL;
       tree_fp = NULL;
       matched_size = 0;
-      if (HTS_get_token_from_string_with_separator(temp_duration_pdf, &matched_size, buff2, '-') == TRUE) {
+      if (bell_get_token_from_string_with_separator(temp_duration_pdf, &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
          s = (size_t) atoi(buff2);
          e = (size_t) atoi(&temp_duration_pdf[matched_size]);
          HTS_fseek(fp, (long) s, SEEK_CUR);
@@ -1348,7 +1348,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          HTS_fseek(fp, start_of_data, SEEK_SET);
       }
       matched_size = 0;
-      if (HTS_get_token_from_string_with_separator(temp_duration_tree, &matched_size, buff2, '-') == TRUE) {
+      if (bell_get_token_from_string_with_separator(temp_duration_tree, &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
          s = (size_t) atoi(buff2);
          e = (size_t) atoi(&temp_duration_tree[matched_size]);
          HTS_fseek(fp, (long) s, SEEK_CUR);
@@ -1366,7 +1366,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
             win_fp[k] = NULL;
          for (k = 0; k < num_windows[j]; k++) {
             matched_size = 0;
-            if (HTS_get_token_from_string_with_separator(temp_stream_win[j][k], &matched_size, buff2, '-') == TRUE) {
+            if (bell_get_token_from_string_with_separator(temp_stream_win[j][k], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
                s = (size_t) atoi(buff2);
                e = (size_t) atoi(&temp_stream_win[j][k][matched_size]);
                HTS_fseek(fp, (long) s, SEEK_CUR);
@@ -1385,7 +1385,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          pdf_fp = NULL;
          tree_fp = NULL;
          matched_size = 0;
-         if (HTS_get_token_from_string_with_separator(temp_stream_pdf[j], &matched_size, buff2, '-') == TRUE) {
+         if (bell_get_token_from_string_with_separator(temp_stream_pdf[j], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
             s = (size_t) atoi(buff2);
             e = (size_t) atoi(&temp_stream_pdf[j][matched_size]);
             HTS_fseek(fp, (long) s, SEEK_CUR);
@@ -1393,7 +1393,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
             HTS_fseek(fp, start_of_data, SEEK_SET);
          }
          matched_size = 0;
-         if (HTS_get_token_from_string_with_separator(temp_stream_tree[j], &matched_size, buff2, '-') == TRUE) {
+         if (bell_get_token_from_string_with_separator(temp_stream_tree[j], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
             s = (size_t) atoi(buff2);
             e = (size_t) atoi(&temp_stream_tree[j][matched_size]);
             HTS_fseek(fp, (long) s, SEEK_CUR);
@@ -1410,7 +1410,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          pdf_fp = NULL;
          tree_fp = NULL;
          matched_size = 0;
-         if (HTS_get_token_from_string_with_separator(temp_gv_pdf[j], &matched_size, buff2, '-') == TRUE) {
+         if (bell_get_token_from_string_with_separator(temp_gv_pdf[j], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
             s = (size_t) atoi(buff2);
             e = (size_t) atoi(&temp_gv_pdf[j][matched_size]);
             HTS_fseek(fp, (long) s, SEEK_CUR);
@@ -1418,7 +1418,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
             HTS_fseek(fp, start_of_data, SEEK_SET);
          }
          matched_size = 0;
-         if (HTS_get_token_from_string_with_separator(temp_gv_tree[j], &matched_size, buff2, '-') == TRUE) {
+         if (bell_get_token_from_string_with_separator(temp_gv_tree[j], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
             s = (size_t) atoi(buff2);
             e = (size_t) atoi(&temp_gv_tree[j][matched_size]);
             HTS_fseek(fp, (long) s, SEEK_CUR);

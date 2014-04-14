@@ -127,22 +127,22 @@ int SearchTree (char *str, Node *node)
 
 static void LoadQuestions(HTS_File *fp, Question *q)
 {
-   char buf[1024];
+   char buf[HTS_MAXBUFLEN];
 
-   HTS_get_pattern_token(fp, buf);
+   bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
    q->qName = cst_strdup(buf);
    q->phead = q->ptail = cst_alloc(Pattern,1);
 
-   HTS_get_pattern_token(fp, buf);
+   bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
    if ( cst_streq(buf,"{") )
    {
       while ( !cst_streq(buf,"}") )
       {
-          HTS_get_pattern_token(fp, buf);
+          bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
           q->ptail->pat = cst_strdup(buf);
           q->ptail->next = cst_alloc(Pattern,1);
           q->ptail = q->ptail->next;
-          HTS_get_pattern_token(fp, buf);
+          bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
       }
    }
 }
@@ -219,25 +219,25 @@ static Node *FindNode (Node *node, int num)
          
 static void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
 {
-   char buf[1024];
+   char buf[HTS_MAXBUFLEN];
    Node *node;
    
-   HTS_get_pattern_token(fp, buf);
+   bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
    node = cst_alloc(Node,1);
    tree->root = node;
    
    if ( cst_streq(buf,"{") )
    {
-      while ( HTS_get_pattern_token(fp, buf) , !cst_streq(buf,"}") )
+      while ( bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN) , !cst_streq(buf,"}") )
       {
          node = FindNode(tree->root, atoi(buf));
-         HTS_get_pattern_token(fp, buf);     /* load a question applied at this node */
+         bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);     /* load a question applied at this node */
          
          node->quest = FindQuestion(ts, type, buf);
          node->yes = cst_alloc(Node,1);
          node->no  = cst_alloc(Node,1);
 
-         HTS_get_pattern_token(fp, buf);
+         bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
          if (IsNum(buf))
          {
             node->no->idx = atoi(buf);
@@ -247,7 +247,7 @@ static void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
             node->no->pdf = name2num(buf);
          }
          
-         HTS_get_pattern_token(fp, buf);
+         bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
          if (IsNum(buf))
          {
             node->yes->idx = atoi(buf);
@@ -266,7 +266,7 @@ static void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
    
 void LoadTreesFile(TreeSet *ts, Mtype type)
 {
-   char buf[1024];
+   char buf[HTS_MAXBUFLEN];
    Question *q;
    Tree *t;
 
@@ -280,7 +280,7 @@ void LoadTreesFile(TreeSet *ts, Mtype type)
    
    while (!HTS_feof(hfp))
    {
-      HTS_get_pattern_token(hfp, buf);
+      bell_get_pattern_token(hfp, buf, HTS_MAXBUFLEN);
       if ( cst_streq(buf,"QS") )
       {
          LoadQuestions(hfp, q);
