@@ -56,7 +56,6 @@
 #define CST_VAL_TYPE_FLOAT   3
 #define CST_VAL_TYPE_STRING  5
 #define CST_VAL_TYPE_FIRST_FREE 7
-#define CST_VAL_TYPE_MAX     54
 
 typedef struct  cst_val_cons_struct {
     struct cst_val_struct *car;

@@ -413,7 +413,7 @@ bell_boolean bell_get_token_from_fp(HTS_File * fp, char *buff, size_t bufflen)
          return FALSE;
    }
 
-   for (i = 0; (i < bufflen) && c != ' ' && c != '\n' && c != '\t';) {
+   for (i = 0; c != ' ' && c != '\n' && c != '\t' && (i < bufflen);) {
       buff[i++] = c;
       if (HTS_feof(fp))
          break;
@@ -448,7 +448,7 @@ bell_boolean bell_get_token_from_fp_with_separator(HTS_File * fp, char *buff, si
          return FALSE;
    }
 
-   for (i = 0; (i < bufflen) && c != separator;) {
+   for (i = 0; c != separator && (i < bufflen);) {
       buff[i++] = c;
       if (HTS_feof(fp))
          break;
@@ -483,7 +483,7 @@ bell_boolean bell_get_token_from_string(const char *string, size_t * index, char
          return FALSE;
       c = string[(*index)++];
    }
-   for (i = 0; (i < bufflen) && c != ' ' && c != '\n' && c != '\t' && c != '\0'; i++) {
+   for (i = 0; c != ' ' && c != '\n' && c != '\t' && c != '\0' && (i < bufflen); i++) {
       buff[i] = c;
       c = string[(*index)++];
    }
@@ -515,7 +515,7 @@ bell_boolean bell_get_token_from_string_with_separator(const char *str, size_t *
       (*index)++;
       c = str[(*index)];
    }
-   while ((i < bufflen) && c != separator && c != '\0') {
+   while (c != separator && c != '\0' && (i < bufflen)) {
       buff[i++] = c;
       (*index)++;
       c = str[(*index)];

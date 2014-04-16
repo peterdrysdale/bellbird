@@ -651,7 +651,16 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 	else
 	{
 	    aaa = cst_strdup(name);
-	    strcpy(&aaa[cst_strlen(name)-cst_strlen(p)],ccc+1);
+            /* remove apostrophe from aaa*/
+            ccc++;
+            k = cst_strlen(name)-cst_strlen(p);
+            l = 0;
+            while(ccc[l] != '\0')
+            {
+                aaa[k+l] = ccc[l];
+                l++;
+            }
+            aaa[k+l] = '\0';
 	    r = us_tokentowords_one(token,aaa);
 	    cst_free(aaa);
 	}
