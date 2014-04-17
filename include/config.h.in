@@ -40,9 +40,6 @@
    */
 #undef LT_OBJDIR
 
-/* Whether unions can be initialized */
-#undef NO_UNION_INITIALIZATION
-
 /* Name of package */
 #undef PACKAGE
 

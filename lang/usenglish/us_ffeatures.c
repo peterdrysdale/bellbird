@@ -93,9 +93,9 @@ static const cst_val *month_range(const cst_item *token)
     int v = item_feat_int(token,"name");
 
     if ((v > 0) && ( v < 32))
-	return VAL_STRING_1;	
+	return &val_string_1;
     else
-	return VAL_STRING_0;	
+	return &val_string_0;
 }
 
 static const cst_val *token_pos_guess(const cst_item *token)

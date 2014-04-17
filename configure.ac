@@ -39,20 +39,6 @@ AC_SUBST(LIBBELLBIRD_CMULEX_VERSION)
 LIBBELLBIRD_USENGLISH_VERSION="0:0:0"
 AC_SUBST(LIBBELLBIRD_USENGLISH_VERSION)
 
-
-dnl Does this compiler support initialization of unions
-AC_MSG_CHECKING([if compiler supports initialization of unions])
-AC_COMPILE_IFELSE(
-    [AC_LANG_PROGRAM([[#include <stdio.h>]],
-        [[struct a { union { float b; int c; } d; };
-          const struct a e = { .d={ .b=3.14 } }; ]])],
-    [unioninit=yes],
-    [unioninit=no])
-AC_MSG_RESULT([$unioninit])
-if test "$unioninit" = no; then
-   AC_DEFINE([NO_UNION_INITIALIZATION], [], [Whether unions can be initialized])
-fi
-
 dnl determine audio type or use none if none supported on this platform
 AUDIODRIVER=none
 

@@ -305,9 +305,9 @@ const cst_val *accented(const cst_item *syl)
 {
     if ((item_feat_present(syl,"accent")) ||
 	(item_feat_present(syl,"endtone")))
-	return VAL_STRING_1;
+	return &val_string_1;
     else
-	return VAL_STRING_0;
+	return &val_string_0;
 }
 
 static const cst_val *seg_coda_ctype(const cst_item *seg, const char *ctype)
@@ -321,13 +321,13 @@ static const cst_val *seg_coda_ctype(const cst_item *seg, const char *ctype)
     {
 	if (cst_streq("+",phone_feature_string(ps,item_feat_string(s,"name"),
 					       "vc")))
-	    return VAL_STRING_0;
+	    return &val_string_0;
 	if (cst_streq(ctype,phone_feature_string(ps,item_feat_string(s,"name"),
 					       "ctype")))
-	    return VAL_STRING_1;
+	    return &val_string_1;
     }
 
-    return VAL_STRING_0;
+    return &val_string_0;
 }
 
 static const cst_val *seg_onset_ctype(const cst_item *seg, const char *ctype)
@@ -341,13 +341,13 @@ static const cst_val *seg_onset_ctype(const cst_item *seg, const char *ctype)
     {
 	if (cst_streq("+",phone_feature_string(ps,item_feat_string(s,"name"),
 					       "vc")))
-	    return VAL_STRING_0;
+	    return &val_string_0;
 	if (cst_streq(ctype,phone_feature_string(ps,item_feat_string(s,"name"),
 						 "ctype")))
-	    return VAL_STRING_1;
+	    return &val_string_1;
     }
 
-    return VAL_STRING_0;
+    return &val_string_0;
 }
 
 static const cst_val *seg_coda_fric(const cst_item *seg)
@@ -382,16 +382,16 @@ static const cst_val *seg_onset_nasal(const cst_item *seg)
 
 static const cst_val *seg_coda_glide(const cst_item *seg)
 {
-    if (seg_coda_ctype(seg,"r") == VAL_STRING_0)
+    if (seg_coda_ctype(seg,"r") == &val_string_0)
 	    return seg_coda_ctype(seg,"l");
-    return VAL_STRING_1;
+    return &val_string_1;
 }
 
 static const cst_val *seg_onset_glide(const cst_item *seg)
 {
-    if (seg_onset_ctype(seg,"r") == VAL_STRING_0)
+    if (seg_onset_ctype(seg,"r") == &val_string_0)
 	    return seg_onset_ctype(seg,"l");
-    return VAL_STRING_1;
+    return &val_string_1;
 }
 
 static const cst_val *seg_onsetcoda(const cst_item *seg)
@@ -399,7 +399,7 @@ static const cst_val *seg_onsetcoda(const cst_item *seg)
     const cst_item *s;
     const cst_phoneset *ps = item_phoneset(seg);
 
-    if (!seg) return VAL_STRING_0;
+    if (!seg) return &val_string_0;
     for (s=item_next(item_as(seg,"SylStructure"));
 	 s;
 	 s=item_next(s))
@@ -496,9 +496,9 @@ static const cst_val *syl_final(const cst_item *seg)
     const cst_item *s = item_as(seg,"SylStructure");
 
     if (!s || (item_next(s) == NULL))
-	return VAL_STRING_1;
+	return &val_string_1;
     else
-	return VAL_STRING_0;
+	return &val_string_0;
 }
 
 static const cst_val *word_punc(const cst_item *word)
@@ -529,17 +529,17 @@ static const cst_val *word_break(const cst_item *word)
     ww = item_as(word,"Phrase");
 
     if ((ww == NULL) || (item_next(ww) != 0))
-	return VAL_STRING_1;
+	return &val_string_1;
     else
     {
 	pp = item_parent(ww);
 	pname = val_string(item_feat(pp,"name"));
 	if (cst_streq("BB",pname))
-	    return VAL_STRING_4;
+	    return &val_string_4;
 	else if (cst_streq("B",pname))
-	    return VAL_STRING_3;
+	    return &val_string_3;
 	else 
-	    return VAL_STRING_1;
+	    return &val_string_1;
     }
 }
 
@@ -646,11 +646,11 @@ static const cst_val *syl_break(const cst_item *syl)
     ss = item_as(syl,"SylStructure");
 
     if (ss == NULL)
-	return VAL_STRING_1;  /* hmm, no sylstructure */
+	return &val_string_1;  /* hmm, no sylstructure */
     else if (item_next(ss) != NULL)
-	return VAL_STRING_0;  /* word internal */
+	return &val_string_0;  /* word internal */
     else if (item_parent(ss) == NULL)  /* no parent */
-	return VAL_STRING_1;
+	return &val_string_1;
     else
 	return word_break(item_parent(ss));
 }
@@ -664,15 +664,15 @@ static const cst_val *cg_break(const cst_item *syl)
     ss = item_as(syl,"SylStructure");
 
     if (ss == NULL)
-	return VAL_STRING_0;  /* hmm, no sylstructure */
+	return &val_string_0;  /* hmm, no sylstructure */
     else if (item_next(ss) != NULL)
-	return VAL_STRING_0;  /* word internal */
+	return &val_string_0;  /* word internal */
     else if (path_to_item(ss,"R:SylStructure.parent.R:Word.n") == NULL)
-        return VAL_STRING_4;  /* utterance final */
+        return &val_string_4;  /* utterance final */
     else if (path_to_item(ss,"R:SylStructure.parent.R:Phrase.n") == NULL)
-        return VAL_STRING_3;  /* phrase final */
+        return &val_string_3;  /* phrase final */
     else
-	return VAL_STRING_1;  /* word final */
+	return &val_string_1;  /* word final */
 }
 
 static const cst_val *syl_codasize(const cst_item *syl)
@@ -758,7 +758,7 @@ static const cst_val *segment_duration(const cst_item *seg)
     const cst_item *s = item_as(seg,"Segment");
 
     if (!s)
-	return VAL_STRING_0;
+	return &val_string_0;
     else if (item_prev(s) == NULL)
 	return item_feat(s,"end");
     else
