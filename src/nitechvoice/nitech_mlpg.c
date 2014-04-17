@@ -64,7 +64,7 @@
 /* calc_R_and_r : calculate R=W'U^{-1}W and r=W'U^{-1}M */
 static void calc_R_and_r(PStreamChol *pst, int m)
 {
-   register int i, j, k, l, n;
+   int i, j, k, l, n;
    double   wu;
 
    for (i=0; i<pst->T; i++) {
@@ -123,7 +123,7 @@ static void InitPStream(PStreamChol *pst)
 /* FreePStream : Free PStream */
 static void FreePStream(PStreamChol *pst)
 {
-    register int t;
+    int t;
 
     for (t=0; t<pst->dw.num; t++)
         cst_free(pst->dw.width[t]);

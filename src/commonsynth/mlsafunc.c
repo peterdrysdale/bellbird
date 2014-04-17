@@ -55,7 +55,7 @@
 static double mlsafir(const double x, const double *b, const int m, const double a, const double aa, double *d)
 {  
    double y = 0.0;
-   register int i;
+   int i;
 
    d[0] = x;
    d[1] = aa*d[0] + a*d[1];
@@ -74,7 +74,7 @@ static double mlsadf1(double x, const double *b, const double a,
                        const int pd, double *d, const double *ppade)
 {
    double v, out = 0.0, *pt, aa;
-   register int i;
+   int i;
 
    aa = 1 - a*a;
    pt = &d[pd+1];
@@ -98,7 +98,7 @@ static double mlsadf2(double x, const double *b, const int m, const double a,
 {
   double v, out = 0.0, *pt;
   double aa;
-  register int i;
+  int i;
     
   aa = 1 - a*a;
    pt = &d[pd * (m+2)];

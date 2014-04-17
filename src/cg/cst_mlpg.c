@@ -192,7 +192,7 @@ static void InitPStreamChol(PStreamChol *pst, const float *dynwin, int fsize,
 // calc_R_and_r: calculate R = W'U^{-1}W and r = W'U^{-1}M
 static void calc_R_and_r(PStreamChol *pst, const int m)
 {
-    register int i, j, k, l, n;
+    int i, j, k, l, n;
     double   wu;
    
     for (i = 0; i < pst->T; i++) {
@@ -226,7 +226,7 @@ static void calc_R_and_r(PStreamChol *pst, const int m)
 // generate parameter sequence from pdf sequence using Cholesky decomposition
 static void mlpgChol(PStreamChol *pst)
 {
-   register int m;
+   int m;
 
    // generating parameter in each dimension
    for (m = 0; m<=pst->order; m++)

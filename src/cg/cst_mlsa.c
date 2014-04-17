@@ -206,7 +206,7 @@ static void b2mc (double *b, double *mc, int m, double a)
 /* freqt : frequency transformation */
 static void freqt (double *c1, int m1, double *c2, int m2, double a, VocoderSetup *vs)
 {
-   register int i, j;
+   int i, j;
    double b;
     
    if (vs->d==NULL) {
@@ -243,7 +243,7 @@ static void freqt (double *c1, int m1, double *c2, int m2, double a, VocoderSetu
 /* c2ir : The minimum phase impulse response is evaluated from the minimum phase cepstrum */
 static void c2ir (double *c, int nc, double *h, int leng)
 {
-   register int n, k, upl;
+   int n, k, upl;
    double  d;
 
    h[0] = exp(c[0]);
