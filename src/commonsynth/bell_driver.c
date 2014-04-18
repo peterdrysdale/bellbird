@@ -95,7 +95,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    char * seg_nn;
    char * endtone;
    cst_val *tmpsyl_vowel;
-   int labelretlen = 0;
+   size_t labelretlen = 0;
 
    int sub_phrases = 0;
    int lisp_total_phrases = 0;
