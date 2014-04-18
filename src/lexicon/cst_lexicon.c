@@ -212,9 +212,11 @@ int in_lex(const cst_lexicon *l, const char *word, const char *pos)
     /* return TRUE is its in the lexicon */
     int r = FALSE, i;
     char *wp;
+    size_t wordlen;
 
-    wp = cst_alloc(char,cst_strlen(word)+2);
-    bell_sprintf(wp,"%c%s",(pos ? pos[0] : '0'),word);
+    wordlen = cst_strlen(word);
+    wp = cst_alloc(char,wordlen+2);
+    bell_snprintf(wp,wordlen+2,"%c%s",(pos ? pos[0] : '0'),word);
 
     for (i=0; l->addenda && l->addenda[i]; i++)
     {
@@ -241,9 +243,11 @@ cst_val *lex_lookup(const cst_lexicon *l, const char *word, const char *pos)
     char *wp;
     cst_val *phones = 0;
     int found = FALSE;
+    size_t wordlen;
 
-    wp = cst_alloc(char,cst_strlen(word)+2);
-    bell_sprintf(wp,"%c%s",(pos ? pos[0] : '0'),word);
+    wordlen = cst_strlen(word);
+    wp = cst_alloc(char,wordlen+2);
+    bell_snprintf(wp,wordlen+2,"%c%s",(pos ? pos[0] : '0'),word);
 
     if (l->addenda)
 	phones = lex_lookup_addenda(wp,l,&found);

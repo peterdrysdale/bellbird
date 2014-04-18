@@ -86,7 +86,7 @@ static void bell_hts_get_wave(HTS_Engine * engine,cst_utterance * utt)
     return;
 }
 
-static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
+static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t labellen)
 {
    char * seg_pp;
    char * seg_p;
@@ -95,6 +95,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
    char * seg_nn;
    char * endtone;
    cst_val *tmpsyl_vowel;
+   int labelretlen = 0;
 
    int sub_phrases = 0;
    int lisp_total_phrases = 0;
@@ -127,7 +128,8 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
          tmp2 = ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_words");
          lisp_total_phrases = ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_phrases");
       }
-      sprintf(label, "%s^%s-%s+%s=%s@x_x/A:%d_%d_%d/B:x-x-x@x-x&x-x#x-x$x-x!x-x;x-x|x/C:%d+%d+%d/D:%s_%d/E:x+x@x+x&x+x#x+x/F:%s_%d/G:%d_%d/H:x=x^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
+      labelretlen = snprintf(label, labellen,
+              "%s^%s-%s+%s=%s@x_x/A:%d_%d_%d/B:x-x-x@x-x&x-x#x-x$x-x!x-x;x-x|x/C:%d+%d+%d/D:%s_%d/E:x+x@x+x&x+x#x+x/F:%s_%d/G:%d_%d/H:x=x^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
               strcmp(seg_pp, "0") == 0 ? "x" : seg_pp,
               strcmp(seg_p, "0") == 0 ? "x" : seg_p,
               seg_c,
@@ -168,7 +170,8 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
 
       sub_phrases = ffeature_int(item, "R:SylStructure.parent.R:Syllable.sub_phrases");
       lisp_total_phrases = ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_phrases");
-      sprintf(label, "%s^%s-%s+%s=%s@%d_%d/A:%d_%d_%d/B:%d-%d-%d@%d-%d&%d-%d#%d-%d$%d-%d!%d-%d;%d-%d|%s/C:%d+%d+%d/D:%s_%d/E:%s+%d@%d+%d&%d+%d#%d+%d/F:%s_%d/G:%d_%d/H:%d=%d^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
+      labelretlen = snprintf(label, labellen,
+              "%s^%s-%s+%s=%s@%d_%d/A:%d_%d_%d/B:%d-%d-%d@%d-%d&%d-%d#%d-%d$%d-%d!%d-%d;%d-%d|%s/C:%d+%d+%d/D:%s_%d/E:%s+%d@%d+%d&%d+%d#%d+%d/F:%s_%d/G:%d_%d/H:%d=%d^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
               strcmp(seg_pp, "0") == 0 ? "x" : seg_pp,
               strcmp(seg_p, "0") == 0 ? "x" : seg_p, seg_c,
               strcmp(seg_n, "0") == 0 ? "x" : seg_n,
@@ -222,6 +225,9 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label)
               ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_words"),
               lisp_total_phrases);
       delete_val(tmpsyl_vowel);
+   }
+   if (labelretlen > labellen -1) {
+      cst_errmsg("Flite_HTS_Engine_create_label: Buffer overflow");
    }
    cst_free(seg_pp);
    cst_free(seg_p);
@@ -337,7 +343,7 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
                 label_data = cst_alloc(char *,label_size);
                 for (i = 0, s = relation_head(utt_relation(utt, "Segment")); s; s = item_next(s), i++) {
                     label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
-                    Flite_HTS_Engine_create_label(s, label_data[i]);
+                    Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
                 }
                 if (voice_type==HTSMODE)
                 {

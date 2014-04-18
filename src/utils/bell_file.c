@@ -80,14 +80,14 @@ int bell_fprintf(cst_file fh, const char *fmt, ...)
     return retval;
 }
 
-int bell_sprintf(char *buf, const char *fmt, ...)
-/* Bare wrapper for sprintf based on recommendations of C FAQ Question 15.5 */
+int bell_snprintf(char *buf, size_t n, const char *fmt, ...)
+/* Bare wrapper for snprintf based on recommendations of C FAQ Question 15.5 */
 {
     int retval;
     va_list parg;
 
     va_start(parg, fmt);
-    retval = vsprintf(buf, fmt, parg);
+    retval = vsnprintf(buf, n, fmt, parg);
     va_end(parg);
 
     return retval;

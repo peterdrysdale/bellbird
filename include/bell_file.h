@@ -11,6 +11,6 @@ off_t bell_ftello(cst_file fh);
 int bell_fseeko(cst_file fh, off_t offset, int whence);
 int bell_fclose(cst_file fh);
 int bell_fprintf(cst_file fh, const char *fmt, ...);
-int bell_sprintf(char *buf, const char *fmt, ...);
+int bell_snprintf(char *buf, size_t n, const char *fmt, ...);
 
 #endif

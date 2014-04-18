@@ -1467,7 +1467,10 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
    }
 
    if (gv_off_context != NULL) {
-      sprintf(buff1, "GV-Off { %s }", gv_off_context);
+      if (cst_strlen(gv_off_context) > HTS_MAXBUFLEN - 12) {
+         error = TRUE;      // Malformed voice file
+      }
+      snprintf(buff1, HTS_MAXBUFLEN, "GV-Off { %s }", gv_off_context);
       gv_off_context_fp = HTS_fopen_from_data((void *) buff1, strlen(buff1) + 1);
       ms->gv_off_context = cst_alloc(HTS_Question,1);
       HTS_Question_initialize(ms->gv_off_context);

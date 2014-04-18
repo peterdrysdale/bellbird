@@ -409,7 +409,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 	if (cst_streq("",ffeature_string(token,"p.punc")))
 	{   /* no preceeding punc */
 	    char n[10];
-	    bell_sprintf(n,"%d",en_exp_roman(name));
+	    bell_snprintf(n,10,"%d",en_exp_roman(name));
 	    if (rex_like(token))
 		r = cons_val(string_val("the"),
 			     en_exp_ordinal(n));

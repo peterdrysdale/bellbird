@@ -79,19 +79,20 @@ cst_val *lts_apply(const char *word,const char *feats,const cst_lts_rules *r)
     char *left, *right, *p;
     char hash;
     char zeros[8];
+    size_t full_bufflen;
     
     /* For feature vals for each letter */
     fval_buff = cst_alloc(cst_lts_letter,
 			  (r->context_window_size*2)+
 			   r->context_extra_feats);
     /* Buffer with added contexts */
+    full_bufflen = (r->context_window_size*2)+cst_strlen(word)+1;
     full_buff = cst_alloc(cst_lts_letter,
-			  (r->context_window_size*2)+
-			  cst_strlen(word)+1); /* TBD assumes single POS feat */
+			  full_bufflen); /* TBD assumes single POS feat */
     if (r->letter_table)
     {
 	for (i=0; i<8; i++) zeros[i] = 2;
-	bell_sprintf((char *)full_buff,
+	bell_snprintf((char *)full_buff, full_bufflen,
                     "%.*s%c%s%c%.*s",
 		    r->context_window_size-1, zeros,
 		    1,
@@ -103,7 +104,7 @@ cst_val *lts_apply(const char *word,const char *feats,const cst_lts_rules *r)
     else
     {
 	/* Assumes l_letter is a char and context < 8 */
-	bell_sprintf((char *)full_buff,
+	bell_snprintf((char *)full_buff, full_bufflen,
                     "%.*s#%s#%.*s",
 		    r->context_window_size-1, "00000000",
 		    word,
@@ -117,7 +118,7 @@ cst_val *lts_apply(const char *word,const char *feats,const cst_lts_rules *r)
 	 pos--)
     {
 	/* Fill the features buffer for the predictor */
-	bell_sprintf((char *)fval_buff,
+	bell_snprintf((char *)fval_buff, full_bufflen,
                     "%.*s%.*s%s",
 		    r->context_window_size,
 		    full_buff+pos-r->context_window_size,

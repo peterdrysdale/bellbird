@@ -233,7 +233,7 @@ static int cmulex_onset_bigram(const cst_val *rest)
     char x[10];
     int i;
 
-    bell_sprintf(x,"%s%s",val_string(val_car(rest)),
+    bell_snprintf(x,10,"%s%s",val_string(val_car(rest)),
            val_string(val_car(val_cdr(rest))));
     for (i=0; cmulex_onset_bigrams[i]; i++)
         if (cst_streq(x,cmulex_onset_bigrams[i]))
@@ -246,7 +246,7 @@ static int cmulex_onset_trigram(const cst_val *rest)
     char x[15];
     int i;
 
-    bell_sprintf(x,"%s%s%s",val_string(val_car(rest)),
+    bell_snprintf(x,15,"%s%s%s",val_string(val_car(rest)),
            val_string(val_car(val_cdr(rest))),
            val_string(val_car(val_cdr(val_cdr(rest)))));
     for (i=0; cmulex_onset_trigrams[i]; i++)
