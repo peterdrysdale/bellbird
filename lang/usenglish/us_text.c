@@ -613,8 +613,8 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 		       cons_val(string_val("'s"),0));
 	cst_free(aaa);
     }
-    else if ((p=cst_strrchr(name,'\''))
-            || ( (p=cst_strrchr(name,'\xe2'))
+    else if ((p=strrchr(name,'\''))
+            || ( (p=strrchr(name,'\xe2'))
                   && *(p+1)!='\0' && *(p+1)=='\x80'
                   && *(p+2)!='\0' && *(p+2)=='\x99' )
             )  /* test for ASCII apostrophe or UTF-8 directional apostrophe hex e28099 */
@@ -720,7 +720,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
     else if (cst_regex_match(wandm,name))
     {   /* weights and measures */
         for (j=cst_strlen(name)-1; j > 0; j--)
-            if (cst_strchr("0123456789",name[j]))
+            if (strchr("0123456789",name[j]))
                 break;
         j += 1;
         for (i=0; wandm_abbrevs[i][0]; i++)

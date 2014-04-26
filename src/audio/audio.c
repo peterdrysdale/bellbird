@@ -157,12 +157,12 @@ int play_wave(cst_wave *w)
     int num_shorts;
 
     if (!w)
-	return CST_ERROR_FORMAT;
+	return BELL_AUDIO_ERROR;
     
     if ((ad = audio_open(w->sample_rate, w->num_channels,
 			 /* FIXME: should be able to determine this somehow */
 			 CST_AUDIO_LINEAR16)) == NULL)
-	return CST_ERROR_FORMAT;
+	return BELL_AUDIO_ERROR;
 
     num_shorts = w->num_samples*w->num_channels;
     for (i=0; i < num_shorts; i += r/2)
@@ -181,5 +181,5 @@ int play_wave(cst_wave *w)
 
     audio_close(ad);
 
-    return CST_OK_FORMAT;
+    return BELL_AUDIO_OK;
 }

@@ -67,7 +67,9 @@ HTS_MODEL_C_START;
 
 #include "cst_alloc.h"
 #include "cst_error.h"
+#include "cst_file.h"
 #include "cst_string.h"
+#include "bell_file.h"
 /* hts_engine libraries */
 #include "HTS_hidden.h"
 
@@ -497,6 +499,7 @@ static HTS_Boolean HTS_Window_load(HTS_Window * win, HTS_File ** fp, size_t size
    size_t fsize, length;
    char buff[HTS_MAXBUFLEN];
    HTS_Boolean result = TRUE;
+   float tempfloat;
 
    /* check */
    if (win == NULL || fp == NULL || size == 0)
@@ -525,7 +528,12 @@ static HTS_Boolean HTS_Window_load(HTS_Window * win, HTS_File ** fp, size_t size
             result = FALSE;
             win->coefficient[i][j] = 0.0;
          } else {
-            win->coefficient[i][j] = (double) atof(buff);
+            if (bell_validate_atof(buff,&tempfloat)) {
+               win->coefficient[i][j] = (double) tempfloat;
+            } else {
+               result = FALSE;
+               win->coefficient[i][j] = 0.0;
+            }
          }
       }
       /* set pointer */
@@ -1470,7 +1478,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
       if (cst_strlen(gv_off_context) > HTS_MAXBUFLEN - 12) {
          error = TRUE;      // Malformed voice file
       }
-      snprintf(buff1, HTS_MAXBUFLEN, "GV-Off { %s }", gv_off_context);
+      bell_snprintf(buff1, HTS_MAXBUFLEN, "GV-Off { %s }", gv_off_context);
       gv_off_context_fp = HTS_fopen_from_data((void *) buff1, strlen(buff1) + 1);
       ms->gv_off_context = cst_alloc(HTS_Question,1);
       HTS_Question_initialize(ms->gv_off_context);

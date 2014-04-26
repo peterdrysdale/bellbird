@@ -51,13 +51,9 @@
 #include "cst_alloc.h"
 #include "cst_string.h"
 
-cst_string *cst_strrchr(const cst_string *str, int c)
-{
-    return (cst_string *)strrchr((const char *)str, c);
-}
-
 double cst_atof(const char *str)
 {
+// Bare atof where no validation is performed. See bell_validate_atof for atof with checks
     return atof(str);
 }
 
@@ -71,11 +67,6 @@ cst_string *cst_strdup(const cst_string *str)
 	memmove(nstr,str,cst_strlen((const char *)str)+1);
     }
     return nstr;
-}
-
-cst_string *cst_strchr(const cst_string *s, int c)
-{
-    return (cst_string *)strchr((const char *)s,c);
 }
 
 char *cst_substr(const char *str,int start, int length)
@@ -130,21 +121,42 @@ int cst_member_string(const char *str, const char * const *slist)
     return *p != NULL;
 }
 
-int bell_isdigit_string(char *str)
+int bell_validate_atof(const char * str, float * floatout)
 {
-// Check for int at beginning of string
+// A safer atof checking for some types of errors
     char *end;
 
-    const long sl = strtol(str, &end, 10);
+    errno = 0;
+    *floatout=strtof(str, &end);
 
-    if (end==str)
+    if (end==str || ERANGE==errno)
+    {
         return FALSE;
-    else if ((LONG_MIN==sl || LONG_MAX==sl) && ERANGE==errno)
+    }
+
+    return TRUE;
+}
+
+int bell_validate_atoi(const char * str, int * intout)
+{
+// A safer atoi checking for some types of errors
+    char *end;
+
+    errno = 0;
+    const long sl = strtol(str,&end,10);
+
+    if (end==str || ERANGE==errno)
+    {
         return FALSE;
+    }
     else if (sl>INT_MAX || sl<INT_MIN)
+    {
         return FALSE;
-    else
-        return TRUE;
+    }
 
-    return FALSE;
+    if(intout != NULL)
+    {
+        *intout=(int) sl;
+    }
+    return TRUE;
 }

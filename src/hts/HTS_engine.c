@@ -61,10 +61,11 @@
 
 HTS_ENGINE_C_START;
 
-#include <stdlib.h>             /* for atof() */
 #include <string.h>             /* for strlen(), strstr() */
 
 #include "cst_alloc.h"
+#include "cst_error.h"
+#include "cst_string.h"
 /* hts_engine libraries */
 #include "HTS_hidden.h"
 
@@ -117,6 +118,8 @@ HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices, size_t num_voice
    size_t nstream;
    double average_weight;
    const char *option, *find;
+   float tempfloat;
+   int tempint;
 
    /* reset engine */
    HTS_Engine_clear(engine);
@@ -142,14 +145,24 @@ HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices, size_t num_voice
    /* spectrum */
    option = HTS_ModelSet_get_option(&engine->ms, 0);
    find = strstr(option, "GAMMA=");
-   if (find != NULL)
-      engine->condition.stage = (size_t) atoi(&find[strlen("GAMMA=")]);
-   find = strstr(option, "LN_GAIN=");
-   if (find != NULL)
-      engine->condition.use_log_gain = atoi(&find[strlen("LN_GAIN=")]) == 1 ? TRUE : FALSE;
+   if (find != NULL) {
+      if (bell_validate_atoi(&find[strlen("GAMMA=")],&tempint)) {
+         engine->condition.stage = (size_t) tempint;
+      }
+   }
+   find = strstr(option, "LN_GAIN=1");
+   if (find != NULL) {
+      engine->condition.use_log_gain = TRUE;
+   }
    find = strstr(option, "ALPHA=");
-   if (find != NULL)
-      engine->condition.alpha = atof(&find[strlen("ALPHA=")]);
+   if (find != NULL) {
+      if (bell_validate_atof(&find[strlen("ALPHA=")],&tempfloat)) {
+         engine->condition.alpha = tempfloat;
+      } else {
+         cst_errmsg("Voice file option 'ALPHA' is not float, setting to default 0.42\n");
+         engine->condition.alpha = 0.42;
+      }
+   }
 
    /* interpolation weights */
    engine->condition.duration_iw = cst_alloc(double,num_voices);

@@ -51,6 +51,9 @@
 #include "cst_utterance.h"
 #include "cst_wave.h"
 
+#define BELL_AUDIO_ERROR -1
+#define BELL_AUDIO_OK 0
+
 #define CST_AUDIOBUFFSIZE 128
 
 typedef enum {

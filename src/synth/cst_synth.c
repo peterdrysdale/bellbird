@@ -595,7 +595,7 @@ int default_utt_break(cst_tokenstream *ts,
     const char *postpunct = item_feat_string(relation_tail(tokens), "punc");
     const char *ltoken = ITEM_NAME(relation_tail(tokens));
 
-    if (cst_strchr(ts->whitespace,'\n') != cst_strrchr(ts->whitespace,'\n'))
+    if (strchr(ts->whitespace,'\n') != strrchr(ts->whitespace,'\n'))
 	 /* contains two new lines */
 	 return TRUE;
     else if (strchr(postpunct,':') ||

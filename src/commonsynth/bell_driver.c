@@ -56,6 +56,7 @@
 #include "cst_error.h"
 #include "cst_features.h"
 #include "cst_file.h"
+#include "bell_file.h"
 #include "cst_item.h"
 #include "cst_regex.h"
 #include "cst_relation.h"
@@ -128,7 +129,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
          tmp2 = ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_words");
          lisp_total_phrases = ffeature_int(item, "p.R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_phrases");
       }
-      labelretlen = snprintf(label, labellen,
+      labelretlen = bell_snprintf(label, labellen,
               "%s^%s-%s+%s=%s@x_x/A:%d_%d_%d/B:x-x-x@x-x&x-x#x-x$x-x!x-x;x-x|x/C:%d+%d+%d/D:%s_%d/E:x+x@x+x&x+x#x+x/F:%s_%d/G:%d_%d/H:x=x^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
               strcmp(seg_pp, "0") == 0 ? "x" : seg_pp,
               strcmp(seg_p, "0") == 0 ? "x" : seg_p,
@@ -170,7 +171,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
 
       sub_phrases = ffeature_int(item, "R:SylStructure.parent.R:Syllable.sub_phrases");
       lisp_total_phrases = ffeature_int(item, "R:SylStructure.parent.parent.R:Phrase.parent.lisp_total_phrases");
-      labelretlen = snprintf(label, labellen,
+      labelretlen = bell_snprintf(label, labellen,
               "%s^%s-%s+%s=%s@%d_%d/A:%d_%d_%d/B:%d-%d-%d@%d-%d&%d-%d#%d-%d$%d-%d!%d-%d;%d-%d|%s/C:%d+%d+%d/D:%s_%d/E:%s+%d@%d+%d&%d+%d#%d+%d/F:%s_%d/G:%d_%d/H:%d=%d^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
               strcmp(seg_pp, "0") == 0 ? "x" : seg_pp,
               strcmp(seg_p, "0") == 0 ? "x" : seg_p, seg_c,

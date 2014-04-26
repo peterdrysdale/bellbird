@@ -139,7 +139,7 @@ static void bellbird_usage()
           " HTS specific options:                                         [  def][ min--max]\n"
           "  -b  f           postfiltering coefficient                    [  0.0][-0.8--0.8]\n"
           "  -r  f           speech speed rate                            [  1.0][ 0.0--    ]\n"
-          "  -fm             additional half-tone                         [  0.0][    --    ]\n"
+          "  -fm f           additional half-tone                         [  0.0][    --    ]\n"
           "  -u  f           voiced/unvoiced threshold                    [  0.5][ 0.0--1.0]\n"
           "  -jm f           weight of GV for spectrum                    [  1.0][ 0.0--2.0]\n"
           "  -jf f           weight of GV for Log F0                      [  1.0][ 0.0--2.0]\n"
@@ -180,8 +180,10 @@ static void ef_set(cst_features *f,const char *fv,const char *type)
     /* set feature from fv (F=V) */
     const char *val;
     char *feat;
+    float tempfloat;
+    int tempint;
 
-    if ((val = cst_strchr(fv,'=')) == 0)
+    if ((val = strchr(fv,'=')) == 0)
     {
 	fprintf(stderr,
 		"bellbird: can't find '=' in featval \"%s\", ignoring it\n",
@@ -193,9 +195,23 @@ static void ef_set(cst_features *f,const char *fv,const char *type)
 	feat[cst_strlen(fv)-cst_strlen(val)] = '\0'; /* replace equals sign with null */
 	val++;     /* increment past the former equals sign */
 	if ( cst_streq("int",type) )
-	    feat_set_int(f,cst_strdup(feat),atoi(val));
+            if (bell_validate_atoi(val,&tempint))
+            {
+	        feat_set_int(f,cst_strdup(feat),tempint);
+            }
+            else
+            {
+                printf("Failed to set int val '%s'.\n",fv);
+            }
 	else if ( cst_streq("float",type) )
-	    feat_set_float(f,cst_strdup(feat),atof(val));
+            if (bell_validate_atof(val,&tempfloat))
+            {
+	        feat_set_float(f,cst_strdup(feat),tempfloat);
+            }
+            else
+            {
+                printf("Failed to set float value '%s'.\n",fv);
+            }
 	else
 	    feat_set_string(f,cst_strdup(feat),val);
         cst_free(feat);
@@ -217,6 +233,8 @@ int main(int argc, char **argv)
     cst_features *extra_feats = NULL;
     const char *lex_addenda_file = NULL;
     cst_audio_streaming_info *asi;
+    float tempfloat;
+    int tempint;
 
     HTS_Engine engine;
     nitech_engine ntengine;
@@ -287,7 +305,14 @@ int main(int argc, char **argv)
 	}
         else if ( cst_streq(argv[i],"--startpos") && (i+1 < argc) )
         {
-            feat_set_int(extra_feats,"file_start_position",atoi(argv[++i]));
+            if (bell_validate_atoi(argv[++i],&tempint))
+            {
+                feat_set_int(extra_feats,"file_start_position",tempint);
+            }
+            else
+            {
+                printf("Failed to set '--startpos' command option\n");
+            }
         }
 	else if (cst_streq(argv[i],"-pw"))
 	{
@@ -337,27 +362,74 @@ int main(int argc, char **argv)
         {
            if ( cst_streq(argv[i],"-b") && (i+1 < argc) )
            {
-               HTS_Engine_set_beta(&engine, atof(argv[++i]));
+              if (bell_validate_atof(argv[++i],&tempfloat))
+              {
+                 HTS_Engine_set_beta(&engine, tempfloat);
+              }
+              else
+              {
+                 printf("Failed to set '-b' command option\n");
+              }
            }
            else if ( cst_streq(argv[i],"-r") && (i+1 < argc) )
            {
-               HTS_Engine_set_speed(&engine, atof(argv[++i]));
+              if (bell_validate_atof(argv[++i],&tempfloat))
+              {
+                 HTS_Engine_set_speed(&engine, tempfloat);
+              }
+              else
+              {
+                  printf("Failed to set '-r' command option\n");
+              }
            }
            else if ( cst_streq(argv[i],"-fm") && (i+1 < argc) )
            {
-               HTS_Engine_add_half_tone(&engine, atof(argv[++i]));
+              if (bell_validate_atof(argv[++i],&tempfloat))
+              {
+                 HTS_Engine_add_half_tone(&engine, tempfloat);
+              }
+              else
+              {
+                 printf("Failed to set '-fm' command option\n");
+              }
            }
            else if ( cst_streq(argv[i],"-u") && (i+1 < argc) )
            {
-               HTS_Engine_set_msd_threshold(&engine, 1, atof(argv[++i]));
+              if (bell_validate_atof(argv[++i],&tempfloat))
+              {
+                 HTS_Engine_set_msd_threshold(&engine, 1, tempfloat);
+              }
+              else
+              {
+                 printf("Failed to set '-u' command option\n");
+              }
+
            }
            else if ( cst_streq(argv[i],"-jm") && (i+1 < argc) )
            {
-               HTS_Engine_set_gv_weight(&engine, 0, atof(argv[++i]));
+              if (bell_validate_atof(argv[++i],&tempfloat))
+              {
+
+               HTS_Engine_set_gv_weight(&engine, 0, tempfloat);
+              }
+              else
+              {
+                 printf("Failed to set '-jm' command option\n");
+              }
+
            }
 	   else if ( cst_streq(argv[i],"-jf") && (i+1 < argc) )
            {
-               HTS_Engine_set_gv_weight(&engine, 1, atof(argv[++i]));
+              if (bell_validate_atof(argv[++i],&tempfloat))
+              {
+
+               HTS_Engine_set_gv_weight(&engine, 1, tempfloat);
+              }
+              else
+              {
+                 printf("Failed to set '-jf' command option\n");
+              }
+
            }
         } /* end of hts specific options */
     }

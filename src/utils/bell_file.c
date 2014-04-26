@@ -82,6 +82,8 @@ int bell_fprintf(cst_file fh, const char *fmt, ...)
 
 int bell_snprintf(char *buf, size_t n, const char *fmt, ...)
 /* Bare wrapper for snprintf based on recommendations of C FAQ Question 15.5 */
+/* Note we rely on standards compliant snprintf. Anyone using non-compliant */
+/* '-1' returning function on overflow will have to provide their own here. */
 {
     int retval;
     va_list parg;

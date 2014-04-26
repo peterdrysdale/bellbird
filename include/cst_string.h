@@ -54,8 +54,6 @@ typedef char cst_string;
 double cst_atof(const char *str);
 
 cst_string *cst_strdup(const cst_string *s);
-cst_string *cst_strchr(const cst_string *s, int c);
-cst_string *cst_strrchr(const cst_string *str, int c);
 #define cst_strstr(h,n) \
      ((cst_string *)strstr((const char *)h,(const char *)n))
 #define cst_strlen(s) (strlen((const char *)s))
@@ -67,6 +65,7 @@ char *cst_substr(const char *str,int start, int length);
 cst_string *cst_downcase(const cst_string *str);
 cst_string *cst_upcase(const cst_string *str);
 
-int bell_isdigit_string(char *str);
+int bell_validate_atof(const char * str, float * floatout);
+int bell_validate_atoi(const char * str, int * intout);
 
 #endif

@@ -61,7 +61,6 @@
 
 HTS_LABEL_C_START;
 
-#include <stdlib.h>             /* for atof() */
 #include <ctype.h>              /* for isgraph() */
 
 #include "cst_alloc.h"
@@ -130,11 +129,11 @@ void HTS_Label_load_from_strings(HTS_Label * label, size_t sampling_rate, size_t
          label->head = lstring;
       }
       data_index = 0;
-      if (bell_isdigit_string(lines[i])) {   /* has frame infomation */
+      if (bell_validate_atoi(lines[i], NULL)) {   /* has frame information */
          bell_get_token_from_string(lines[i], &data_index, buff, HTS_MAXBUFLEN);
-         start = atof(buff);
+         start = cst_atof(buff);
          bell_get_token_from_string(lines[i], &data_index, buff, HTS_MAXBUFLEN);
-         end = atof(buff);
+         end = cst_atof(buff);
          bell_get_token_from_string(lines[i], &data_index, buff, HTS_MAXBUFLEN);
          lstring->name = cst_strdup(buff);
          lstring->start = rate * start;

@@ -46,9 +46,6 @@
 #ifndef _CST_FILE_H__
 #define _CST_FILE_H__
 
-#define CST_ERROR_FORMAT -1
-#define CST_OK_FORMAT     0
-
 #include <stdio.h>
 typedef FILE * cst_file;
 

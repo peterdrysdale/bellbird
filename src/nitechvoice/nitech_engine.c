@@ -85,7 +85,7 @@ static cst_wave * nitech_process (char **lines, size_t num_lines,
         if (!isgraph((int) lines[j][0]))
             break;
         data_index = 0;
-        if (bell_isdigit_string(lines[j])) {   /* has frame information */
+        if (bell_validate_atoi(lines[j], NULL)) {   /* has frame information */
             bell_get_token_from_string(lines[j], &data_index, buff, HTS_MAXBUFLEN);
             /* throw away start information */
             bell_get_token_from_string(lines[j], &data_index, buff, HTS_MAXBUFLEN);

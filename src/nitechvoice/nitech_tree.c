@@ -150,6 +150,7 @@ static void LoadQuestions(HTS_File *fp, Question *q)
 static bell_boolean IsTree (Tree *tree, char *buf)
 {
    char *s,*l,*r;
+   int tempint;
 
    s = buf;
    if ( ((l = strchr(s, '[')) == NULL) || ((r = strrchr(s, ']'))==NULL) )
@@ -160,7 +161,14 @@ static bell_boolean IsTree (Tree *tree, char *buf)
    {
       *r = '\0';
       s = l+1;
-      tree->state = atoi(s);
+      if (bell_validate_atoi(s, &tempint))
+      {
+         tree->state = tempint;
+      }
+      else
+      {
+         return 0;
+      }
    }
    
    return 1;
@@ -193,7 +201,16 @@ static Question *FindQuestion(TreeSet *ts, Mtype type, char *buf)
 
 static int name2num(char *buf)
 {
-   return (atoi(strrchr(buf,'_')+1));
+   int tempint;
+
+   if (bell_validate_atoi(strrchr(buf,'_')+1, &tempint))
+   {
+      return tempint;
+   }
+   else
+   {
+      return 0;
+   }
 }
 
 static Node *FindNode (Node *node, int num)
@@ -221,6 +238,7 @@ static void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
 {
    char buf[HTS_MAXBUFLEN];
    Node *node;
+   int tempint;
    
    bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
    node = cst_alloc(Node,1);
@@ -230,7 +248,12 @@ static void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
    {
       while ( bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN) , !cst_streq(buf,"}") )
       {
-         node = FindNode(tree->root, atoi(buf));
+         if (!bell_validate_atoi(buf, &tempint))
+         {
+            cst_errmsg("LoadTree: malformed voice file\n");
+            cst_error();
+         }
+         node = FindNode(tree->root, tempint);
          bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);     /* load a question applied at this node */
          
          node->quest = FindQuestion(ts, type, buf);
@@ -240,7 +263,12 @@ static void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
          bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
          if (IsNum(buf))
          {
-            node->no->idx = atoi(buf);
+            if (!bell_validate_atoi(buf, &tempint))
+            {
+               cst_errmsg("LoadTree: malformed voice file\n");
+               cst_error();
+            }
+            node->no->idx = tempint;
          }
          else
          {
@@ -250,7 +278,12 @@ static void LoadTree (TreeSet *ts, HTS_File *fp, Tree *tree, Mtype type)
          bell_get_pattern_token(fp, buf, HTS_MAXBUFLEN);
          if (IsNum(buf))
          {
-            node->yes->idx = atoi(buf);
+            if (!bell_validate_atoi(buf, &tempint))
+            {
+               cst_errmsg("LoadTree: malformed voice file\n");
+               cst_error();
+            }
+            node->yes->idx = tempint;
          }
          else
          {
