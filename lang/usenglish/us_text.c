@@ -214,7 +214,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
     /* Return list of words that expand token/name */
     char *p, *aaa, *bbb, *ccc;
     int i,j;
-    size_t k,l;
+    size_t k,l,m;
     cst_val *r, *s, *ss;
     const cst_val *rr;
     const char *nsw = "";
@@ -262,7 +262,8 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
     else if (cst_regex_match(cst_rx_commaint,name))
     {   /* 99,999,999 */
 	aaa = cst_strdup(name);
-	for (l=k=0; k < cst_strlen(name); k++)
+        m = cst_strlen(name);
+	for (l=k=0; k < m; k++)
 	    if (name[k] != ',')
 	    {
 		aaa[l] = name[k];

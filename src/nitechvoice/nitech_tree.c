@@ -82,8 +82,12 @@ static bell_boolean DPMatch (char *str, char *pat, int pos, int max)
 
 static bell_boolean PMatch (char *str, char *pat)
 {
-   int i, max = 0;
-   for (i=0; i < (int)cst_strlen(pat); i++)
+   size_t i;
+   int max = 0;
+   size_t patlen;
+
+   patlen = cst_strlen(pat);
+   for (i=0; i < patlen; i++)
       if (pat[i] != '*') max++;
          
    return DPMatch(str, pat, 0, cst_strlen(str)-max);
@@ -176,9 +180,11 @@ static bell_boolean IsTree (Tree *tree, char *buf)
 
 static bell_boolean IsNum (char *buf)
 {
-   int i;
+   size_t i;
+   size_t buflen;
 
-   for (i=0; i<(int)cst_strlen(buf); i++)
+   buflen = cst_strlen(buf);
+   for (i=0; i<buflen; i++)
       if (! (isdigit(buf[i]) || (buf[i] == '-'))) 
          return 0;
       

@@ -205,9 +205,11 @@ cst_val *en_exp_ordinal(const char *rawnumstring)
     const char *ord;
     char *numstring;
     size_t i,j;
+    size_t rawnumstringlen;
 
     numstring = cst_strdup(rawnumstring);
-    for (j=i=0; i < cst_strlen(rawnumstring); i++)
+    rawnumstringlen = cst_strlen(rawnumstring);
+    for (j=i=0; i < rawnumstringlen; i++)
 	if (rawnumstring[i] != ',')
 	{
 	    numstring[j] = rawnumstring[i];
