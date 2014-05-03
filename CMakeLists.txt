@@ -48,8 +48,7 @@ INCLUDE_DIRECTORIES( include )
 SET(SRC_LIBBELLBIRD
     src/audio/au_alsa.c
     src/audio/au_none.c
-    src/audio/au_streaming.c
-    src/audio/audio.c
+    src/audio/bell_audio.c
     src/cg/cst_cg.c
     src/cg/cst_cg_load_voice.c
     src/cg/cst_cg_map.c

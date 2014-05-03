@@ -59,43 +59,30 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "cst_audio.h"
+#include "cst_alloc.h"
 #include "cst_error.h"
-#include "cst_string.h"
-#include "cst_wave.h"
+#include "bell_audio.h"
+#include "native_audio.h"
 
 #include <alsa/asoundlib.h>
 
-
-/*static char *pcm_dev_name = "hw:0,0"; */
 static const char *pcm_dev_name ="default";
 
-#if 0
-static inline void print_pcm_state(snd_pcm_t *handle, char *msg)
-{
-  fprintf(stderr, "PCM state at %s = %s\n", msg,
-		  snd_pcm_state_name(snd_pcm_state(handle)));
-}
-#endif
-
-cst_audiodev *audio_open_alsa(unsigned int sps, int channels, cst_audiofmt fmt)
+cst_audiodev *audio_open_alsa(unsigned int sps, int channels)
 {
   cst_audiodev *ad;
-  unsigned 	int real_rate;
   int err;
 
   /* alsa specific stuff */
-  snd_pcm_t *pcm_handle;          
-  snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
+  snd_pcm_t *pcm_handle;
   snd_pcm_hw_params_t *hwparams;
   snd_pcm_format_t format;
-  snd_pcm_access_t access = SND_PCM_ACCESS_RW_INTERLEAVED;
 
   /* Allocate the snd_pcm_hw_params_t structure on the stack. */
   snd_pcm_hw_params_alloca(&hwparams);
 
   /* Open pcm device */
-  err = snd_pcm_open(&pcm_handle, pcm_dev_name, stream, 0);
+  err = snd_pcm_open(&pcm_handle, pcm_dev_name, SND_PCM_STREAM_PLAYBACK, 0);
   if (err < 0) 
   {
 	cst_errmsg("audio_open_alsa: failed to open audio device %s. %s\n",
@@ -114,7 +101,7 @@ cst_audiodev *audio_open_alsa(unsigned int sps, int channels, cst_audiofmt fmt)
   }
 
   /* Set access mode */
-  err = snd_pcm_hw_params_set_access(pcm_handle, hwparams, access);
+  err = snd_pcm_hw_params_set_access(pcm_handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED);
   if (err < 0) 
   {
 	snd_pcm_close(pcm_handle);
@@ -123,31 +110,11 @@ cst_audiodev *audio_open_alsa(unsigned int sps, int channels, cst_audiofmt fmt)
 	return NULL;
   }
 
-  /* Determine matching alsa sample format */
-  /* This could be implemented in a more */
-  /* flexible way (byte order conversion). */
-  switch (fmt)
-  {
-  case CST_AUDIO_LINEAR16:
 #ifdef WORDS_BIGENDIAN
-        format = SND_PCM_FORMAT_S16_BE;
+  format = SND_PCM_FORMAT_S16_BE;
 #else
-        format = SND_PCM_FORMAT_S16_LE;
+  format = SND_PCM_FORMAT_S16_LE;
 #endif
-	break;
-  case CST_AUDIO_LINEAR8:
-	format = SND_PCM_FORMAT_U8;
-	break;
-  case CST_AUDIO_MULAW:
-	format = SND_PCM_FORMAT_MU_LAW;
-	break;
-  default:
-	snd_pcm_close(pcm_handle);
-        snd_config_update_free_global();
-	cst_errmsg("audio_open_alsa: failed to find suitable format.\n");
-	return NULL;
-	break;
-  }
 
   /* Set sample format */
   err = snd_pcm_hw_params_set_format(pcm_handle, hwparams, format);
@@ -159,9 +126,8 @@ cst_audiodev *audio_open_alsa(unsigned int sps, int channels, cst_audiofmt fmt)
 	return NULL;
   }
 
-  /* Set sample rate near the disired rate */
-  real_rate = sps;
-  err = snd_pcm_hw_params_set_rate(pcm_handle, hwparams, real_rate, 0);
+  /* Set sample rate */
+  err = snd_pcm_hw_params_set_rate(pcm_handle, hwparams, sps, 0);
   if (err < 0)   
   {
 	snd_pcm_close(pcm_handle);
@@ -169,8 +135,6 @@ cst_audiodev *audio_open_alsa(unsigned int sps, int channels, cst_audiofmt fmt)
 	cst_errmsg("audio_open_alsa: failed to set sample rate near %d. %s.\n", sps, snd_strerror(err));
 	return NULL;
   }
-  /*FIXME:  This is probably too strict */
-  assert(sps == real_rate);
 
   /* Set number of channels */
   assert(channels >0);
@@ -196,14 +160,11 @@ cst_audiodev *audio_open_alsa(unsigned int sps, int channels, cst_audiofmt fmt)
   /* Make sure the device is ready to accept data */
   assert(snd_pcm_state(pcm_handle) == SND_PCM_STATE_PREPARED);
 
-  /* snd_pcm_hw_params_free(hwparams); */
-
   /* Write hardware parameters to audio device data structure */
   ad = cst_alloc(cst_audiodev, 1);
   assert(ad != NULL);
-  ad->real_sps = ad->sps = sps;
-  ad->real_channels = ad->channels = channels;
-  ad->real_fmt = ad->fmt = fmt;
+  ad->sps = sps;
+  ad->channels = channels;
   ad->platform_data = (void *) pcm_handle;
 
   return ad;
@@ -234,34 +195,8 @@ int audio_close_alsa(cst_audiodev *ad)
 /* Returns zero if recovery was successful. */
 static int recover_from_error(snd_pcm_t *pcm_handle, ssize_t res)
 {
-  if (res == -EPIPE) /* xrun */
-  {
-	res = snd_pcm_prepare(pcm_handle);
-	if (res < 0) 
-	{
-	  /* Failed to recover from xrun */
-	  cst_errmsg("recover_from_write_error: failed to recover from xrun. %s\n.", snd_strerror(res));
-	  return res;
-	}
-  } 
-  else if (res == -ESTRPIPE) /* Suspend */
-  {
-	while ((res = snd_pcm_resume(pcm_handle)) == -EAGAIN) 
-	{
-	  snd_pcm_wait(pcm_handle, 1000);
-	}
-	if (res < 0) 
-	{
-	  res = snd_pcm_prepare(pcm_handle);
-	  if (res <0) 
-	  {
-		/* Resume failed */
-		cst_errmsg("audio_recover_from_write_error: failed to resume after suspend. %s\n.", snd_strerror(res));
-		return res;
-	  }
-	}
-  } 
-  else if (res < 0) 
+  res = snd_pcm_recover(pcm_handle,res,0);
+  if (res < 0)
   {
 	/* Unknown failure */
 	cst_errmsg("audio_recover_from_write_error: %s.\n", snd_strerror(res));
@@ -270,26 +205,24 @@ static int recover_from_error(snd_pcm_t *pcm_handle, ssize_t res)
   return 0;
 }
 
-int audio_write_alsa(cst_audiodev *ad, void *samples, int num_bytes)
+int audio_write_alsa(cst_audiodev *ad, void *samples, int num_frames)
 {
   size_t frame_size;
-  ssize_t num_frames, res;
+  ssize_t res;
   snd_pcm_t *pcm_handle;
   char *buf = (char *) samples;
+  int frames_to_write;
 
-  /* Determine frame size in bytes */
-  frame_size  = audio_bps(ad->real_fmt) * ad->real_channels;
-  /* Require that only complete frames are handed in */
-  assert((num_bytes % frame_size) == 0);
-  num_frames = num_bytes / frame_size;
+  frames_to_write = num_frames;
   pcm_handle = (snd_pcm_t *) ad->platform_data;
+  frame_size = BELL_AUDIO_16BIT * ad->channels;
 
-  while (num_frames > 0) 
+  while (frames_to_write > 0)
   {
-	res = snd_pcm_writei(pcm_handle, buf, num_frames);
-	if (res != num_frames) 
+	res = snd_pcm_writei(pcm_handle, buf, frames_to_write); //Note pcm_handle open in blocked mode
+	if (res != frames_to_write)
 	{
-	  if (res == -EAGAIN || (res > 0 && res < num_frames)) 
+	  if (res > 0 && res < frames_to_write)
 	  {
 		snd_pcm_wait(pcm_handle, 100);
 	  }
@@ -301,45 +234,11 @@ int audio_write_alsa(cst_audiodev *ad, void *samples, int num_bytes)
 
 	if (res >0) 
 	{
-	  num_frames -= res;
+	  frames_to_write -= res;
 	  buf += res * frame_size;
 	}
   }
-  return num_bytes;
-}
-
-int audio_flush_alsa(cst_audiodev *ad)
-{
-  int result;
-  result = snd_pcm_drain((snd_pcm_t *) ad->platform_data);
-  if (result < 0)
-  {
-	cst_errmsg("audio_flush_alsa: Error: %s.\n", snd_strerror(result));
-  }
-	/* Prepare device for more data */
-  result = snd_pcm_prepare((snd_pcm_t *) ad->platform_data);
-if (result < 0)
-  {
-	cst_errmsg("audio_flush_alsa: Error: %s.\n", snd_strerror(result));
-  }
-  return result;
-}
-
-int audio_drain_alsa(cst_audiodev *ad)
-{
-  int result;
-  result = snd_pcm_drop((snd_pcm_t *) ad->platform_data);
-  if (result < 0)
-  {
-	cst_errmsg("audio_drain_alsa: Error: %s.\n", snd_strerror(result));
-  }
-/* Prepare device for more data */
-  result = snd_pcm_prepare((snd_pcm_t *) ad->platform_data);
-if (result < 0)
-  {
-	cst_errmsg("audio_drain_alsa: Error: %s.\n", snd_strerror(result));
-  }
-  return result;
+  return num_frames;
 }
 
 #endif // CST_AUDIO_ALSA

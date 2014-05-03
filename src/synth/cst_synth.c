@@ -43,7 +43,7 @@
 /*  General synthesis control                                            */
 /*                                                                       */
 /*************************************************************************/
-#include "cst_audio.h"
+
 #include "cst_cart.h"
 #include "cst_error.h"
 #include "cst_lexicon.h"
@@ -106,26 +106,11 @@ static const cst_synth_module synth_method_phones[] = {
 cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v)
 {
     /* Create an utterance with a wave in it as if we've synthesized it */
-    /* Put it through streaming if that is require */
     cst_utterance *u;
-    const cst_val *streaming_info_val;
-    cst_audio_streaming_info *asi = NULL;
 
     u = new_utterance();
     utt_init(u,v);
     utt_set_wave(u,w);
-
-    streaming_info_val=get_param_val(u->features,"streaming_info",NULL);
-    if (streaming_info_val)
-    {
-        asi = val_audio_streaming_info(streaming_info_val);
-        asi->utt = u;
-    }
-
-    if (!asi) return u;  /* no stream */
-
-    /* Do streaming */
-    (*asi->asc)(w,0,w->num_samples,1,asi);
 
     return u;
 }

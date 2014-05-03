@@ -56,7 +56,6 @@
 #include "cst_track.h"
 #include "cst_voice.h"
 #include "cst_wave.h"
-#include "cst_audio.h"
 
 typedef struct cst_dur_stats_struct {
     char *phone;
@@ -146,8 +145,7 @@ void delete_cg_db(cst_cg_db *db);
 cst_utterance *cg_synth(cst_utterance *utt);
 cst_wave *mlsa_resynthesis(const cst_track *t, 
                            const cst_track *str, 
-                           cst_cg_db *cg_db,
-                           cst_audio_streaming_info *asc);
+                           cst_cg_db *cg_db);
 
 cst_voice *cst_cg_load_voice(const char *voxdir,
                              const cst_lang lang_table[]);

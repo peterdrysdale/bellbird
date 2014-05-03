@@ -55,7 +55,6 @@
 /*                                                                       */
 /*************************************************************************/
 
-#include "cst_audio.h"
 #include "cst_cg.h"
 #include "cst_item.h"
 #include "cst_spamf0.h"
@@ -464,15 +463,6 @@ static cst_utterance *cg_resynth(cst_utterance *utt)
     cst_track *param_track;
     cst_track *str_track = NULL;
     cst_track *smoothed_track;
-    const cst_val *streaming_info_val;
-    cst_audio_streaming_info *asi = NULL;
-
-    streaming_info_val=get_param_val(utt->features,"streaming_info",NULL);
-    if (streaming_info_val)
-    {
-        asi = val_audio_streaming_info(streaming_info_val);
-        asi->utt = utt;
-    }
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));
@@ -482,11 +472,11 @@ static cst_utterance *cg_resynth(cst_utterance *utt)
     if (cg_db->do_mlpg)
     {
         smoothed_track = cg_mlpg(param_track, cg_db);
-        w = mlsa_resynthesis(smoothed_track,str_track,cg_db,asi);
+        w = mlsa_resynthesis(smoothed_track,str_track,cg_db);
         delete_track(smoothed_track);
     }
     else
-        w=mlsa_resynthesis(param_track,str_track,cg_db,asi);
+        w=mlsa_resynthesis(param_track,str_track,cg_db);
 
     if (w == NULL)
     {

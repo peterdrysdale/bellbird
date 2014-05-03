@@ -1,7 +1,7 @@
 
 myincludedir = $(pkgincludedir)/include
 
-FLITEHEADERS = cst_alloc.h cst_audio.h \
+FLITEHEADERS = cst_alloc.h \
 	cst_cart.h cst_cg.h cst_endian.h \
 	cst_error.h cst_features.h cst_ffeatures.h \
 	cst_file.h cst_item.h \
@@ -15,7 +15,8 @@ FLITEHEADERS = cst_alloc.h cst_audio.h \
         flite.h HTS_misc.h pstreamchol.h
 HTSENGINEHEADERS = HTS_engine.h
 
-BELLBIRDHEADERS = bell_driver.h bell_file.h nitech_engine.h
+BELLBIRDHEADERS = bell_audio.h bell_driver.h \
+        bell_file.h nitech_engine.h
 
 myinclude_HEADERS = $(FLITEHEADERS) \
                     $(HTSENGINEHEADERS) \

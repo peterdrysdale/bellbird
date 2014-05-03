@@ -66,7 +66,6 @@
 #include "cst_string.h"
 #include "cst_track.h"
 #include "cst_wave.h"
-#include "cst_audio.h"
 
 #include "cst_cg.h"
 
@@ -448,8 +447,7 @@ static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
                                 const cst_track *str,
                                 double fs,	/* sampling frequency (Hz) */
                                 double framem,	/* frame size */
-                                cst_cg_db *cg_db,
-                                cst_audio_streaming_info *asi)
+                                cst_cg_db *cg_db)
 {
     long t, pos;
     int framel, i;
@@ -457,8 +455,6 @@ static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
     VocoderSetup vs;
     cst_wave *wave = 0;
     double *mcep;
-    int stream_mark;
-    int rc = CST_AUDIO_STREAM_CONT;
     int num_mcep;
     double ffs = 16000;
 
@@ -478,9 +474,7 @@ static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
 
     mcep = cst_alloc(double,num_mcep+1);
 
-    for (t = 0, stream_mark = pos = 0; 
-         (rc == CST_AUDIO_STREAM_CONT) && (t < params->num_frames);
-         t++) 
+    for (t = 0, pos = 0; t < params->num_frames; t++)
     {
         f0 = (double)params->frames[t][0];
         for (i=1; i<num_mcep+1; i++)
@@ -491,37 +485,19 @@ static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
             vocoder(f0, mcep, str->frames[t], num_mcep, cg_db, &vs, wave, &pos);
         else
             vocoder(f0, mcep, NULL, num_mcep, cg_db, &vs, wave, &pos);
-
-        if (asi && (pos-stream_mark > asi->min_buffsize))
-        {
-            rc=(*asi->asc)(wave,stream_mark,pos-stream_mark,0,asi);
-            stream_mark = pos;
-        }
     }
     wave->num_samples = pos;
-
-    if (asi && (rc == CST_AUDIO_STREAM_CONT))
-    {   /* drain the last part of the waveform */
-        (*asi->asc)(wave,stream_mark,pos-stream_mark,1,asi);
-    }
 
     /* memory free */
     cst_free(mcep);
     free_vocoder(&vs);
 
-    if (rc == CST_AUDIO_STREAM_STOP)
-    {
-        delete_wave(wave);
-        return NULL;
-    }
-    else
-        return wave;
+    return wave;
 }
 
 cst_wave *mlsa_resynthesis(const cst_track *params, 
                            const cst_track *str, 
-                           cst_cg_db *cg_db,
-                           cst_audio_streaming_info *asi)
+                           cst_cg_db *cg_db)
 {
     /* Resynthesizes a wave from given track */
     cst_wave *wave = 0;
@@ -537,7 +513,7 @@ cst_wave *mlsa_resynthesis(const cst_track *params,
         shift = 5.0;
     }
 
-    wave = synthesis_body(params,str,sr,shift,cg_db,asi);
+    wave = synthesis_body(params,str,sr,shift,cg_db);
 
     return wave;
 }

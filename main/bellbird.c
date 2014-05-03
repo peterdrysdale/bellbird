@@ -85,7 +85,6 @@
 /* ----------------------------------------------------------------- */
 #include <stdio.h>
 
-#include "cst_audio.h"
 #include "cst_error.h"
 #include "cst_features.h"
 #include "cst_file.h"
@@ -232,7 +231,6 @@ int main(int argc, char **argv)
     int ssml_mode = FALSE;         /* default to non-SSML reading */
     cst_features *extra_feats = NULL;
     const char *lex_addenda_file = NULL;
-    cst_audio_streaming_info *asi;
     float tempfloat;
     int tempint;
 
@@ -449,13 +447,6 @@ int main(int argc, char **argv)
        durs = 0.0;
 
        if (lex_addenda_file) flite_voice_add_lex_addenda(voice,lex_addenda_file);
-
-       if (cst_streq("stream",outtype))
-       {
-           asi = new_audio_streaming_info();
-           asi->asc = audio_stream_chunk;
-           feat_set(voice->features,"streaming_info",audio_streaming_info_val(asi));
-       }
 
        if (explicit_phones)
        {

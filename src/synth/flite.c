@@ -50,6 +50,7 @@
 #include "cst_synth.h"
 #include "cst_utt_utils.h"
 #include "flite.h"
+#include "bell_audio.h"
 
 /* This is a global, which isn't ideal, this may change */
 cst_lang flite_lang_list[20];
@@ -159,8 +160,7 @@ float flite_ts_to_speech(cst_tokenstream *ts,
     /* If its a file to write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
     if (!cst_streq(outtype,"play") && 
-        !cst_streq(outtype,"none") &&
-        !cst_streq(outtype,"stream"))
+        !cst_streq(outtype,"none"))
     {
 	w = new_wave();
 	cst_wave_resize(w,0,1);
@@ -271,11 +271,8 @@ float flite_process_output(cst_utterance *u, const char *outtype,
     dur = (float)w->num_samples/(float)w->sample_rate;
 	     
     if (cst_streq(outtype,"play"))
-	play_wave(w);
-    else if (cst_streq(outtype,"stream"))
     {
-        /* It's already been played so do nothing */
-        
+	play_wave(w);
     }
     else if (!cst_streq(outtype,"none"))
     {

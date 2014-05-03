@@ -51,7 +51,6 @@
 #include <math.h>
 #include <limits.h>
 #include "cst_alloc.h"
-#include "cst_audio.h"
 #include "cst_cg.h"
 #include "cst_error.h"
 #include "cst_features.h"
@@ -288,8 +287,7 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
     /* If its a file we write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
     if (!cst_streq(outtype,"play") && 
-        !cst_streq(outtype,"none") &&
-        !cst_streq(outtype,"stream"))
+        !cst_streq(outtype,"none"))
     {
         w = new_wave();
         cst_wave_resize(w,0,1);

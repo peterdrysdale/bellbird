@@ -34,7 +34,7 @@
 /*               Date:  January 2001                                     */
 /*************************************************************************/
 /*                                                                       */
-/*  Selects between audio devices                                        */
+/*  Native audio support                                                 */
 /*                                                                       */
 /*************************************************************************/
 
@@ -45,33 +45,30 @@
 #include "config.h"
 #endif
 
+#define BELL_AUDIO_16BIT 2 // Each 16bit audio element has 2 bytes per channel per frame
+
+typedef struct cst_audiodev_struct {
+    int sps;
+    int channels;
+    void *platform_data;
+} cst_audiodev;
+
 #ifdef CST_AUDIO_ALSA
 
 #define AUDIO_OPEN_NATIVE audio_open_alsa
 #define AUDIO_CLOSE_NATIVE audio_close_alsa
-#define AUDIO_SET_SAMPLE_RATE_NATIVE audio_set_sample_rate_alsa
 #define AUDIO_WRITE_NATIVE audio_write_alsa
-#define AUDIO_DRAIN_NATIVE audio_drain_alsa
-#define AUDIO_FLUSH_NATIVE audio_flush_alsa
 
-#endif
-
-#ifdef CST_AUDIO_NONE
+#else
 
 #define AUDIO_OPEN_NATIVE audio_open_none
 #define AUDIO_CLOSE_NATIVE audio_close_none
-#define AUDIO_SET_SAMPLE_RATE_NATIVE audio_set_sample_rate_none
 #define AUDIO_WRITE_NATIVE audio_write_none
-#define AUDIO_DRAIN_NATIVE audio_drain_none
-#define AUDIO_FLUSH_NATIVE audio_flush_none
-#define CST_AUDIO_NONE
 
 #endif
 
-cst_audiodev *AUDIO_OPEN_NATIVE(int sps, int channels, cst_audiofmt fmt);
+cst_audiodev *AUDIO_OPEN_NATIVE(unsigned int sps, int channels);
 int AUDIO_CLOSE_NATIVE(cst_audiodev *ad);
-int AUDIO_WRITE_NATIVE(cst_audiodev *ad,void *buff,int num_bytes);
-int AUDIO_DRAIN_NATIVE(cst_audiodev *ad);
-int AUDIO_FLUSH_NATIVE(cst_audiodev *ad);
+int AUDIO_WRITE_NATIVE(cst_audiodev *ad,void *buff,int num_frames);
 
 #endif

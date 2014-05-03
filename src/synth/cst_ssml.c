@@ -275,8 +275,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     /* If its a file to write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
     if (!cst_streq(outtype,"play") && 
-        !cst_streq(outtype,"none") &&
-        !cst_streq(outtype,"stream"))
+        !cst_streq(outtype,"none"))
     {
 	w = new_wave();
 	cst_wave_resize(w,0,1);
@@ -427,8 +426,7 @@ float flite_ssml_file_to_speech(const char *filename,
     /* If its a file to write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
     if (!cst_streq(outtype,"play") && 
-        !cst_streq(outtype,"none") &&
-        !cst_streq(outtype,"stream"))
+        !cst_streq(outtype,"none"))
     {
 	w = new_wave();
 	cst_wave_resize(w,0,1);
@@ -470,8 +468,7 @@ float flite_ssml_text_to_speech(const char *text,
     /* If its a file to write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
     if (!cst_streq(outtype,"play") && 
-        !cst_streq(outtype,"none") &&
-        !cst_streq(outtype,"stream"))
+        !cst_streq(outtype,"none"))
     {
 	w = new_wave();
 	cst_wave_resize(w,0,1);

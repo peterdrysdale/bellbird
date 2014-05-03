@@ -67,7 +67,6 @@ VAL_REG(itemfunc,29)
 VAL_REG(features,31)
 VAL_REG(breakfunc,33)
 VAL_REG(cg_db,35)
-VAL_REG(audio_streaming_info,37)
 
 // The val takes ownership and must provide delete for these types
 void val_delete_utterance(void *v);
@@ -75,7 +74,6 @@ void val_delete_wave(void *v);
 void val_delete_track(void *v);
 void val_delete_features(void *v);
 void val_delete_cg_db(void *v);
-void val_delete_audio_streaming_info(void *v);
 
 // Table of names and delete functions (where required) for vals
 const cst_val_def cst_val_defs[] = {
@@ -99,5 +97,4 @@ const cst_val_def cst_val_defs[] = {
     { "features", val_delete_features },   /* 31 features */
     { "breakfunc", NULL },                 /* 33 breakfunc */
     { "cg_db", val_delete_cg_db },         /* 35 cg_db */
-    { "audio_streaming_info", val_delete_audio_streaming_info }, /* 37 asi */
 };
