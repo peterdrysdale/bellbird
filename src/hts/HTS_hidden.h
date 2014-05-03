@@ -87,7 +87,7 @@ HTS_HIDDEN_H_START;
 void HTS_ModelSet_initialize(HTS_ModelSet * ms);
 
 /* HTS_ModelSet_load: load HTS voices */
-HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voices);
+HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices);
 
 /* HTS_ModelSet_get_sampling_frequency: get sampling frequency of HTS voices */
 size_t HTS_ModelSet_get_sampling_frequency(HTS_ModelSet * ms);
@@ -106,9 +106,6 @@ size_t HTS_ModelSet_get_nstate(HTS_ModelSet * ms);
 
 /* HTS_ModelSet_get_nstream: get number of stream */
 size_t HTS_ModelSet_get_nstream(HTS_ModelSet * ms);
-
-/* HTS_ModelSet_get_nvoices: get number of HTS voices */
-size_t HTS_ModelSet_get_nvoices(HTS_ModelSet * ms);
 
 /* HTS_ModelSet_get_vector_length: get vector length */
 size_t HTS_ModelSet_get_vector_length(HTS_ModelSet * ms, size_t stream_index);
@@ -134,14 +131,14 @@ size_t HTS_ModelSet_get_window_max_width(HTS_ModelSet * ms, size_t stream_index)
 /* HTS_ModelSet_use_gv: get GV flag */
 HTS_Boolean HTS_ModelSet_use_gv(HTS_ModelSet * ms, size_t stream_index);
 
-/* HTS_ModelSet_get_duration: get duration using interpolation weight */
-void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, const double *iw, double *mean, double *vari);
+/* HTS_ModelSet_get_duration: get duration */
+void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, double *mean, double *vari);
 
-/* HTS_ModelSet_get_parameter: get parameter using interpolation weight */
-void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t state_index, const char *string, const double *iw, double *mean, double *vari, double *msd);
+/* HTS_ModelSet_get_parameter: get parameter */
+void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t state_index, const char *string, double *mean, double *vari, double *msd);
 
-/* HTS_ModelSet_get_gv: get GV using interpolation weight */
-void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *string, const double *iw, double *mean, double *vari);
+/* HTS_ModelSet_get_gv: get GV */
+void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *string, double *mean, double *vari);
 
 /* HTS_ModelSet_clear: free model set */
 void HTS_ModelSet_clear(HTS_ModelSet * ms);
@@ -172,7 +169,7 @@ void HTS_Label_clear(HTS_Label * label);
 void HTS_SStreamSet_initialize(HTS_SStreamSet * sss);
 
 /* HTS_SStreamSet_create: parse label and determine state duration */
-HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_Label * label, HTS_Boolean phoneme_alignment_flag, double speed, double *duration_iw, double **parameter_iw, double **gv_iw);
+HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_Label * label, HTS_Boolean phoneme_alignment_flag, double speed);
 
 /* HTS_SStreamSet_get_nstream: get number of stream */
 size_t HTS_SStreamSet_get_nstream(HTS_SStreamSet * sss);

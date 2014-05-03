@@ -453,7 +453,7 @@ cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
     if (voice_type==HTSMODE)
     {
        HTS_Engine_initialize(engine);
-       if ( HTS_Engine_load(engine, &fn_voice, 1) != TRUE)
+       if ( HTS_Engine_load(engine, &fn_voice) != TRUE)
        {
           cst_errmsg("HTS voice cannot be loaded.\n");
           HTS_Engine_clear(engine);

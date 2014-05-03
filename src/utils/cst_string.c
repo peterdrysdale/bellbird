@@ -147,10 +147,12 @@ int bell_validate_atoi(const char * str, int * intout)
 
     if (end==str || ERANGE==errno)
     {
+        if (intout != NULL) *intout = 0;
         return FALSE;
     }
     else if (sl>INT_MAX || sl<INT_MIN)
     {
+        if (intout != NULL) *intout = 0;
         return FALSE;
     }
 

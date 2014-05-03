@@ -352,8 +352,8 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 	}
         ss = cons_val(string_val(aaa),ss);
         if ((val_length(ss) == 2) &&
-            (atoi(val_string(val_car(val_cdr(ss)))) <
-             atoi(val_string(val_car(ss)))))  /* its a number range */
+            (strtol(val_string(val_car(val_cdr(ss))),NULL,10) <
+             strtol(val_string(val_car(ss)),NULL,10)))  /* its a number range */
         {
             /* Should get 22-23 November, or 1998-1999 right */
             r = 
@@ -676,11 +676,11 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 	if ((cst_streq("1",aaa)) && (cst_streq("2",bbb)))
 	    r = cons_val(string_val("a"),
 			 cons_val(string_val("half"),0));
-	else if (atoi(aaa) < (atoi(bbb)))
+	else if (strtol(aaa,NULL,10) < (strtol(bbb,NULL,10)))
 	{
 	    r = val_append(en_exp_number(aaa),
 			   en_exp_ordinal(bbb));
-	    if (atoi(aaa) > 1)
+	    if (strtol(aaa,NULL,10) > 1)
 		r = val_append(r,cons_val(string_val("'s"),0));
 	}
 	else

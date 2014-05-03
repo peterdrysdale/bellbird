@@ -177,7 +177,7 @@ void HTS_SStreamSet_initialize(HTS_SStreamSet * sss)
 }
 
 /* HTS_SStreamSet_create: parse label and determine state duration */
-HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_Label * label, HTS_Boolean phoneme_alignment_flag, double speed, double *duration_iw, double **parameter_iw, double **gv_iw)
+HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_Label * label, HTS_Boolean phoneme_alignment_flag, double speed)
 {
    size_t i, j, k;
    double temp;
@@ -188,39 +188,6 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
    double frame_length;
    size_t next_time;
    size_t next_state;
-
-   /* check interpolation weights */
-   for (i = 0, temp = 0.0; i < HTS_ModelSet_get_nvoices(ms); i++)
-      temp += duration_iw[i];
-   if (temp == 0.0) {
-      return FALSE;
-   } else if (temp != 1.0) {
-      for (i = 0; i < HTS_ModelSet_get_nvoices(ms); i++)
-         if (duration_iw[i] != 0.0)
-            duration_iw[i] /= temp;
-   }
-
-   for (i = 0; i < HTS_ModelSet_get_nstream(ms); i++) {
-      for (j = 0, temp = 0.0; j < HTS_ModelSet_get_nvoices(ms); j++)
-         temp += parameter_iw[i][j];
-      if (temp == 0.0) {
-         return FALSE;
-      } else if (temp != 1.0) {
-         for (j = 0; j < HTS_ModelSet_get_nvoices(ms); j++)
-            if (parameter_iw[i][j] != 0.0)
-               parameter_iw[i][j] /= temp;
-      }
-      if (HTS_ModelSet_use_gv(ms, i)) {
-         for (j = 0, temp = 0.0; j < HTS_ModelSet_get_nvoices(ms); j++)
-            temp += gv_iw[i][j];
-         if (temp == 0.0)
-            return FALSE;
-         else if (temp != 1.0)
-            for (j = 0; j < HTS_ModelSet_get_nvoices(ms); j++)
-               if (gv_iw[i][j] != 0.0)
-                  gv_iw[i][j] /= temp;
-      }
-   }
 
    /* initialize state sequence */
    sss->nstate = HTS_ModelSet_get_nstate(ms);
@@ -255,7 +222,7 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
    duration_mean = cst_alloc(double,sss->total_state);
    duration_vari = cst_alloc(double,sss->total_state);
    for (i = 0; i < HTS_Label_get_size(label); i++)
-      HTS_ModelSet_get_duration(ms, HTS_Label_get_string(label, i), duration_iw, &duration_mean[i * sss->nstate], &duration_vari[i * sss->nstate]);
+      HTS_ModelSet_get_duration(ms, HTS_Label_get_string(label, i), &duration_mean[i * sss->nstate], &duration_vari[i * sss->nstate]);
    if (phoneme_alignment_flag == TRUE) {
       /* use duration set by user */
       next_time = 0;
@@ -295,9 +262,9 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
          for (k = 0; k < sss->nstream; k++) {
             sst = &sss->sstream[k];
             if (sst->msd)
-               HTS_ModelSet_get_parameter(ms, k, j, HTS_Label_get_string(label, i), parameter_iw[k], sst->mean[state], sst->vari[state], &sst->msd[state]);
+               HTS_ModelSet_get_parameter(ms, k, j, HTS_Label_get_string(label, i), sst->mean[state], sst->vari[state], &sst->msd[state]);
             else
-               HTS_ModelSet_get_parameter(ms, k, j, HTS_Label_get_string(label, i), parameter_iw[k], sst->mean[state], sst->vari[state], NULL);
+               HTS_ModelSet_get_parameter(ms, k, j, HTS_Label_get_string(label, i), sst->mean[state], sst->vari[state], NULL);
          }
          state++;
       }
@@ -330,7 +297,7 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
       if (HTS_ModelSet_use_gv(ms, i)) {
          sst->gv_mean = cst_alloc(double,sst->vector_length);
          sst->gv_vari = cst_alloc(double,sst->vector_length);
-         HTS_ModelSet_get_gv(ms, i, HTS_Label_get_string(label, 0), gv_iw[i], sst->gv_mean, sst->gv_vari);
+         HTS_ModelSet_get_gv(ms, i, HTS_Label_get_string(label, 0), sst->gv_mean, sst->gv_vari);
       } else {
          sst->gv_mean = NULL;
          sst->gv_vari = NULL;

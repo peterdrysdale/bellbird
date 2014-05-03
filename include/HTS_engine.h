@@ -142,7 +142,6 @@ typedef struct _HTS_ModelSet {
    char *hts_voice_version;     /* version of HTS voice format */
    size_t sampling_frequency;   /* sampling frequency */
    size_t frame_period;         /* frame period */
-   size_t num_voices;           /* # of HTS voices */
    size_t num_states;           /* # of HMM states */
    size_t num_streams;          /* # of streams */
    char *stream_type;           /* stream type */
@@ -152,8 +151,8 @@ typedef struct _HTS_ModelSet {
    char **option;               /* options for each stream */
    HTS_Model *duration;         /* duration PDFs and trees */
    HTS_Window *window;          /* window coefficients for delta */
-   HTS_Model **stream;          /* parameter PDFs and trees */
-   HTS_Model **gv;              /* GV PDFs and trees */
+   HTS_Model *stream;          /* parameter PDFs and trees */
+   HTS_Model *gv;              /* GV PDFs and trees */
 } HTS_ModelSet;
 
 /* label ----------------------------------------------------------- */
@@ -279,10 +278,6 @@ typedef struct _HTS_Condition {
    /* log F0 */
    double additional_half_tone; /* additional half tone */
 
-   /* interpolation weights */
-   double *duration_iw;         /* weights for duration interpolation */
-   double **parameter_iw;       /* weights for parameter interpolation */
-   double **gv_iw;              /* weights for GV interpolation */
 } HTS_Condition;
 
 /* HTS_Engine: Engine itself. */
@@ -301,7 +296,7 @@ typedef struct _HTS_Engine {
 void HTS_Engine_initialize(HTS_Engine * engine);
 
 /* HTS_Engine_load: load HTS voices */
-HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices, size_t num_voices);
+HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices);
 
 /* HTS_Engine_get_sampling_frequency: get sampling frequency */
 size_t HTS_Engine_get_sampling_frequency(HTS_Engine * engine);

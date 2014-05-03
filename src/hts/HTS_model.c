@@ -61,7 +61,7 @@
 
 HTS_MODEL_C_START;
 
-#include <stdlib.h>             /* for atoi(),abs() */
+#include <stdlib.h>             /* for abs() */
 #include <string.h>             /* for strlen(),strstr(),strrchr(),strcmp() */
 #include <ctype.h>              /* for isdigit() */
 
@@ -148,12 +148,14 @@ static size_t HTS_name2num(const char *buff)
 {
    const char *p; // for reading buff in reverse
    size_t len;
+   int tempint;
 
    if ( (len=strlen(buff)) == 0)
        return 0;
    for (p = buff+len; p>buff && '0' <= *(p-1) && *(p-1) <= '9'; p--);
 
-   return (size_t) atoi(p);
+   bell_validate_atoi(p, &tempint);
+   return (size_t) tempint;
 
 }
 
@@ -161,6 +163,7 @@ static size_t HTS_name2num(const char *buff)
 static size_t HTS_get_state_num(const char *string)
 {
    char *left, *right;
+   int tempint;
 
    left = strchr(string, '[');
    if (left == NULL)
@@ -171,7 +174,8 @@ static size_t HTS_get_state_num(const char *string)
    if (right == NULL)
       return 0;
 
-   return (size_t) atoi(left);
+   bell_validate_atoi(left, &tempint);
+   return (size_t) tempint;
 }
 
 /* HTS_Question_initialize: initialize question */
@@ -369,6 +373,7 @@ static HTS_Boolean HTS_Tree_load(HTS_Tree * tree, HTS_File * fp, HTS_Question * 
 {
    char buff[HTS_MAXBUFLEN];
    HTS_Node *node, *last_node;
+   int tempint;
 
    if (tree == NULL || fp == NULL)
       return FALSE;
@@ -383,9 +388,10 @@ static HTS_Boolean HTS_Tree_load(HTS_Tree * tree, HTS_File * fp, HTS_Question * 
 
    if (strcmp(buff, "{") == 0) {
       while (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == TRUE && strcmp(buff, "}") != 0) {
-         node = HTS_Node_find(last_node, atoi(buff));
+         bell_validate_atoi(buff, &tempint);
+         node = HTS_Node_find(last_node, tempint);
          if (node == NULL) {
-            cst_errmsg("HTS_Tree_load: Cannot find node %d.\n", atoi(buff));
+            cst_errmsg("HTS_Tree_load: Cannot find node %d.\n", tempint);
             HTS_Tree_clear(tree);
             return FALSE;
          }
@@ -406,13 +412,15 @@ static HTS_Boolean HTS_Tree_load(HTS_Tree * tree, HTS_File * fp, HTS_Question * 
 
          if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
             node->quest = NULL;
-            free(node->yes);
-            free(node->no);
+            cst_free(node->yes);
+            cst_free(node->no);
             HTS_Tree_clear(tree);
             return FALSE;
          }
-         if (HTS_is_num(buff))
-            node->no->index = atoi(buff);
+         if (HTS_is_num(buff)) {
+            bell_validate_atoi(buff, &tempint);
+            node->no->index = tempint;
+         }
          else
             node->no->pdf = HTS_name2num(buff);
          node->no->next = last_node;
@@ -420,13 +428,15 @@ static HTS_Boolean HTS_Tree_load(HTS_Tree * tree, HTS_File * fp, HTS_Question * 
 
          if (bell_get_pattern_token(fp, buff, HTS_MAXBUFLEN) == FALSE) {
             node->quest = NULL;
-            free(node->yes);
-            free(node->no);
+            cst_free(node->yes);
+            cst_free(node->no);
             HTS_Tree_clear(tree);
             return FALSE;
          }
-         if (HTS_is_num(buff))
-            node->yes->index = atoi(buff);
+         if (HTS_is_num(buff)) {
+            bell_validate_atoi(buff, &tempint);
+            node->yes->index = tempint;
+         }
          else
             node->yes->pdf = HTS_name2num(buff);
          node->yes->next = last_node;
@@ -500,6 +510,7 @@ static HTS_Boolean HTS_Window_load(HTS_Window * win, HTS_File ** fp, size_t size
    char buff[HTS_MAXBUFLEN];
    HTS_Boolean result = TRUE;
    float tempfloat;
+   int tempint;
 
    /* check */
    if (win == NULL || fp == NULL || size == 0)
@@ -515,7 +526,8 @@ static HTS_Boolean HTS_Window_load(HTS_Window * win, HTS_File ** fp, size_t size
          result = FALSE;
          fsize = 1;
       } else {
-         fsize = atoi(buff);
+         bell_validate_atoi(buff, &tempint);
+         fsize = tempint;
          if (fsize == 0) {
             result = FALSE;
             fsize = 1;
@@ -528,7 +540,7 @@ static HTS_Boolean HTS_Window_load(HTS_Window * win, HTS_File ** fp, size_t size
             result = FALSE;
             win->coefficient[i][j] = 0.0;
          } else {
-            if (bell_validate_atof(buff,&tempfloat)) {
+            if (bell_validate_atof(buff, &tempfloat)) {
                win->coefficient[i][j] = (double) tempfloat;
             } else {
                result = FALSE;
@@ -637,7 +649,7 @@ static HTS_Boolean HTS_Model_load_tree(HTS_Model * model, HTS_File * fp)
          question = cst_alloc(HTS_Question,1);
          HTS_Question_initialize(question);
          if (HTS_Question_load(question, fp) == FALSE) {
-            free(question);
+            cst_free(question);
             HTS_Model_clear(model);
             return FALSE;
          }
@@ -656,7 +668,7 @@ static HTS_Boolean HTS_Model_load_tree(HTS_Model * model, HTS_File * fp)
          tree->state = state;
          HTS_Tree_parse_pattern(tree, buff);
          if (HTS_Tree_load(tree, fp, model->question) == FALSE) {
-            free(tree);
+            cst_free(tree);
             HTS_Model_clear(model);
             return FALSE;
          }
@@ -715,7 +727,7 @@ static HTS_Boolean HTS_Model_load_pdf(HTS_Model * model, HTS_File * fp, size_t v
    }
    if (result == FALSE) {
       model->npdf += 2;
-      free(model->npdf);
+      cst_free(model->npdf);
       HTS_Model_initialize(model);
       return FALSE;
    }
@@ -811,7 +823,6 @@ void HTS_ModelSet_initialize(HTS_ModelSet * ms)
    ms->hts_voice_version = NULL;
    ms->sampling_frequency = 0;
    ms->frame_period = 0;
-   ms->num_voices = 0;
    ms->num_states = 0;
    ms->num_streams = 0;
    ms->stream_type = NULL;
@@ -832,49 +843,42 @@ void HTS_ModelSet_clear(HTS_ModelSet * ms)
    size_t i, j;
 
    if (ms->hts_voice_version != NULL)
-      free(ms->hts_voice_version);
+      cst_free(ms->hts_voice_version);
    if (ms->stream_type != NULL)
-      free(ms->stream_type);
+      cst_free(ms->stream_type);
    if (ms->fullcontext_format != NULL)
-      free(ms->fullcontext_format);
+      cst_free(ms->fullcontext_format);
    if (ms->fullcontext_version != NULL)
-      free(ms->fullcontext_version);
+      cst_free(ms->fullcontext_version);
    if (ms->gv_off_context != NULL) {
       HTS_Question_clear(ms->gv_off_context);
-      free(ms->gv_off_context);
+      cst_free(ms->gv_off_context);
    }
    if (ms->option != NULL) {
       for (i = 0; i < ms->num_streams; i++)
          if (ms->option[i] != NULL)
-            free(ms->option[i]);
-      free(ms->option);
+            cst_free(ms->option[i]);
+      cst_free(ms->option);
    }
 
    if (ms->duration != NULL) {
-      for (i = 0; i < ms->num_voices; i++)
-         HTS_Model_clear(&ms->duration[i]);
-      free(ms->duration);
+      HTS_Model_clear(ms->duration);
+      cst_free(ms->duration);
    }
    if (ms->window != NULL) {
       for (i = 0; i < ms->num_streams; i++)
          HTS_Window_clear(&ms->window[i]);
-      free(ms->window);
+      cst_free(ms->window);
    }
    if (ms->stream != NULL) {
-      for (i = 0; i < ms->num_voices; i++) {
-         for (j = 0; j < ms->num_streams; j++)
-            HTS_Model_clear(&ms->stream[i][j]);
-         free(ms->stream[i]);
-      }
+      for (j = 0; j < ms->num_streams; j++)
+         HTS_Model_clear(&ms->stream[j]);
       cst_free(ms->stream);
    }
    if (ms->gv != NULL) {
-      for (i = 0; i < ms->num_voices; i++) {
-         for (j = 0; j < ms->num_streams; j++)
-            HTS_Model_clear(&ms->gv[i][j]);
-         free(ms->gv[i]);
-      }
-      free(ms->gv);
+      for (j = 0; j < ms->num_streams; j++)
+         HTS_Model_clear(&ms->gv[j]);
+      cst_free(ms->gv);
    }
    HTS_ModelSet_initialize(ms);
 }
@@ -907,7 +911,7 @@ static HTS_Boolean HTS_strequal(const char *s1, const char *s2)
 }
 
 /* HTS_ModelSet_load: load model set */
-HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voices)
+HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices)
 {
    size_t i, j, k, s, e;
    HTS_Boolean error = FALSE;
@@ -926,22 +930,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
    char *gv_off_context = NULL;
 
    /* temporary values */
-   char *temp_hts_voice_version;
-   size_t temp_sampling_frequency;
-   size_t temp_frame_period;
-   size_t temp_num_states;
-   size_t temp_num_streams;
-   char *temp_stream_type;
-   char *temp_fullcontext_format;
-   char *temp_fullcontext_version;
-
-   char *temp_gv_off_context;
-
-   size_t *temp_vector_length;
-   HTS_Boolean *temp_is_msd;
-   size_t *temp_num_windows;
-   HTS_Boolean *temp_use_gv;
-   char **temp_option;
+   int tempint;
 
    char *temp_duration_pdf;
    char *temp_duration_tree;
@@ -959,28 +948,17 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
 
    HTS_ModelSet_clear(ms);
 
-   if (ms == NULL || voices == NULL || num_voices < 1)
+   if (ms == NULL || voices == NULL)
       return FALSE;
 
-   ms->num_voices = num_voices;
-
-   for (i = 0; i < num_voices && error == FALSE; i++) {
+   while (1) { //while only for early error exit - will run only once
       /* open file */
-      fp = HTS_fopen_from_fn(voices[i], "rb");
+      fp = HTS_fopen_from_fn(voices[0], "rb");
       if (fp == NULL) {
          error = TRUE;
          break;
       }
-      /* reset GLOBAL options */
-      temp_hts_voice_version = NULL;
-      temp_sampling_frequency = 0;
-      temp_frame_period = 0;
-      temp_num_states = 0;
-      temp_num_streams = 0;
-      temp_stream_type = NULL;
-      temp_fullcontext_format = NULL;
-      temp_fullcontext_version = NULL;
-      temp_gv_off_context = NULL;
+
       if (bell_get_token_from_fp_with_separator(fp, buff1, HTS_MAXBUFLEN, '\n') != TRUE) {
          error = TRUE;
          break;
@@ -998,111 +976,76 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          if (HTS_strequal(buff1, "[STREAM]") == TRUE) {
             break;
          } else if (HTS_match_head_string(buff1, "HTS_VOICE_VERSION:", &matched_size) == TRUE) {
-            if (temp_hts_voice_version != NULL)
-               free(temp_hts_voice_version);
-            temp_hts_voice_version = cst_strdup(&buff1[matched_size]);
+            ms->hts_voice_version = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "SAMPLING_FREQUENCY:", &matched_size) == TRUE) {
-            temp_sampling_frequency = (size_t) atoi(&buff1[matched_size]);
+            if (bell_validate_atoi(&buff1[matched_size], &tempint)) {
+               ms->sampling_frequency = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
          } else if (HTS_match_head_string(buff1, "FRAME_PERIOD:", &matched_size) == TRUE) {
-            temp_frame_period = (size_t) atoi(&buff1[matched_size]);
+            if (bell_validate_atoi(&buff1[matched_size], &tempint)) {
+               ms->frame_period = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
          } else if (HTS_match_head_string(buff1, "NUM_STATES:", &matched_size) == TRUE) {
-            temp_num_states = (size_t) atoi(&buff1[matched_size]);
+            if (bell_validate_atoi(&buff1[matched_size], &tempint)) {
+               ms->num_states = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
          } else if (HTS_match_head_string(buff1, "NUM_STREAMS:", &matched_size) == TRUE) {
-            temp_num_streams = (size_t) atoi(&buff1[matched_size]);
+            if (bell_validate_atoi(&buff1[matched_size], &tempint)) {
+               ms->num_streams = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
          } else if (HTS_match_head_string(buff1, "STREAM_TYPE:", &matched_size) == TRUE) {
-            if (temp_stream_type != NULL)
-               free(temp_stream_type);
-            temp_stream_type = cst_strdup(&buff1[matched_size]);
+            ms->stream_type = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "FULLCONTEXT_FORMAT:", &matched_size) == TRUE) {
-            if (temp_fullcontext_format != NULL)
-               free(temp_fullcontext_format);
-            temp_fullcontext_format = cst_strdup(&buff1[matched_size]);
+            ms->fullcontext_format = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "FULLCONTEXT_VERSION:", &matched_size) == TRUE) {
-            if (temp_fullcontext_version != NULL)
-               free(temp_fullcontext_version);
-            temp_fullcontext_version = cst_strdup(&buff1[matched_size]);
+            ms->fullcontext_version = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "GV_OFF_CONTEXT:", &matched_size) == TRUE) {
-            if (temp_gv_off_context != NULL)
-               free(temp_gv_off_context);
-            temp_gv_off_context = cst_strdup(&buff1[matched_size]);
+            gv_off_context = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "COMMENT:", &matched_size) == TRUE) {
          } else {
             cst_errmsg("HTS_ModelSet_load: Unknown option %s.\n", buff1);
          }
       }
-      /* check GLOBAL options */
-      if (i == 0) {
-         ms->hts_voice_version = temp_hts_voice_version;
-         ms->sampling_frequency = temp_sampling_frequency;
-         ms->frame_period = temp_frame_period;
-         ms->num_states = temp_num_states;
-         ms->num_streams = temp_num_streams;
-         ms->stream_type = temp_stream_type;
-         ms->fullcontext_format = temp_fullcontext_format;
-         ms->fullcontext_version = temp_fullcontext_version;
-         gv_off_context = temp_gv_off_context;
-      } else {
-         if (HTS_strequal(ms->hts_voice_version, temp_hts_voice_version) != TRUE)
-            error = TRUE;
-         if (ms->sampling_frequency != temp_sampling_frequency)
-            error = TRUE;
-         if (ms->frame_period != temp_frame_period)
-            error = TRUE;
-         if (ms->num_states != temp_num_states)
-            error = TRUE;
-         if (ms->num_streams != temp_num_streams)
-            error = TRUE;
-         if (HTS_strequal(ms->stream_type, temp_stream_type) != TRUE)
-            error = TRUE;
-         if (HTS_strequal(ms->fullcontext_format, temp_fullcontext_format) != TRUE)
-            error = TRUE;
-         if (HTS_strequal(ms->fullcontext_version, temp_fullcontext_version) != TRUE)
-            error = TRUE;
-         if (HTS_strequal(gv_off_context, temp_gv_off_context) != TRUE)
-            error = TRUE;
-         if (temp_hts_voice_version != NULL)
-            free(temp_hts_voice_version);
-         if (temp_stream_type != NULL)
-            free(temp_stream_type);
-         if (temp_fullcontext_format != NULL)
-            free(temp_fullcontext_format);
-         if (temp_fullcontext_version != NULL)
-            free(temp_fullcontext_version);
-         if (temp_gv_off_context != NULL)
-            free(temp_gv_off_context);
-      }
+
       /* find stream names */
-      if (i == 0) {
-         stream_type_list = cst_alloc(char *,ms->num_streams);
-         for (j = 0, matched_size = 0; j < ms->num_streams; j++) {
-            if (bell_get_token_from_string_with_separator(ms->stream_type, &matched_size, buff2, HTS_MAXBUFLEN, ',') == TRUE) {
-               stream_type_list[j] = cst_strdup(buff2);
-            } else {
-               stream_type_list[j] = NULL;
-               error = TRUE;
-            }
+      stream_type_list = cst_alloc(char *,ms->num_streams);
+      for (j = 0, matched_size = 0; j < ms->num_streams; j++) {
+         if (bell_get_token_from_string_with_separator(ms->stream_type, &matched_size, buff2, HTS_MAXBUFLEN, ',') == TRUE) {
+            stream_type_list[j] = cst_strdup(buff2);
+         } else {
+            stream_type_list[j] = NULL;
+            error = TRUE;
          }
       }
+
       if (error != FALSE) {
          HTS_fclose(fp);
          break;
       }
       /* reset STREAM options */
-      temp_vector_length = cst_alloc(size_t,ms->num_streams);
+      vector_length = cst_alloc(size_t,ms->num_streams);
       for (j = 0; j < ms->num_streams; j++)
-         temp_vector_length[j] = 0;
-      temp_is_msd = cst_alloc(HTS_Boolean,ms->num_streams);
+         vector_length[j] = 0;
+      is_msd = cst_alloc(HTS_Boolean,ms->num_streams);
       for (j = 0; j < ms->num_streams; j++)
-         temp_is_msd[j] = FALSE;
-      temp_num_windows = cst_alloc(size_t,ms->num_streams);
+         is_msd[j] = FALSE;
+      num_windows = cst_alloc(size_t,ms->num_streams);
       for (j = 0; j < ms->num_streams; j++)
-         temp_num_windows[j] = 0;
-      temp_use_gv = cst_alloc(HTS_Boolean,ms->num_streams);
+         num_windows[j] = 0;
+      use_gv = cst_alloc(HTS_Boolean,ms->num_streams);
       for (j = 0; j < ms->num_streams; j++)
-         temp_use_gv[j] = FALSE;
-      temp_option = cst_alloc(char *,ms->num_streams);
+         use_gv[j] = FALSE;
+      ms->option = cst_alloc(char *,ms->num_streams);
       for (j = 0; j < ms->num_streams; j++)
-         temp_option[j] = NULL;
+         ms->option[j] = NULL;
       /* load STREAM options */
       while (1) {
          if (bell_get_token_from_fp_with_separator(fp, buff1, HTS_MAXBUFLEN, '\n') != TRUE) {
@@ -1116,8 +1059,13 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        temp_vector_length[j] = (size_t) atoi(&buff1[matched_size]);
-                        break;
+                        if (bell_validate_atoi(&buff1[matched_size], &tempint)) {
+                           vector_length[j] = (size_t) tempint;
+                           break;
+                        } else {
+                           error = TRUE;
+                           break;
+                        }
                      }
                }
             }
@@ -1126,7 +1074,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        temp_is_msd[j] = (buff1[matched_size] == '1') ? TRUE : FALSE;
+                        is_msd[j] = (buff1[matched_size] == '1') ? TRUE : FALSE;
                         break;
                      }
                }
@@ -1136,8 +1084,13 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        temp_num_windows[j] = (size_t) atoi(&buff1[matched_size]);
-                        break;
+                        if (bell_validate_atoi(&buff1[matched_size], &tempint)) {
+                           num_windows[j] = (size_t) tempint;
+                           break;
+                        } else {
+                           error = TRUE;
+                           break;
+                        }
                      }
                }
             }
@@ -1146,7 +1099,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        temp_use_gv[j] = (buff1[matched_size] == '1') ? TRUE : FALSE;
+                        use_gv[j] = (buff1[matched_size] == '1') ? TRUE : FALSE;
                         break;
                      }
                }
@@ -1156,9 +1109,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++)
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        if (temp_option[j] != NULL)
-                           free(temp_option[j]);
-                        temp_option[j] = cst_strdup(&buff1[matched_size]);
+                        ms->option[j] = cst_strdup(&buff1[matched_size]);
                         break;
                      }
                }
@@ -1166,38 +1117,6 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          } else {
             cst_errmsg("HTS_ModelSet_load: Unknown option %s.\n", buff1);
          }
-      }
-      /* check STREAM options */
-      if (i == 0) {
-         vector_length = temp_vector_length;
-         is_msd = temp_is_msd;
-         num_windows = temp_num_windows;
-         use_gv = temp_use_gv;
-         ms->option = temp_option;
-      } else {
-         for (j = 0; j < ms->num_streams; j++)
-            if (vector_length[j] != temp_vector_length[j])
-               error = TRUE;
-         for (j = 0; j < ms->num_streams; j++)
-            if (is_msd[j] != is_msd[j])
-               error = TRUE;
-         for (j = 0; j < ms->num_streams; j++)
-            if (num_windows[j] != temp_num_windows[j])
-               error = TRUE;
-         for (j = 0; j < ms->num_streams; j++)
-            if (use_gv[j] != temp_use_gv[j])
-               error = TRUE;
-         for (j = 0; j < ms->num_streams; j++)
-            if (HTS_strequal(ms->option[j], temp_option[j]) != TRUE)
-               error = TRUE;
-         free(temp_vector_length);
-         free(temp_is_msd);
-         free(temp_num_windows);
-         free(temp_use_gv);
-         for (j = 0; j < ms->num_streams; j++)
-            if (temp_option[j] != NULL)
-               free(temp_option[j]);
-         free(temp_option);
       }
       if (error != FALSE) {
          HTS_fclose(fp);
@@ -1233,12 +1152,8 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          if (strcmp(buff1, "[DATA]") == 0) {
             break;
          } else if (HTS_match_head_string(buff1, "DURATION_PDF:", &matched_size) == TRUE) {
-            if (temp_duration_pdf != NULL)
-               free(temp_duration_pdf);
             temp_duration_pdf = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "DURATION_TREE:", &matched_size) == TRUE) {
-            if (temp_duration_tree != NULL)
-               free(temp_duration_tree);
             temp_duration_tree = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "STREAM_WIN[", &matched_size) == TRUE) {
             if (bell_get_token_from_string_with_separator(buff1, &matched_size, buff2, HTS_MAXBUFLEN, ']') == TRUE) {
@@ -1261,8 +1176,6 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        if (temp_stream_pdf[j] != NULL)
-                           free(temp_stream_pdf[j]);
                         temp_stream_pdf[j] = cst_strdup(&buff1[matched_size]);
                         break;
                      }
@@ -1274,8 +1187,6 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        if (temp_stream_tree[j] != NULL)
-                           free(temp_stream_tree[j]);
                         temp_stream_tree[j] = cst_strdup(&buff1[matched_size]);
                         break;
                      }
@@ -1287,8 +1198,6 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        if (temp_gv_pdf[j] != NULL)
-                           free(temp_gv_pdf[j]);
                         temp_gv_pdf[j] = cst_strdup(&buff1[matched_size]);
                         break;
                      }
@@ -1300,8 +1209,6 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
                if (buff1[matched_size++] == ':') {
                   for (j = 0; j < ms->num_streams; j++) {
                      if (strcmp(stream_type_list[j], buff2) == 0) {
-                        if (temp_gv_tree[j] != NULL)
-                           free(temp_gv_tree[j]);
                         temp_gv_tree[j] = cst_strdup(&buff1[matched_size]);
                         break;
                      }
@@ -1323,25 +1230,20 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          if (temp_stream_pdf[j] == NULL)
             error = TRUE;
       /* prepare memory */
-      if (i == 0) {
-         ms->duration = cst_alloc(HTS_Model,num_voices);
-         for (j = 0; j < num_voices; j++)
-            HTS_Model_initialize(&ms->duration[j]);
-         ms->window = cst_alloc(HTS_Window,ms->num_streams);
-         for (j = 0; j < ms->num_streams; j++)
-            HTS_Window_initialize(&ms->window[j]);
-         ms->stream = cst_alloc(HTS_Model *,num_voices);
-         for (j = 0; j < num_voices; j++) {
-            ms->stream[j] = cst_alloc(HTS_Model,ms->num_streams);
-            for (k = 0; k < ms->num_streams; k++)
-               HTS_Model_initialize(&ms->stream[j][k]);
-         }
-         ms->gv = cst_alloc(HTS_Model *,num_voices);
-         for (j = 0; j < num_voices; j++) {
-            ms->gv[j] = cst_alloc(HTS_Model,ms->num_streams);
-            for (k = 0; k < ms->num_streams; k++)
-               HTS_Model_initialize(&ms->gv[j][k]);
-         }
+      ms->duration = cst_alloc(HTS_Model,1);
+      HTS_Model_initialize(ms->duration);
+      ms->window = cst_alloc(HTS_Window,ms->num_streams);
+      for (j = 0; j < ms->num_streams; j++)
+         HTS_Window_initialize(&ms->window[j]);
+      ms->stream = cst_alloc(HTS_Model,ms->num_streams);
+      for (k = 0; k < ms->num_streams; k++)
+         HTS_Model_initialize(&ms->stream[k]);
+      ms->gv = cst_alloc(HTS_Model,ms->num_streams);
+      for (k = 0; k < ms->num_streams; k++)
+         HTS_Model_initialize(&ms->gv[k]);
+      if (error != FALSE) {
+         HTS_fclose(fp);
+         break;
       }
       start_of_data = HTS_ftell(fp);
       /* load duration */
@@ -1349,24 +1251,49 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
       tree_fp = NULL;
       matched_size = 0;
       if (bell_get_token_from_string_with_separator(temp_duration_pdf, &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
-         s = (size_t) atoi(buff2);
-         e = (size_t) atoi(&temp_duration_pdf[matched_size]);
-         HTS_fseek(fp, (long) s, SEEK_CUR);
-         pdf_fp = HTS_fopen_from_fp(fp, e - s + 1);
-         HTS_fseek(fp, start_of_data, SEEK_SET);
+         if (bell_validate_atoi(buff2, &tempint)) {
+            s = (size_t) tempint;
+         } else {
+            error = TRUE;
+         }
+         if (bell_validate_atoi(&temp_duration_pdf[matched_size], &tempint)) {
+            e = (size_t) tempint;
+         } else {
+            error = TRUE;
+         }
+         if (error == FALSE) {
+            HTS_fseek(fp, (long) s, SEEK_CUR);
+            pdf_fp = HTS_fopen_from_fp(fp, e - s + 1);
+            HTS_fseek(fp, start_of_data, SEEK_SET);
+         }
       }
       matched_size = 0;
       if (bell_get_token_from_string_with_separator(temp_duration_tree, &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
-         s = (size_t) atoi(buff2);
-         e = (size_t) atoi(&temp_duration_tree[matched_size]);
-         HTS_fseek(fp, (long) s, SEEK_CUR);
-         tree_fp = HTS_fopen_from_fp(fp, e - s + 1);
-         HTS_fseek(fp, start_of_data, SEEK_SET);
+         if (bell_validate_atoi(buff2, &tempint)) {
+            s = (size_t) tempint;
+         } else {
+            error = TRUE;
+         }
+         if (bell_validate_atoi(&temp_duration_tree[matched_size], &tempint)) {
+            e = (size_t) tempint;
+         } else {
+            error = TRUE;
+         }
+         if (error == FALSE) {
+            HTS_fseek(fp, (long) s, SEEK_CUR);
+            tree_fp = HTS_fopen_from_fp(fp, e - s + 1);
+            HTS_fseek(fp, start_of_data, SEEK_SET);
+         }
       }
-      if (HTS_Model_load(&ms->duration[i], pdf_fp, tree_fp, ms->num_states, 1, FALSE) != TRUE)
+      if ((error == FALSE) &&
+          (HTS_Model_load(ms->duration, pdf_fp, tree_fp, ms->num_states, 1, FALSE) != TRUE))
          error = TRUE;
       HTS_fclose(pdf_fp);
       HTS_fclose(tree_fp);
+      if (error != FALSE) {
+         HTS_fclose(fp);
+         break;
+      }
       /* load windows */
       for (j = 0; j < ms->num_streams; j++) {
          win_fp = cst_alloc(HTS_File *,num_windows[j]);
@@ -1375,18 +1302,33 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          for (k = 0; k < num_windows[j]; k++) {
             matched_size = 0;
             if (bell_get_token_from_string_with_separator(temp_stream_win[j][k], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
-               s = (size_t) atoi(buff2);
-               e = (size_t) atoi(&temp_stream_win[j][k][matched_size]);
-               HTS_fseek(fp, (long) s, SEEK_CUR);
-               win_fp[k] = HTS_fopen_from_fp(fp, e - s + 1);
-               HTS_fseek(fp, start_of_data, SEEK_SET);
+               if (bell_validate_atoi(buff2, &tempint)) {
+                  s = (size_t) tempint;
+               } else {
+                  error = TRUE;
+               }
+               if (bell_validate_atoi(&temp_stream_win[j][k][matched_size], &tempint)) {
+                  e = (size_t) tempint;
+               } else {
+                  error = TRUE;
+               }
+               if (error == FALSE) {
+                  HTS_fseek(fp, (long) s, SEEK_CUR);
+                  win_fp[k] = HTS_fopen_from_fp(fp, e - s + 1);
+                  HTS_fseek(fp, start_of_data, SEEK_SET);
+               }
             }
          }
-         if (HTS_Window_load(&ms->window[j], win_fp, num_windows[j]) != TRUE)
+         if ((error == FALSE) &&
+             (HTS_Window_load(&ms->window[j], win_fp, num_windows[j]) != TRUE))
             error = TRUE;
          for (k = 0; k < num_windows[j]; k++)
             HTS_fclose(win_fp[k]);
-         free(win_fp);
+         cst_free(win_fp);
+      }
+      if (error != FALSE) {
+         HTS_fclose(fp);
+         break;
       }
       /* load streams */
       for (j = 0; j < ms->num_streams; j++) {
@@ -1394,24 +1336,49 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          tree_fp = NULL;
          matched_size = 0;
          if (bell_get_token_from_string_with_separator(temp_stream_pdf[j], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
-            s = (size_t) atoi(buff2);
-            e = (size_t) atoi(&temp_stream_pdf[j][matched_size]);
-            HTS_fseek(fp, (long) s, SEEK_CUR);
-            pdf_fp = HTS_fopen_from_fp(fp, e - s + 1);
-            HTS_fseek(fp, start_of_data, SEEK_SET);
+            if (bell_validate_atoi(buff2, &tempint)) {
+               s = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
+            if (bell_validate_atoi(&temp_stream_pdf[j][matched_size], &tempint)) {
+               e = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
+            if (error == FALSE) {
+               HTS_fseek(fp, (long) s, SEEK_CUR);
+               pdf_fp = HTS_fopen_from_fp(fp, e - s + 1);
+               HTS_fseek(fp, start_of_data, SEEK_SET);
+            }
          }
          matched_size = 0;
          if (bell_get_token_from_string_with_separator(temp_stream_tree[j], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
-            s = (size_t) atoi(buff2);
-            e = (size_t) atoi(&temp_stream_tree[j][matched_size]);
-            HTS_fseek(fp, (long) s, SEEK_CUR);
-            tree_fp = HTS_fopen_from_fp(fp, e - s + 1);
-            HTS_fseek(fp, start_of_data, SEEK_SET);
+            if (bell_validate_atoi(buff2, &tempint)) {
+               s = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
+            if (bell_validate_atoi(&temp_stream_tree[j][matched_size], &tempint)) {
+               e = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
+            if (error == FALSE) {
+               HTS_fseek(fp, (long) s, SEEK_CUR);
+               tree_fp = HTS_fopen_from_fp(fp, e - s + 1);
+               HTS_fseek(fp, start_of_data, SEEK_SET);
+            }
          }
-         if (HTS_Model_load(&ms->stream[i][j], pdf_fp, tree_fp, vector_length[j], num_windows[j], is_msd[j]) != TRUE)
+         if ((error == FALSE) &&
+             (HTS_Model_load(&ms->stream[j], pdf_fp, tree_fp, vector_length[j], num_windows[j], is_msd[j]) != TRUE))
             error = TRUE;
          HTS_fclose(pdf_fp);
          HTS_fclose(tree_fp);
+      }
+      if (error != FALSE) {
+         HTS_fclose(fp);
+         break;
       }
       /* load GVs */
       for (j = 0; j < ms->num_streams; j++) {
@@ -1419,22 +1386,43 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
          tree_fp = NULL;
          matched_size = 0;
          if (bell_get_token_from_string_with_separator(temp_gv_pdf[j], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
-            s = (size_t) atoi(buff2);
-            e = (size_t) atoi(&temp_gv_pdf[j][matched_size]);
-            HTS_fseek(fp, (long) s, SEEK_CUR);
-            pdf_fp = HTS_fopen_from_fp(fp, e - s + 1);
-            HTS_fseek(fp, start_of_data, SEEK_SET);
+            if (bell_validate_atoi(buff2, &tempint)) {
+               s = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
+            if (bell_validate_atoi(&temp_gv_pdf[j][matched_size], &tempint)) {
+               e = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
+            if (error == FALSE) {
+               HTS_fseek(fp, (long) s, SEEK_CUR);
+               pdf_fp = HTS_fopen_from_fp(fp, e - s + 1);
+               HTS_fseek(fp, start_of_data, SEEK_SET);
+            }
          }
          matched_size = 0;
          if (bell_get_token_from_string_with_separator(temp_gv_tree[j], &matched_size, buff2, HTS_MAXBUFLEN, '-') == TRUE) {
-            s = (size_t) atoi(buff2);
-            e = (size_t) atoi(&temp_gv_tree[j][matched_size]);
-            HTS_fseek(fp, (long) s, SEEK_CUR);
-            tree_fp = HTS_fopen_from_fp(fp, e - s + 1);
-            HTS_fseek(fp, start_of_data, SEEK_SET);
+            if (bell_validate_atoi(buff2, &tempint)) {
+               s = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
+            if (bell_validate_atoi(&temp_gv_tree[j][matched_size], &tempint)) {
+               e = (size_t) tempint;
+            } else {
+               error = TRUE;
+            }
+            if (error == FALSE) {
+               HTS_fseek(fp, (long) s, SEEK_CUR);
+               tree_fp = HTS_fopen_from_fp(fp, e - s + 1);
+               HTS_fseek(fp, start_of_data, SEEK_SET);
+            }
          }
          if (use_gv[j] == TRUE) {
-            if (HTS_Model_load(&ms->gv[i][j], pdf_fp, tree_fp, vector_length[j], 1, FALSE) != TRUE)
+            if ((error == FALSE) &
+                (HTS_Model_load(&ms->gv[j], pdf_fp, tree_fp, vector_length[j], 1, FALSE) != TRUE))
                error = TRUE;
          }
          HTS_fclose(pdf_fp);
@@ -1442,36 +1430,35 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
       }
       /* free */
       if (temp_duration_pdf != NULL)
-         free(temp_duration_pdf);
+         cst_free(temp_duration_pdf);
       if (temp_duration_tree != NULL)
-         free(temp_duration_tree);
+         cst_free(temp_duration_tree);
       for (j = 0; j < ms->num_streams; j++) {
          for (k = 0; k < num_windows[j]; k++)
             if (temp_stream_win[j][k] != NULL)
-               free(temp_stream_win[j][k]);
-         free(temp_stream_win[j]);
+               cst_free(temp_stream_win[j][k]);
+         cst_free(temp_stream_win[j]);
       }
-      free(temp_stream_win);
+      cst_free(temp_stream_win);
       for (j = 0; j < ms->num_streams; j++)
          if (temp_stream_pdf[j] != NULL)
-            free(temp_stream_pdf[j]);
-      free(temp_stream_pdf);
+            cst_free(temp_stream_pdf[j]);
+      cst_free(temp_stream_pdf);
       for (j = 0; j < ms->num_streams; j++)
          if (temp_stream_tree[j] != NULL)
-            free(temp_stream_tree[j]);
-      free(temp_stream_tree);
+            cst_free(temp_stream_tree[j]);
+      cst_free(temp_stream_tree);
       for (j = 0; j < ms->num_streams; j++)
          if (temp_gv_pdf[j] != NULL)
-            free(temp_gv_pdf[j]);
-      free(temp_gv_pdf);
+            cst_free(temp_gv_pdf[j]);
+      cst_free(temp_gv_pdf);
       for (j = 0; j < ms->num_streams; j++)
          if (temp_gv_tree[j] != NULL)
-            free(temp_gv_tree[j]);
-      free(temp_gv_tree);
+            cst_free(temp_gv_tree[j]);
+      cst_free(temp_gv_tree);
       /* fclose */
       HTS_fclose(fp);
-      if (error != FALSE)
-         break;
+      break;  // exit while loop after only one time
    }
 
    if (gv_off_context != NULL) {
@@ -1484,24 +1471,24 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices, size_t num_voice
       HTS_Question_initialize(ms->gv_off_context);
       HTS_Question_load(ms->gv_off_context, gv_off_context_fp);
       HTS_fclose(gv_off_context_fp);
-      free(gv_off_context);
+      cst_free(gv_off_context);
    }
 
    if (stream_type_list != NULL) {
       for (i = 0; i < ms->num_streams; i++)
          if (stream_type_list[i] != NULL)
-            free(stream_type_list[i]);
-      free(stream_type_list);
+            cst_free(stream_type_list[i]);
+      cst_free(stream_type_list);
    }
 
    if (vector_length != NULL)
-      free(vector_length);
+      cst_free(vector_length);
    if (is_msd != NULL)
-      free(is_msd);
+      cst_free(is_msd);
    if (num_windows != NULL)
-      free(num_windows);
+      cst_free(num_windows);
    if (use_gv != NULL)
-      free(use_gv);
+      cst_free(use_gv);
 
    return !error;
 }
@@ -1547,22 +1534,16 @@ size_t HTS_ModelSet_get_nstream(HTS_ModelSet * ms)
    return ms->num_streams;
 }
 
-/* HTS_ModelSet_get_nvoices: get number of stream */
-size_t HTS_ModelSet_get_nvoices(HTS_ModelSet * ms)
-{
-   return ms->num_voices;
-}
-
 /* HTS_ModelSet_get_vector_length: get vector length */
 size_t HTS_ModelSet_get_vector_length(HTS_ModelSet * ms, size_t stream_index)
 {
-   return ms->stream[0][stream_index].vector_length;
+   return ms->stream[stream_index].vector_length;
 }
 
 /* HTS_ModelSet_is_msd: get MSD flag */
 HTS_Boolean HTS_ModelSet_is_msd(HTS_ModelSet * ms, size_t stream_index)
 {
-   return ms->stream[0][stream_index].is_msd;
+   return ms->stream[stream_index].is_msd;
 }
 
 /* HTS_ModelSet_get_window_size: get dynamic window size */
@@ -1598,14 +1579,14 @@ size_t HTS_ModelSet_get_window_max_width(HTS_ModelSet * ms, size_t stream_index)
 /* HTS_ModelSet_use_gv: get GV flag */
 HTS_Boolean HTS_ModelSet_use_gv(HTS_ModelSet * ms, size_t stream_index)
 {
-   if (ms->gv[0][stream_index].vector_length != 0)
+   if (ms->gv[stream_index].vector_length != 0)
       return TRUE;
    else
       return FALSE;
 }
 
 /* HTS_Model_add_parameter: get parameter using interpolation weight */
-static void HTS_Model_add_parameter(HTS_Model * model, size_t state_index, const char *string, double *mean, double *vari, double *msd, double weight)
+static void HTS_Model_add_parameter(HTS_Model * model, size_t state_index, const char *string, double *mean, double *vari, double *msd)
 {
    size_t i;
    size_t tree_index, pdf_index;
@@ -1613,15 +1594,15 @@ static void HTS_Model_add_parameter(HTS_Model * model, size_t state_index, const
 
    HTS_Model_get_index(model, state_index, string, &tree_index, &pdf_index);
    for (i = 0; i < len; i++) {
-      mean[i] += weight * model->pdf[tree_index][pdf_index][i];
-      vari[i] += weight * model->pdf[tree_index][pdf_index][i + len];
+      mean[i] += model->pdf[tree_index][pdf_index][i];
+      vari[i] += model->pdf[tree_index][pdf_index][i + len];
    }
    if (msd != NULL && model->is_msd == TRUE)
-      *msd += weight * model->pdf[tree_index][pdf_index][len + len];
+      *msd += model->pdf[tree_index][pdf_index][len + len];
 }
 
-/* HTS_ModelSet_get_duration: get duration using interpolation weight */
-void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, const double *iw, double *mean, double *vari)
+/* HTS_ModelSet_get_duration: get duration */
+void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, double *mean, double *vari)
 {
    size_t i;
    size_t len = ms->num_states;
@@ -1630,16 +1611,15 @@ void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, const doub
       mean[i] = 0.0;
       vari[i] = 0.0;
    }
-   for (i = 0; i < ms->num_voices; i++)
-      if (iw[i] != 0.0)
-         HTS_Model_add_parameter(&ms->duration[i], 2, string, mean, vari, NULL, iw[i]);
+
+   HTS_Model_add_parameter(ms->duration, 2, string, mean, vari, NULL);
 }
 
-/* HTS_ModelSet_get_parameter: get parameter using interpolation weight */
-void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t state_index, const char *string, const double *iw, double *mean, double *vari, double *msd)
+/* HTS_ModelSet_get_parameter: get parameter */
+void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t state_index, const char *string, double *mean, double *vari, double *msd)
 {
    size_t i;
-   size_t len = ms->stream[0][stream_index].vector_length * ms->stream[0][stream_index].num_windows;
+   size_t len = ms->stream[stream_index].vector_length * ms->stream[stream_index].num_windows;
 
    for (i = 0; i < len; i++) {
       mean[i] = 0.0;
@@ -1648,24 +1628,21 @@ void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t s
    if (msd != NULL)
       *msd = 0.0;
 
-   for (i = 0; i < ms->num_voices; i++)
-      if (iw[i] != 0.0)
-         HTS_Model_add_parameter(&ms->stream[i][stream_index], state_index, string, mean, vari, msd, iw[i]);
+   HTS_Model_add_parameter(&ms->stream[stream_index], state_index, string, mean, vari, msd);
 }
 
-/* HTS_ModelSet_get_gv: get GV using interpolation weight */
-void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *string, const double *iw, double *mean, double *vari)
+/* HTS_ModelSet_get_gv: get GV */
+void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *string, double *mean, double *vari)
 {
    size_t i;
-   size_t len = ms->stream[0][stream_index].vector_length;
+   size_t len = ms->stream[stream_index].vector_length;
 
    for (i = 0; i < len; i++) {
       mean[i] = 0.0;
       vari[i] = 0.0;
    }
-   for (i = 0; i < ms->num_voices; i++)
-      if (iw[i] != 0.0)
-         HTS_Model_add_parameter(&ms->gv[i][stream_index], 2, string, mean, vari, NULL, iw[i]);
+
+   HTS_Model_add_parameter(&ms->gv[stream_index], 2, string, mean, vari, NULL);
 }
 
 HTS_MODEL_C_END;

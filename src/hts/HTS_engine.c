@@ -94,11 +94,6 @@ void HTS_Engine_initialize(HTS_Engine * engine)
    /* log F0 */
    engine->condition.additional_half_tone = 0.0;
 
-   /* interpolation weights */
-   engine->condition.duration_iw = NULL;
-   engine->condition.parameter_iw = NULL;
-   engine->condition.gv_iw = NULL;
-
    /* initialize model set */
    HTS_ModelSet_initialize(&engine->ms);
    /* initialize label list */
@@ -112,11 +107,10 @@ void HTS_Engine_initialize(HTS_Engine * engine)
 }
 
 /* HTS_Engine_load: load HTS voices */
-HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices, size_t num_voices)
+HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices)
 {
-   size_t i, j;
+   size_t i;
    size_t nstream;
-   double average_weight;
    const char *option, *find;
    float tempfloat;
    int tempint;
@@ -125,12 +119,11 @@ HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices, size_t num_voice
    HTS_Engine_clear(engine);
 
    /* load voices */
-   if (HTS_ModelSet_load(&engine->ms, voices, num_voices) != TRUE) {
+   if (HTS_ModelSet_load(&engine->ms, voices) != TRUE) {
       HTS_Engine_clear(engine);
       return FALSE;
    }
    nstream = HTS_ModelSet_get_nstream(&engine->ms);
-   average_weight = 1.0 / num_voices;
 
    /* global */
    engine->condition.sampling_frequency = HTS_ModelSet_get_sampling_frequency(&engine->ms);
@@ -162,23 +155,6 @@ HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices, size_t num_voice
          cst_errmsg("Voice file option 'ALPHA' is not float, setting to default 0.42\n");
          engine->condition.alpha = 0.42;
       }
-   }
-
-   /* interpolation weights */
-   engine->condition.duration_iw = cst_alloc(double,num_voices);
-   for (i = 0; i < num_voices; i++)
-      engine->condition.duration_iw[i] = average_weight;
-   engine->condition.parameter_iw = cst_alloc(double *,nstream);
-   for (i = 0; i < nstream; i++) {
-      engine->condition.parameter_iw[i] = cst_alloc(double,num_voices);
-      for (j = 0; j < num_voices; j++)
-         engine->condition.parameter_iw[i][j] = average_weight;
-   }
-   engine->condition.gv_iw = cst_alloc(double *,nstream);
-   for (i = 0; i < nstream; i++) {
-      engine->condition.gv_iw[i] = cst_alloc(double,num_voices);
-      for (j = 0; j < num_voices; j++)
-         engine->condition.gv_iw[i][j] = average_weight;
    }
 
    return TRUE;
@@ -238,7 +214,7 @@ static HTS_Boolean HTS_Engine_generate_state_sequence(HTS_Engine * engine)
    size_t i, state_index, model_index;
    double f;
 
-   if (HTS_SStreamSet_create(&engine->sss, &engine->ms, &engine->label, engine->condition.phoneme_alignment_flag, engine->condition.speed, engine->condition.duration_iw, engine->condition.parameter_iw, engine->condition.gv_iw) != TRUE) {
+   if (HTS_SStreamSet_create(&engine->sss, &engine->ms, &engine->label, engine->condition.phoneme_alignment_flag, engine->condition.speed) != TRUE) {
       HTS_Engine_refresh(engine);
       return FALSE;
    }
@@ -319,24 +295,10 @@ void HTS_Engine_refresh(HTS_Engine * engine)
 /* HTS_Engine_clear: free engine */
 void HTS_Engine_clear(HTS_Engine * engine)
 {
-   size_t i;
-
    if (engine->condition.msd_threshold != NULL)
       cst_free(engine->condition.msd_threshold);
-   if (engine->condition.duration_iw != NULL)
-      cst_free(engine->condition.duration_iw);
    if (engine->condition.gv_weight != NULL)
       cst_free(engine->condition.gv_weight);
-   if (engine->condition.parameter_iw != NULL) {
-      for (i = 0; i < HTS_ModelSet_get_nstream(&engine->ms); i++)
-         cst_free(engine->condition.parameter_iw[i]);
-      cst_free(engine->condition.parameter_iw);
-   }
-   if (engine->condition.gv_iw != NULL) {
-      for (i = 0; i < HTS_ModelSet_get_nstream(&engine->ms); i++)
-         cst_free(engine->condition.gv_iw[i]);
-      cst_free(engine->condition.gv_iw);
-   }
 
    HTS_ModelSet_clear(&engine->ms);
    HTS_Engine_initialize(engine);
