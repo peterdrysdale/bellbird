@@ -62,11 +62,10 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
     float end,f0val, syldur;
     int num_frames,f,i;
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
+    int param_track_num_frames = UTT_FEAT_INT(utt,"param_track_num_frames");
 
     spamf0_track=new_track();
-    cst_track_resize(spamf0_track,
-                     (UTT_FEAT_INT(utt,"param_track_num_frames")),
-                     1);
+    cst_track_resize(spamf0_track, param_track_num_frames, 1);
     acc_tree = cg_db->spamf0_accent_tree;
     phrase_tree = cg_db->spamf0_phrase_tree;
     end = 0.0;
@@ -83,7 +82,7 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
             f0val=val_float(cart_interpret(s,phrase_tree));
         }
 
-        for ( ; ((num_frames * cg_db->frame_advance) <= end) && (num_frames < UTT_FEAT_INT(utt,"param_track_num_frames")); num_frames++)
+        for ( ; ((num_frames * cg_db->frame_advance) <= end) && (num_frames < param_track_num_frames); num_frames++)
         {
             spamf0_track->frames[num_frames][0]=f0val;
         }
@@ -103,7 +102,7 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
                       spamf0_track);
     }
     param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));
-    for (i=0;i<UTT_FEAT_INT(utt,"param_track_num_frames");i++)
+    for (i=0; i<param_track_num_frames; i++)
     {
         param_track->frames[i][0]=spamf0_track->frames[i][0];
     }
@@ -111,7 +110,7 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
     return utt;
 }
 
-void cst_synthtilt(const cst_cg_db *cg_db, 
+static void cst_synthtilt(const cst_cg_db *cg_db,
                           const float start, const float peak, const float tiltamp, 
                           const float tiltdur, const float tilttilt,
                           cst_track *ftrack)
