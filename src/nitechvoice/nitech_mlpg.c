@@ -334,7 +334,9 @@ void ReadWin(PStreamChol *pst)
 
         // set pointer
         pst->dw.coef[i] += leng;
-    }  
+    }
+
+    cst_free(readincoef);
 }
 
 void FreeWin(PStreamChol *pst)
