@@ -112,27 +112,6 @@ cst_utterance *flite_do_synth(cst_utterance *u,
 	return u;
 }
 
-float flite_file_to_speech(const char *filename, 
-			   cst_voice *voice,
-			   const char *outtype)
-{
-    cst_tokenstream *ts;
-
-    if ((ts = ts_open(filename,
-	      get_param_string(voice->features,"text_whitespace",NULL),
-	      get_param_string(voice->features,"text_singlecharsymbols",NULL),
-	      get_param_string(voice->features,"text_prepunctuation",NULL),
-	      get_param_string(voice->features,"text_postpunctuation",NULL)))
-	== NULL)
-    {
-	cst_errmsg("failed to open file \"%s\" for reading\n",
-		   filename);
-	return 1;
-    }
-    return flite_ts_to_speech(ts,voice,outtype);
-}
-
-
 float flite_ts_to_speech(cst_tokenstream *ts,
                          cst_voice *voice,
                          const char *outtype)

@@ -338,13 +338,16 @@ void LoadTreesFile(TreeSet *ts, Mtype type)
    cst_free(hfp);
 }
 
-void InitTreeSet(TreeSet *ts) 
+TreeSet * InitTreeSet(void)
 {
+   TreeSet *ts;
+
+   ts = cst_alloc(TreeSet, 1);
    ts->fp[DUR] = NULL;
    ts->fp[LF0] = NULL;
    ts->fp[MCP] = NULL;
    
-   return; 
+   return ts;
 } 
 
 static void delete_tree_nodes(Node *node)
@@ -358,30 +361,38 @@ static void delete_tree_nodes(Node *node)
     cst_free(node);
 }
 
-void FreeTrees(TreeSet *ts, Mtype type)
+void nitech_free_treeset(TreeSet *ts)
 {
     Question *nq, *qq;
     Pattern *pp, *np;
     Tree *tt, *nt;
+    int i;
 
-    for (qq = ts->qhead[type]; qq; qq = nq)
+    if (ts == NULL) return;
+
+    for (i=0; i<3; i++)
     {
-	nq = qq->next;
+        for (qq = ts->qhead[i]; qq; qq = nq)
+        {
+            nq = qq->next;
 
-	cst_free(qq->qName);
-	for (pp = qq->phead; pp; pp = np)
-	{
-	    np = pp->next;
-	    cst_free(pp->pat);
-	    cst_free(pp);
-	}
-	cst_free(qq);
+            cst_free(qq->qName);
+	    for (pp = qq->phead; pp; pp = np)
+            {
+                np = pp->next;
+	        cst_free(pp->pat);
+	        cst_free(pp);
+            }
+            cst_free(qq);
+        }
+
+        for (tt = ts->thead[i]; tt; tt = nt)
+        {
+            nt = tt->next;
+            delete_tree_nodes(tt->root);
+            cst_free(tt);
+        }
     }
 
-    for (tt = ts->thead[type]; tt; tt = nt)
-    {
-	nt = tt->next;
-	delete_tree_nodes(tt->root);
-	cst_free(tt);
-    }
+    cst_free(ts);
 }

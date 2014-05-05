@@ -10,7 +10,7 @@
 #define HTSMODE 1
 #define NITECHMODE 2
 
-float bell_hts_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine, const char *filename, cst_voice *voice, const char *outtype, const int voice_type);
+float bell_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine, const char *filename, cst_voice *voice, const char *outtype, const int voice_type);
 
 float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine, cst_tokenstream *ts, cst_voice *voice, const char *outtype, const int voice_type);
 

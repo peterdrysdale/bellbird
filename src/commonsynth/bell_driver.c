@@ -237,7 +237,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    cst_free(endtone);
 }
 
-float bell_hts_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
+float bell_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
                            const char *filename, cst_voice *voice,
                            const char *outtype, const int voice_type)
 {
@@ -251,9 +251,15 @@ float bell_hts_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
         == NULL)
     {
         cst_errmsg("Failed to open file \"%s\" for reading\n",filename);
-        cst_error();
+        return -1.0;
     }
-    return bell_hts_ts_to_speech(engine,ntengine,ts,voice,outtype,voice_type);
+    if (voice_type == NITECHMODE || voice_type == HTSMODE){
+       return bell_hts_ts_to_speech(engine,ntengine,ts,voice,outtype,voice_type);
+    }
+    else       // must be CLUSTERGENMODE
+    {
+       return flite_ts_to_speech(ts,voice,outtype);
+    }
 }
 
 float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
@@ -444,7 +450,7 @@ cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
     if (fn_voice == NULL)
     {
        cst_errmsg("A voice must be specified.\n");
-       cst_error();
+       return NULL;
     }
     if (voice_type==CLUSTERGENMODE)
     {
@@ -453,23 +459,29 @@ cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
     if (voice_type==HTSMODE)
     {
        HTS_Engine_initialize(engine);
-       if ( HTS_Engine_load(engine, &fn_voice) != TRUE)
+       if (HTS_Engine_load(engine, &fn_voice) != TRUE)
        {
-          cst_errmsg("HTS voice cannot be loaded.\n");
           HTS_Engine_clear(engine);
-          cst_error();
        }
-       voice = register_hts_voice(flite_lang_list);
+       else
+       {
+          voice = register_hts_voice(flite_lang_list);
+       }
     }
     if (voice_type==NITECHMODE)
     {
-       nitech_engine_initialize(ntengine, fn_voice);
-       voice = register_hts_voice(flite_lang_list);
+       if (nitech_engine_initialize(ntengine, fn_voice) != TRUE)
+       {
+           ;
+       }
+       else
+       {
+          voice = register_hts_voice(flite_lang_list);
+       }
     }
     if (voice == NULL)
     {
        cst_errmsg("Failed to load voice\n");
-       cst_error();
     }
     return voice;
 }

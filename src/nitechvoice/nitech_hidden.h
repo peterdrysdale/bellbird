@@ -83,13 +83,13 @@ void LoadModelFiles (ModelSet *);
 void FindDurPDF (Model *, ModelSet *, float, int );
 void FindLF0PDF (int, Model *, ModelSet *, float);
 void FindMcpPDF (int, Model *, ModelSet *);
-void InitModelSet (ModelSet *);
+ModelSet * InitModelSet (void);
 void DeleteModelSet(ModelSet *ms);
 
 void LoadTreesFile (TreeSet *, Mtype);
 int SearchTree (char *, Node *);
-void InitTreeSet(TreeSet *);
-void FreeTrees(TreeSet *ts, Mtype type);
+TreeSet * InitTreeSet(void);
+void nitech_free_treeset(TreeSet *ts);
 
 void init_vocoder(int m, VocoderSetup *vs);
 void vocoder (double p, double *mc, int m, cst_wave *w, int samp_offset, nitechP *gp, VocoderSetup *vs);

@@ -74,13 +74,13 @@ typedef struct _VocoderSetup {
 
 typedef struct _nitech_engine {
    cst_utterance *utt;
-   ModelSet   ms;
-   TreeSet    ts;
+   ModelSet   *ms;
+   TreeSet    *ts;
    PStreamChol    mceppst, lf0pst;
    VocoderSetup vs;
 } nitech_engine;
 
-void nitech_engine_initialize(nitech_engine *ntengine, const char * fn_voice);
+bell_boolean nitech_engine_initialize(nitech_engine *ntengine, const char * fn_voice);
 bell_boolean nitech_engine_synthesize_from_strings(
                       nitech_engine * ntengine, char **lines, size_t num_lines);
 void nitech_engine_clear(nitech_engine * ntengine);

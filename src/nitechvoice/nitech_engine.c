@@ -166,7 +166,7 @@ bell_boolean nitech_engine_synthesize_from_strings(nitech_engine * ntengine, cha
    
     /* generate speech */
     w=nitech_process(lines, num_lines, &(ntengine->mceppst), &(ntengine->lf0pst),
-                       &gp, &(ntengine->ms), &(ntengine->ts), &(ntengine->vs));
+                       &gp, ntengine->ms, ntengine->ts, &(ntengine->vs));
 
     /* Attach waveform to utterance for data return */
     utt_set_wave(ntengine->utt,w);
@@ -174,9 +174,10 @@ bell_boolean nitech_engine_synthesize_from_strings(nitech_engine * ntengine, cha
     return TRUE;
 }
 
-void nitech_engine_initialize(nitech_engine *ntengine, const char * fn_voice)
+bell_boolean nitech_engine_initialize(nitech_engine *ntengine, const char * fn_voice)
 {
     char * filename;
+    bell_boolean retval = TRUE;
 
     /* delta window handler for log f0 */
     ntengine->lf0pst.dw.fn = cst_alloc(char *,3);
@@ -195,86 +196,92 @@ void nitech_engine_initialize(nitech_engine *ntengine, const char * fn_voice)
     ReadWin(&(ntengine->mceppst));
 
     /* initialize TreeSet and ModelSet */
-    InitTreeSet (&(ntengine->ts));
-    InitModelSet(&(ntengine->ms));
+    ntengine->ts = NULL;
+    ntengine->ts = InitTreeSet();
+    ntengine->ms = NULL;
+    ntengine->ms = InitModelSet();
 
     filename = bell_build_filename(fn_voice,"hts/trees-dur.inf");
-    (ntengine->ts).fp[DUR]=bell_fopen(filename,"r");
+    ntengine->ts->fp[DUR]=bell_fopen(filename,"r");
     cst_free(filename);
-    if ((ntengine->ts).fp[DUR] == NULL)
+    if (ntengine->ts->fp[DUR] == NULL)
     {
         cst_errmsg("nitech_engine: can't open hts/trees-dur.inf file\n");
-        cst_error();
+        retval = FALSE;
     }
     filename = bell_build_filename(fn_voice,"hts/trees-lf0.inf");
-    (ntengine->ts).fp[LF0]=bell_fopen(filename,"r");
+    ntengine->ts->fp[LF0]=bell_fopen(filename,"r");
     cst_free(filename);
-    if ((ntengine->ts).fp[LF0] == NULL)
+    if (ntengine->ts->fp[LF0] == NULL)
     {
         cst_errmsg("nitech_engine: can't open hts/trees-lf0.inf file\n");
-        cst_error();
+        retval = FALSE;
     }
     filename = bell_build_filename(fn_voice,"hts/trees-mcep.inf");
-    (ntengine->ts).fp[MCP]=bell_fopen(filename,"r");
+    ntengine->ts->fp[MCP]=bell_fopen(filename,"r");
     cst_free(filename);
-    if ((ntengine->ts).fp[MCP] == NULL)
+    if (ntengine->ts->fp[MCP] == NULL)
     {
         cst_errmsg("nitech_engine: can't open hts/trees-mcep.inf file\n");
-        cst_error();
+        retval = FALSE;
     }
     filename = bell_build_filename(fn_voice,"hts/duration.pdf");
-    (ntengine->ms).fp[DUR]=bell_fopen(filename,"rb");
+    ntengine->ms->fp[DUR]=bell_fopen(filename,"rb");
     cst_free(filename);
-    if ((ntengine->ms).fp[DUR] == NULL)
+    if (ntengine->ms->fp[DUR] == NULL)
     {
         cst_errmsg("nitech_engine: can't open hts/duration.pdf file\n");
-        cst_error();
+        retval = FALSE;
     }
     filename = bell_build_filename(fn_voice,"hts/lf0.pdf");
-    (ntengine->ms).fp[LF0]=bell_fopen(filename,"rb");
+    ntengine->ms->fp[LF0]=bell_fopen(filename,"rb");
     cst_free(filename);
-    if ((ntengine->ms).fp[LF0] == NULL)
+    if (ntengine->ms->fp[LF0] == NULL)
     {
         cst_errmsg("nitech_engine: can't open hts/lf0.pdf file\n");
-        cst_error();
+        retval = FALSE;
     }
     filename = bell_build_filename(fn_voice,"hts/mcep.pdf");
-    (ntengine->ms).fp[MCP]=bell_fopen(filename,"rb");
+    ntengine->ms->fp[MCP]=bell_fopen(filename,"rb");
     cst_free(filename);
-    if ((ntengine->ms).fp[MCP] == NULL)
+    if (ntengine->ms->fp[MCP] == NULL)
     {
         cst_errmsg("nitech_engine: can't open hts/mcep.pdf file\n");
-        cst_error();
+        retval = FALSE;
     }
 
     /* load tree files for duration, log f0 and mel-cepstrum */
-    LoadTreesFile(&(ntengine->ts), DUR);
-    LoadTreesFile(&(ntengine->ts), LF0);
-    LoadTreesFile(&(ntengine->ts), MCP);
-    bell_fclose(ntengine->ts.fp[DUR]);
-    bell_fclose(ntengine->ts.fp[LF0]);
-    bell_fclose(ntengine->ts.fp[MCP]);
-   
-    /* load model files for duration, log f0 and mel-cepstrum */
-    LoadModelFiles(&(ntengine->ms));
-    bell_fclose(ntengine->ms.fp[DUR]);
-    bell_fclose(ntengine->ms.fp[LF0]);
-    bell_fclose(ntengine->ms.fp[MCP]);
+    if (retval) LoadTreesFile(ntengine->ts, DUR);
+    if (retval) LoadTreesFile(ntengine->ts, LF0);
+    if (retval) LoadTreesFile(ntengine->ts, MCP);
 
-    /* check the number of window */
-    if (ntengine->lf0pst.dw.num != ntengine->ms.lf0stream) 
+    /* load model files for duration, log f0 and mel-cepstrum */
+    if (retval) LoadModelFiles(ntengine->ms);
+
+    // close tree and model files
+    if (ntengine->ts->fp[DUR]) bell_fclose(ntengine->ts->fp[DUR]);
+    if (ntengine->ts->fp[LF0]) bell_fclose(ntengine->ts->fp[LF0]);
+    if (ntengine->ts->fp[MCP]) bell_fclose(ntengine->ts->fp[MCP]);
+    if (ntengine->ms->fp[DUR]) bell_fclose(ntengine->ms->fp[DUR]);
+    if (ntengine->ms->fp[LF0]) bell_fclose(ntengine->ms->fp[LF0]);
+    if (ntengine->ms->fp[MCP]) bell_fclose(ntengine->ms->fp[MCP]);
+
+    // check the number of window
+    if (retval && ntengine->lf0pst.dw.num != ntengine->ms->lf0stream)
     {
         cst_errmsg("nitech_engine: dynamic window for f0 is illegal\n");
-        cst_error();
+        retval = FALSE;
     }
-    if (ntengine->ms.mcepvsize % ntengine->mceppst.dw.num != 0 ) 
+    if (retval && ntengine->ms->mcepvsize % ntengine->mceppst.dw.num != 0)
     {
         cst_errmsg("nitech_engine: dynamic window for mcep is illegal\n");
-        cst_error();
+        retval = FALSE;
     }
 
-    /* Initialize vocoder */
-    init_vocoder(ntengine->ms.mcepvsize-1, &(ntengine->vs));
+    // Initialize vocoder
+    if (retval) init_vocoder(ntengine->ms->mcepvsize-1, &(ntengine->vs));
+
+    return retval;
 }
 
 void nitech_engine_clear(nitech_engine * ntengine)
@@ -282,12 +289,10 @@ void nitech_engine_clear(nitech_engine * ntengine)
     int i;
 
 // Free trees
-    FreeTrees(&(ntengine->ts), DUR);
-    FreeTrees(&(ntengine->ts), LF0);
-    FreeTrees(&(ntengine->ts), MCP);
+    nitech_free_treeset(ntengine->ts);
 
 // Free modelset
-    DeleteModelSet(&(ntengine->ms));
+    DeleteModelSet(ntengine->ms);
 
 // Free vocoder
     free_vocoder(&(ntengine->vs));

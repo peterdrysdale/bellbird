@@ -197,19 +197,24 @@ void FindMcpPDF (int s, Model *m, ModelSet *ms)
    m->mcepvariance[s] = ms->mceppdf[s][idx]+ms->mcepvsize;
 }
 
-void InitModelSet (ModelSet *ms)
+ModelSet * InitModelSet (void)
 {
+   ModelSet *ms;
+
+   ms = cst_alloc(ModelSet,1);
    ms->fp[DUR] = NULL;
    ms->fp[LF0] = NULL;
    ms->fp[MCP] = NULL;
    
-   return;
+   return ms;
 } 
 
 void DeleteModelSet(ModelSet *ms)
 {
     int i,j,k;
-    
+
+    if (ms == NULL) return;
+
     for (i=1; i<=ms->ndurpdf; i++)
 	cst_free(ms->durpdf[i]);
     cst_free(ms->durpdf);
@@ -235,4 +240,6 @@ void DeleteModelSet(ModelSet *ms)
     }
     cst_free(ms->nlf0pdf);
     cst_free(ms->lf0pdf);
+
+    cst_free(ms);
 }
