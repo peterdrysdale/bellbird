@@ -440,7 +440,7 @@ int main(int argc, char **argv)
 
     if (voice_type==NITECHMODE || voice_type==HTSMODE)
     {
-       bell_hts_file_to_speech(&engine, &ntengine, texttoread, voice, outtype, voice_type);
+       bell_file_to_speech(&engine, &ntengine, texttoread, voice, outtype, voice_type);
     }
     else if (voice_type==CLUSTERGENMODE)
     {
@@ -464,7 +464,7 @@ int main(int argc, char **argv)
            if (ssml_mode)
                durs = flite_ssml_file_to_speech(texttoread,voice,outtype);
            else
-               durs = flite_file_to_speech(texttoread,voice,outtype);
+               durs = bell_file_to_speech(&engine,&ntengine,texttoread,voice,outtype,voice_type);
        }
 
        if (debug_durs && (durs != 0.0)) printf("Durs was %f at end of run",durs);
