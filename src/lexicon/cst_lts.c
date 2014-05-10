@@ -56,19 +56,6 @@ static cst_lts_phone apply_model(cst_lts_letter *vals,
 				 cst_lts_addr start,
 				 const cst_lts_model *model);
 
-cst_lts_rules *new_lts_rules()
-{
-    cst_lts_rules *lt = cst_alloc(cst_lts_rules,1);
-    lt->name = 0;
-    lt->letter_index = 0;
-    lt->models = 0;
-    lt->phone_table = 0;
-    lt->context_window_size = 0;
-    lt->context_extra_feats = 0;
-    lt->letter_table = 0;
-    return lt;
-}
-
 cst_val *lts_apply(const char *word,const char *feats,const cst_lts_rules *r)
 {
     int pos, index, i;

@@ -53,7 +53,6 @@ CST_VAL_REGISTER_TYPE_NODEL(lexicon,cst_lexicon)
 
 #define WP_SIZE 64
 
-static int no_syl_boundaries(const cst_item *i, const cst_val *p);
 static cst_val *lex_lookup_addenda(const char *wp,const cst_lexicon *l,
                                    int *found);
 
@@ -61,23 +60,6 @@ static int lex_match_entry(const char *a, const char *b);
 static int lex_lookup_bsearch(const cst_lexicon *l,const char *word);
 static int find_full_match(const cst_lexicon *l,
 			   int i,const char *word);
-
-cst_lexicon *new_lexicon()
-{
-    cst_lexicon *l = cst_alloc(cst_lexicon,1);
-    l->syl_boundary = no_syl_boundaries;
-    return l;
-}
-
-void delete_lexicon(cst_lexicon *lex)
-{   /* But I doubt if this will ever be called, lexicons are mapped */
-    /* This probably isn't complete */
-    if (lex)
-    {
-	cst_free(lex->data);
-	cst_free(lex);
-    }
-}
 
 static cst_val *cst_lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
 {   /* if replace then replace entry in addenda of lex with entry */
@@ -196,15 +178,6 @@ cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
 
     ts_close(lf);
     return val_reverse(na);
-}
-
-static int no_syl_boundaries(const cst_item *i, const cst_val *p)
-{
-    /* This is a default function that will normally be replaced */
-    /* for each lexicon                                         */
-    (void)i;
-    (void)p;
-    return FALSE;
 }
 
 int in_lex(const cst_lexicon *l, const char *word, const char *pos)

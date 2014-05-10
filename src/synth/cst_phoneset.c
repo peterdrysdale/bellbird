@@ -44,22 +44,6 @@
 
 CST_VAL_REGISTER_TYPE_NODEL(phoneset,cst_phoneset)
 
-cst_phoneset *new_phoneset()
-{
-    /* These aren't going to be supported dynamically */
-    cst_phoneset *v = cst_alloc(struct cst_phoneset_struct,1);
-
-    return v;
-}
-
-void delete_phoneset(cst_phoneset *v)
-{
-    if (v)
-    {
-	cst_free(v);
-    }
-}
-
 int phone_id(const cst_phoneset *ps,const char* phonename)
 {
     int i;

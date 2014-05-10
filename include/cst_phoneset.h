@@ -61,10 +61,6 @@ struct cst_phoneset_struct {
 };
 typedef struct cst_phoneset_struct cst_phoneset;
 
-/* Constructor functions */
-cst_phoneset *new_phoneset();
-void delete_phoneset(cst_phoneset *u);
-
 const cst_val *phone_feature(const cst_phoneset *ps,
 			     const char* phonename,
 			     const char *featname);

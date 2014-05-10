@@ -59,7 +59,6 @@ static int cmu_is_vowel(const char *p);
 static int cmu_is_silence(const char *p);
 static int cmu_has_vowel_in_list(const cst_val *v);
 static int cmu_has_vowel_in_syl(const cst_item *i);
-static int cmu_sonority(const char *p);
 
 static const char * const addenda0[] = { "p,", NULL };
 static const char * const addenda1[] = { "p.", NULL };
@@ -146,52 +145,6 @@ static int cmu_is_vowel(const char *p)
 	return FALSE;
     else
 	return TRUE;
-}
-
-static int cmu_sonority(const char *p)
-{
-    /* A bunch of hacks for US English phoneset */
-    if (cmu_is_vowel(p) || (cmu_is_silence(p)))
-	return 5;
-    else if (strchr("wylr",p[0]) != NULL)
-	return 4;  /* glides/liquids */
-    else if (strchr("nm",p[0]) != NULL)
-	return 3;  /* nasals */
-    else if (strchr("bdgjlmnnnrvwyz",p[0]) != NULL)
-	return 2;  /* voiced obstruents */
-    else
-	return 1;
-}
-
-int cmu_syl_boundary(const cst_item *i,const cst_val *rest)
-{
-    /* Returns TRUE if this should be a syllable boundary */
-    /* This is of course phone set dependent              */
-    int p, n, nn;
-
-    if (rest == NULL)
-	return TRUE;
-    else if (cmu_is_silence(val_string(val_car(rest))))
-	return TRUE;
-    else if (!cmu_has_vowel_in_list(rest)) /* no more vowels so rest *all* coda */
-	return FALSE;
-    else if (!cmu_has_vowel_in_syl(i))  /* need a vowel */
-	return FALSE;
-    else if (cmu_is_vowel(val_string(val_car(rest))))
-	return TRUE;
-    else if (val_cdr(rest) == NULL)
-	return FALSE;
-    else 
-    {   /* so there is following vowel, and multiple phones left */
-	p = cmu_sonority(item_feat_string(i,"name"));
-	n = cmu_sonority(val_string(val_car(rest)));
-	nn = cmu_sonority(val_string(val_car(val_cdr(rest))));
-
-	if ((p <= n) && (n <= nn))
-	    return TRUE;
-	else
-	    return FALSE;
-    }
 }
 
 static int cmulex_dist_to_vowel(const cst_val *rest)
