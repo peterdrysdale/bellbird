@@ -119,7 +119,6 @@ typedef const cst_val *(*cst_ffunction)(const cst_item *i);
 CST_VAL_USER_FUNCPTR_DCLS(ffunc,cst_ffunction)
 void ff_register(cst_features *ffeatures, const char *name,
 			   cst_ffunction f);
-void ff_unregister(cst_features *ffeatures, const char *name);
 
 /* Generalized item hook function, like cst_uttfunc. */
 typedef cst_val *(*cst_itemfunc)(cst_item *i);

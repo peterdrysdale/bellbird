@@ -77,7 +77,6 @@ SET(SRC_LIBBELLBIRD
     src/nitechvoice/nitech_vocoder.c
     src/regex/cst_regex.c
     src/regex/regexp.c
-    src/regex/regsub.c
     src/speech/cst_track.c
     src/speech/cst_wave.c
     src/speech/cst_wave_io.c

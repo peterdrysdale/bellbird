@@ -66,42 +66,14 @@ CST_VAL_REGISTER_FUNCPTR(breakfunc,cst_breakfunc)
 
 static cst_utterance *tokentosegs(cst_utterance *u);
 
-static const cst_synth_module synth_method_text[] = {
-    { "tokenizer_func", default_tokenization },
-    { "textanalysis_func", default_textanalysis },
-    { "pos_tagger_func", default_pos_tagger },
-    { "phrasing_func", NULL },
-    { "lexical_insertion_func", default_lexical_insertion },
-    { "pause_insertion_func", default_pause_insertion },
-    { "intonation_func", cart_intonation },
-    { "postlex_func", NULL },
-    { "wave_synth_func", NULL },
-    { "post_synth_hook_func", NULL },
-    { NULL, NULL }
-};
+typedef struct cst_synth_module_struct {
+    const char *hookname;
+    cst_uttfunc defhook;
+} cst_synth_module;
 
-static const cst_synth_module synth_method_tokens[] = {
-    { "textanalysis_func", default_textanalysis },
-    { "pos_tagger_func", default_pos_tagger },
-    { "phrasing_func", NULL },
-    { "lexical_insertion_func", default_lexical_insertion },
-    { "pause_insertion_func", default_pause_insertion },
-    { "intonation_func", cart_intonation },
-    { "postlex_func", NULL },
-    { "wave_synth_func", NULL },
-    { "post_synth_hook_func", NULL },
-    { NULL, NULL }
-};
-
-static const cst_synth_module synth_method_phones[] = {
-    { "tokenizer_func", default_tokenization },
-    { "textanalysis_func", tokentosegs },
-    { "pos_tagger_func", default_pos_tagger },
-    { "intonation_func", NULL },
-    { "wave_synth_func", NULL },
-    { "post_synth_hook_func", NULL },
-    { NULL, NULL }
-};
+static const cst_synth_module synth_method_text[];
+static const cst_synth_module synth_method_tokens[];
+static const cst_synth_module synth_method_phones[];
 
 cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v)
 {
@@ -166,7 +138,7 @@ cst_utterance *utt_synth_phones(cst_utterance *u)
     return apply_synth_method(u, synth_method_phones);
 }
 
-cst_utterance *default_tokenization(cst_utterance *u)
+static cst_utterance *default_tokenization(cst_utterance *u)
 {
     const char *text,*token;
     cst_tokenstream *fd;
@@ -201,12 +173,12 @@ cst_utterance *default_tokenization(cst_utterance *u)
     return u;
 }
 
-cst_val *default_tokentowords(cst_item *i)
+static cst_val *default_tokentowords(cst_item *i)
 {
     return cons_val(string_val(item_feat_string(i,"name")), NULL);
 }
 
-cst_utterance *default_textanalysis(cst_utterance *u)
+static cst_utterance *default_textanalysis(cst_utterance *u)
 {
     cst_item *t,*word;
     cst_relation *word_rel;
@@ -302,7 +274,8 @@ cst_utterance *hts_phrasing(cst_utterance *u)
     
     return u;
 }
-cst_utterance *default_pause_insertion(cst_utterance *u)
+
+static cst_utterance *default_pause_insertion(cst_utterance *u)
 {
     /* Add initial silences and silence at each phrase break */
     const char *silence;
@@ -323,7 +296,7 @@ cst_utterance *default_pause_insertion(cst_utterance *u)
     {
 	for (w = item_last_daughter(p); w; w=item_prev(w))
 	{
-	    s = path_to_item(w,"R:SylStructure.daughtern.daughtern.R:Segment");
+	    s = path_to_item(w,"R:SylStructure.dn.dn.R:Segment");
 	    if (s)
 	    {
 		s = item_append(s,NULL);
@@ -369,7 +342,7 @@ cst_utterance *cart_intonation(cst_utterance *u)
     return u;
 }
 
-cst_utterance *default_pos_tagger(cst_utterance *u)
+static cst_utterance *default_pos_tagger(cst_utterance *u)
 {
     cst_item *word;
     const cst_val *p;
@@ -390,7 +363,7 @@ cst_utterance *default_pos_tagger(cst_utterance *u)
     return u;
 }
 
-cst_utterance *default_lexical_insertion(cst_utterance *u)
+static cst_utterance *default_lexical_insertion(cst_utterance *u)
 {
     cst_item *word;
     cst_relation *sylstructure,*seg,*syl;
@@ -602,3 +575,40 @@ int default_utt_break(cst_tokenstream *ts,
     else
 	return FALSE;
 }
+
+static const cst_synth_module synth_method_text[] = {
+    { "tokenizer_func", default_tokenization },
+    { "textanalysis_func", default_textanalysis },
+    { "pos_tagger_func", default_pos_tagger },
+    { "phrasing_func", NULL },
+    { "lexical_insertion_func", default_lexical_insertion },
+    { "pause_insertion_func", default_pause_insertion },
+    { "intonation_func", cart_intonation },
+    { "postlex_func", NULL },
+    { "wave_synth_func", NULL },
+    { "post_synth_hook_func", NULL },
+    { NULL, NULL }
+};
+
+static const cst_synth_module synth_method_tokens[] = {
+    { "textanalysis_func", default_textanalysis },
+    { "pos_tagger_func", default_pos_tagger },
+    { "phrasing_func", NULL },
+    { "lexical_insertion_func", default_lexical_insertion },
+    { "pause_insertion_func", default_pause_insertion },
+    { "intonation_func", cart_intonation },
+    { "postlex_func", NULL },
+    { "wave_synth_func", NULL },
+    { "post_synth_hook_func", NULL },
+    { NULL, NULL }
+};
+
+static const cst_synth_module synth_method_phones[] = {
+    { "tokenizer_func", default_tokenization },
+    { "textanalysis_func", tokentosegs },
+    { "pos_tagger_func", default_pos_tagger },
+    { "intonation_func", NULL },
+    { "wave_synth_func", NULL },
+    { "post_synth_hook_func", NULL },
+    { NULL, NULL }
+};

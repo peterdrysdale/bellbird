@@ -208,7 +208,6 @@ src/hts/*
 /* ----------------------------------------------------------------- */
 
 src/regex/regexp.c
-src/regex/regsub.c
 
  *      Copyright (c) 1986 by University of Toronto.
  *      Written by Henry Spencer.  Not derived from licensed software.

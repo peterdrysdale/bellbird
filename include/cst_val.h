@@ -111,7 +111,6 @@ cst_val *cons_val(const cst_val *a, const cst_val *b);
 
 /* Derefence and delete val if no other references */
 void delete_val(cst_val *val);
-void delete_val_list(cst_val *val);
 
 /* Accessor functions */
 int val_int(const cst_val *v);

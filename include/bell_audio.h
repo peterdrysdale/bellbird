@@ -3,6 +3,6 @@
 
 #include "cst_wave.h"
 
-int play_wave(cst_wave *w);
+bell_boolean play_wave(cst_wave *w);
 
 #endif

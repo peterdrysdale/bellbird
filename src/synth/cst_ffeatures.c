@@ -66,40 +66,40 @@ DEF_STATIC_CONST_VAL_STRING(val_string_final,"final");
 DEF_STATIC_CONST_VAL_STRING(val_string_mid,"mid");
 DEF_STATIC_CONST_VAL_STRING(val_string_empty,"");
 
-const cst_val *ph_vc(const cst_item *p)
+static const cst_val *ph_vc(const cst_item *p)
 {
     return phone_feature(item_phoneset(p),ITEM_NAME(p),"vc");
 }
-const cst_val *ph_vlng(const cst_item *p)
+static const cst_val *ph_vlng(const cst_item *p)
 {
     return phone_feature(item_phoneset(p),ITEM_NAME(p),"vlng");
 }
-const cst_val *ph_vheight(const cst_item *p)
+static const cst_val *ph_vheight(const cst_item *p)
 {
    return phone_feature(item_phoneset(p),ITEM_NAME(p),"vheight");
 }
-const cst_val *ph_vrnd(const cst_item *p)
+static const cst_val *ph_vrnd(const cst_item *p)
 {
     return phone_feature(item_phoneset(p),ITEM_NAME(p),"vrnd");
 }
-const cst_val *ph_vfront(const cst_item *p)
+static const cst_val *ph_vfront(const cst_item *p)
 {
     return phone_feature(item_phoneset(p),ITEM_NAME(p),"vfront");
 }
-const cst_val *ph_ctype(const cst_item *p)
+static const cst_val *ph_ctype(const cst_item *p)
 {
     return phone_feature(item_phoneset(p),ITEM_NAME(p),"ctype");
 }
-const cst_val *ph_cplace(const cst_item *p)
+static const cst_val *ph_cplace(const cst_item *p)
 {
     return phone_feature(item_phoneset(p),ITEM_NAME(p),"cplace");
 }
-const cst_val *ph_cvox(const cst_item *p)
+static const cst_val *ph_cvox(const cst_item *p)
 {
     return phone_feature(item_phoneset(p),ITEM_NAME(p),"cvox");
 }
 
-const cst_val *cg_duration(const cst_item *p)
+static const cst_val *cg_duration(const cst_item *p)
 {
     /* Note this constructs float vals, these will be freed when the */
     /* cart cache is freed, so this should only be used in carts     */
@@ -116,7 +116,7 @@ DEF_STATIC_CONST_VAL_STRING(val_string_pos_b,"b");
 DEF_STATIC_CONST_VAL_STRING(val_string_pos_m,"m");
 DEF_STATIC_CONST_VAL_STRING(val_string_pos_e,"e");
 
-const cst_val *cg_state_pos(const cst_item *p)
+static const cst_val *cg_state_pos(const cst_item *p)
 {
     const char *name;
     name = item_feat_string(p,"name");
@@ -128,12 +128,12 @@ const cst_val *cg_state_pos(const cst_item *p)
         return (cst_val *)&val_string_pos_e;
 }
 
-const cst_val *cg_state_place(const cst_item *p)
+static const cst_val *cg_state_place(const cst_item *p)
 {
     float start, end;
     int this;
-    start = (float)ffeature_int(p,"R:mcep_link.parent.daughter1.frame_number");
-    end = (float)ffeature_int(p,"R:mcep_link.parent.daughtern.frame_number");
+    start = (float)ffeature_int(p,"R:mcep_link.parent.d1.frame_number");
+    end = (float)ffeature_int(p,"R:mcep_link.parent.dn.frame_number");
     this = item_feat_int(p,"frame_number");
     if ((end-start) == 0.0)
         return float_val(0.0);
@@ -141,30 +141,30 @@ const cst_val *cg_state_place(const cst_item *p)
         return float_val((this-start)/(end-start));
 }
 
-const cst_val *cg_state_index(const cst_item *p)
+static const cst_val *cg_state_index(const cst_item *p)
 {
     float start;
     int this;
-    start = (float)ffeature_int(p,"R:mcep_link.parent.daughter1.frame_number");
+    start = (float)ffeature_int(p,"R:mcep_link.parent.d1.frame_number");
     this = item_feat_int(p,"frame_number");
     return float_val(this-start);
 }
 
-const cst_val *cg_state_rindex(const cst_item *p)
+static const cst_val *cg_state_rindex(const cst_item *p)
 {
     float end;
     int this;
-    end = (float)ffeature_int(p,"R:mcep_link.parent.daughtern.frame_number");
+    end = (float)ffeature_int(p,"R:mcep_link.parent.dn.frame_number");
     this = item_feat_int(p,"frame_number");
     return float_val(end-this);
 }
 
-const cst_val *cg_phone_place(const cst_item *p)
+static const cst_val *cg_phone_place(const cst_item *p)
 {
     float start, end;
     int this;
-    start = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.daughter1.R:mcep_link.daughter1.frame_number");
-    end = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.daughtern.R:mcep_link.daughtern.frame_number");
+    start = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.d1.R:mcep_link.d1.frame_number");
+    end = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.dn.R:mcep_link.dn.frame_number");
     this = item_feat_int(p,"frame_number");
     if ((end-start) == 0.0)
         return float_val(0.0);
@@ -172,25 +172,25 @@ const cst_val *cg_phone_place(const cst_item *p)
         return float_val((this-start)/(end-start));
 }
 
-const cst_val *cg_phone_index(const cst_item *p)
+static const cst_val *cg_phone_index(const cst_item *p)
 {
     float start;
     int this;
-    start = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.daughter1.R:mcep_link.daughter1.frame_number");
+    start = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.d1.R:mcep_link.d1.frame_number");
     this = item_feat_int(p,"frame_number");
     return float_val(this-start);
 }
 
-const cst_val *cg_phone_rindex(const cst_item *p)
+static const cst_val *cg_phone_rindex(const cst_item *p)
 {
     float end;
     int this;
-    end = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.daughtern.R:mcep_link.daughtern.frame_number");
+    end = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.dn.R:mcep_link.dn.frame_number");
     this = item_feat_int(p,"frame_number");
     return float_val(end-this);
 }
 
-const cst_val *cg_is_pau(const cst_item *p)
+static const cst_val *cg_is_pau(const cst_item *p)
 {
     if (p && cst_streq("pau",item_feat_string(p,"name")))
         return &val_int_1;
@@ -198,7 +198,7 @@ const cst_val *cg_is_pau(const cst_item *p)
         return &val_int_0;
 }
 
-const cst_val *cg_find_phrase_number(const cst_item *p)
+static const cst_val *cg_find_phrase_number(const cst_item *p)
 {
     const cst_item *v;
     int x = 0;
@@ -209,14 +209,14 @@ const cst_val *cg_find_phrase_number(const cst_item *p)
     return val_int_n(x);
 }
 
-const cst_val *cg_position_in_phrasep(const cst_item *p)
+static const cst_val *cg_position_in_phrasep(const cst_item *p)
 {
     float pstart, pend, phrasenumber;
     float x;
     #define CG_FRAME_SHIFT 0.005 
 
-    pstart = ffeature_float(p,"R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1.daughter1.R:Segment.p.end");
-    pend = ffeature_float(p,"R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern.daughtern.R:Segment.end");
+    pstart = ffeature_float(p,"R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.d1.R:SylStructure.d1.d1.R:Segment.p.end");
+    pend = ffeature_float(p,"R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.dn.R:SylStructure.dn.dn.R:Segment.end");
     phrasenumber = ffeature_float(p,"R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.lisp_cg_find_phrase_number");
     if ((pend - pstart) == 0.0)
         return float_val(-1.0);
@@ -230,28 +230,28 @@ const cst_val *cg_position_in_phrasep(const cst_item *p)
 }
 
 /* Spam specific features, but may be useful for others */
-const cst_val *pos_in_word(const cst_item *p)
+static const cst_val *pos_in_word(const cst_item *p)
 {
 	const cst_item *s;
 	int i=0;
 	p=item_as(p,"Syllable");
-	s=item_as(path_to_item(p,"R:SylStructure.parent.daughter1"),"Syllable");
+	s=item_as(path_to_item(p,"R:SylStructure.parent.d1"),"Syllable");
 	for (;s && !item_equal(p,s);s=item_next(s),i++){}
 	return val_string_n(i);
 }
 
-const cst_val *syllable_duration(const cst_item *p)
+static const cst_val *syllable_duration(const cst_item *p)
 {
-	return float_val(ffeature_float(p,"R:SylStructure.daughtern.R:Segment.end") - ffeature_float(p,"R:SylStructure.daughter1.R:Segment.p.end"));
+	return float_val(ffeature_float(p,"R:SylStructure.dn.R:Segment.end") - ffeature_float(p,"R:SylStructure.d1.R:Segment.p.end"));
 }
 
-const cst_val *syl_vowel(const cst_item *p)
+static const cst_val *syl_vowel(const cst_item *p)
 {
     /* Do not call this ffeature with ffeature_string as it will leak a   */
     /* temporary cst_val return value. Call ffeature explicitly instead   */
 	const cst_item *s,*ls;
-	s=item_as(path_to_item(p,"R:SylStructure.daughter1"),"Segment");
-	ls=item_as(path_to_item(p,"R:SylStructure.daughtern"),"Segment");
+	s=item_as(path_to_item(p,"R:SylStructure.d1"),"Segment");
+	ls=item_as(path_to_item(p,"R:SylStructure.dn"),"Segment");
 	for (;s && !item_equal(s,ls);s=item_next(s))
 	{
 		if (cst_streq("+",val_string(ph_vc(s)))){ return string_val(ITEM_NAME(s));}
@@ -260,44 +260,44 @@ const cst_val *syl_vowel(const cst_item *p)
 	return (cst_val *) NULL;
 }
 
-const cst_val *syl_numphones(const cst_item *p)
+static const cst_val *syl_numphones(const cst_item *p)
 {
 	int i;
 	const cst_item *s,*ls;
-	s=item_as(path_to_item(p,"R:SylStructure.daughter1"),"Segment");
-	ls=item_as(path_to_item(p,"R:SylStructure.daughtern"),"Segment");
+	s=item_as(path_to_item(p,"R:SylStructure.d1"),"Segment");
+	ls=item_as(path_to_item(p,"R:SylStructure.dn"),"Segment");
 	for (i=1;s && !item_equal(s,ls);s=item_next(s)){i++;}
 	return val_string_n(i);
 }
 
 
-const cst_val *pos_in_phrase(const cst_item *p)
+static const cst_val *pos_in_phrase(const cst_item *p)
 {
 	const cst_item *s;
 	int i=0;
 	p=item_as(p,"Word");
-	s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.daughter1"),"Word");
+	s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.d1"),"Word");
 	for (;s && !item_equal(p,s);s=item_next(s),i++){}
 	return val_string_n(i);
 }
 
-const cst_val *cg_syl_ratio(const cst_item *p)
+static const cst_val *cg_syl_ratio(const cst_item *p)
 {
 	return float_val (( 1 + ffeature_float(p,"syl_in"))/(1 + ffeature_float(p,"syl_in") + ffeature_float(p,"syl_out")));
 }
 
 
-const cst_val *cg_phrase_ratio(const cst_item *p)
+static const cst_val *cg_phrase_ratio(const cst_item *p)
 {
 	const cst_item *lp=p;
 	while (item_next(lp)){lp=item_next(lp);}
 	return float_val ((1 + ffeature_float(p,"lisp_cg_find_phrase_number"))/(1 + ffeature_float(lp,"lisp_cg_find_phrase_number")));
 }
 
-const cst_val *cg_syls_in_phrase(const cst_item *p)
+static const cst_val *cg_syls_in_phrase(const cst_item *p)
 {
 	cst_item *s=item_as(item_daughter(p),"Word");
-	return float_val(1 + ffeature_float(s,"R:SylStructure.daughter1.R:Syllable.syl_out"));
+	return float_val(1 + ffeature_float(s,"R:SylStructure.d1.R:Syllable.syl_out"));
 }
 
 
@@ -563,7 +563,7 @@ static const cst_val *ssyl_in(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
 
     /* This should actually include the first syllable, but Festival's
        doesn't. */
@@ -586,7 +586,7 @@ static const cst_val *ssyl_out(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
 
     for (c=0, p=item_next(ss); 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -609,7 +609,7 @@ static const cst_val *syl_in(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -628,7 +628,7 @@ static const cst_val *syl_out(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -715,7 +715,7 @@ static const cst_val *asyl_in(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -739,7 +739,7 @@ static const cst_val *asyl_out(const cst_item *syl)
 
     ss = item_as(syl,"Syllable");
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 

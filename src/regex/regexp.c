@@ -6,7 +6,7 @@
    is intact. */
 
 /*
- * regcomp and regexec -- regsub and regerror are elsewhere
+ * regcomp and regexec
  *
  *     Copyright (c) 1986 by University of Toronto.
  *     Written by Henry Spencer.  Not derived from licensed software.

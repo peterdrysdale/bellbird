@@ -164,12 +164,12 @@ static const cst_val *token_pos_guess(const cst_item *token)
     return r;
 }
 
-const cst_val *content_words_in(const cst_item *p)
+static const cst_val *content_words_in(const cst_item *p)
 {
     const cst_item *s;
     int i=0;
     p=item_as(p,"Word");
-    s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.daughter1"),"Word");
+    s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.d1"),"Word");
     for (;s && !item_equal(p,s);s=item_next(s))
     {
         if (!strcmp(ffeature_string(s,"gpos"),"content"))
@@ -179,12 +179,12 @@ const cst_val *content_words_in(const cst_item *p)
     return val_string_n(i);
 }
 
-const cst_val *content_words_out(const cst_item *p)
+static const cst_val *content_words_out(const cst_item *p)
 {
     const cst_item *s;
     int i=0;
     p=item_as(p,"Word");
-    s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.daughtern"),"Word");
+    s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.dn"),"Word");
     for (;s && !item_equal(p,s);p=item_next(p))
     {
         if (!strcmp(ffeature_string(p,"gpos"),"content"))
@@ -194,7 +194,7 @@ const cst_val *content_words_out(const cst_item *p)
     return val_string_n(i);
 }
 
-const cst_val *cg_content_words_in_phrase(const cst_item *p)
+static const cst_val *lisp_cg_content_words_in_phrase(const cst_item *p)
 {
 	return float_val(ffeature_float(p,"R:SylStructure.parent.parent.R:Word.content_words_in") + ffeature_float(p,"R:SylStructure.parent.parent.R:Word.content_words_out")) ;//- (strcmp(ffeature_string(p,"R:SylStructure.parent.parent.R:Word.gpos"),"content")==0?1:0));
 }
@@ -212,6 +212,6 @@ void us_ff_register(cst_features *ffunctions)
     ff_register(ffunctions, "token_pos_guess",token_pos_guess);
     ff_register(ffunctions, "content_words_in",content_words_in);
     ff_register(ffunctions, "content_words_out",content_words_out);
-    ff_register(ffunctions, "lisp_cg_content_words_in_phrase",cg_content_words_in_phrase);
+    ff_register(ffunctions, "lisp_cg_content_words_in_phrase",lisp_cg_content_words_in_phrase);
 
 }

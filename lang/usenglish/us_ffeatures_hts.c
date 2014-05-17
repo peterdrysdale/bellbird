@@ -75,22 +75,6 @@ static const cst_val *gpos(const cst_item *word)
     return (cst_val *)&val_string_content;
 }
 
-int item_after_length(const cst_item *n)
-{
-    int i = 0;
-
-    if (n == NULL) return 0;
-    for (;n;n=n->n,i++);
-    return i;
-}
-
-const cst_item *item_first(const cst_item *n)
-{
-    if (n == 0) return 0;
-    for (;n->p != 0;n=n->p);
-    return n;
-}
-
 /* 21 by Toda-san */
 static const cst_val *lisp_distance_to_p_stress(const cst_item *syl)
 {
@@ -98,7 +82,7 @@ static const cst_val *lisp_distance_to_p_stress(const cst_item *syl)
     int c;
 
     s=item_as(syl,"Syllable");
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_prev(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_prev(s),c++)
@@ -122,7 +106,7 @@ static const cst_val *lisp_distance_to_n_stress(const cst_item *syl)
     int c;
 
     s=item_as(syl,"Syllable");
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_next(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
@@ -146,7 +130,7 @@ static const cst_val *lisp_distance_to_p_accent(const cst_item *syl)
     int c;
 
     s=item_as(syl,"Syllable");
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughter1.R:SylStructure.daughter1");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_prev(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_prev(s),c++)
@@ -170,7 +154,7 @@ static const cst_val *lisp_distance_to_n_accent(const cst_item *syl)
     int c;
 
     s=item_as(syl,"Syllable");
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern");
+    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_next(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
@@ -204,7 +188,7 @@ static const cst_val *hts_content_words_in(const cst_item *word)
     const cst_item *p,*fs;
     int c;
   
-    fs = path_to_item(word,"R:Phrase.parent.daughter1");
+    fs = path_to_item(word,"R:Phrase.parent.d1");
     for (c=0,p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); p=item_prev(p))
     {
         if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
@@ -218,7 +202,7 @@ static const cst_val *hts_content_words_out(const cst_item *word)
     const cst_item *p,*fs;
     int c;
 
-    fs = path_to_item(word,"R:Phrase.parent.daughtern");
+    fs = path_to_item(word,"R:Phrase.parent.dn");
     for (c=0, p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); p=item_next(p))
     {
         if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
@@ -262,8 +246,8 @@ static const cst_val *lisp_num_syls_in_phrase(const cst_item *phrase)
     const cst_item *sw,*fw;
     int c;
   
-    sw = path_to_item(phrase,"daughter1");
-    fw = path_to_item(phrase,"daughtern");
+    sw = path_to_item(phrase,"d1");
+    fw = path_to_item(phrase,"dn");
     for (c=0; sw && (!item_equal(sw,fw)) && (c < CST_CONST_INT_MAX); sw=item_next(sw))
     {
         c += ffeature_int(sw, "word_numsyls");
@@ -278,8 +262,8 @@ static const cst_val *lisp_num_words_in_phrase(const cst_item *phrase)
     const cst_item *sw,*fw;
     int c;
   
-    sw = path_to_item(phrase,"daughter1");
-    fw = path_to_item(phrase,"daughtern");
+    sw = path_to_item(phrase,"d1");
+    fw = path_to_item(phrase,"dn");
     for (c=1; sw && (!item_equal(sw,fw)) && (c < CST_CONST_INT_MAX); sw=item_next(sw))
     {
         c++;

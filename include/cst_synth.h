@@ -66,24 +66,7 @@ cst_utterance *utt_synth_phones(cst_utterance *u);
 cst_utterance *utt_synth_tokens(cst_utterance *u);
 cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v);
 
-cst_utterance *default_segmentanalysis(cst_utterance *u);
-
-cst_utterance *default_tokenization(cst_utterance *u);
-cst_utterance *default_textanalysis(cst_utterance *u);
-cst_val *default_tokentowords(cst_item *i);
 cst_utterance *default_phrasing(cst_utterance *u);
 cst_utterance *hts_phrasing(cst_utterance *u);
-cst_utterance *default_pos_tagger(cst_utterance *u);
-cst_utterance *default_lexical_insertion(cst_utterance *u);
-cst_utterance *default_pause_insertion(cst_utterance *u);
-
-cst_utterance *cart_intonation(cst_utterance *u);
-
-cst_utterance *flat_prosody(cst_utterance *u);
-
-typedef struct cst_synth_module_struct {
-    const char *hookname;
-    cst_uttfunc defhook;
-} cst_synth_module;
 
 #endif

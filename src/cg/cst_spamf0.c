@@ -91,10 +91,10 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
     for (s=UTT_REL_HEAD(utt,"Syllable"); s; s=item_next(s))
     {
         f = val_int(cart_interpret(s,acc_tree));
-        syldur = ffeature_float(s,"R:SylStructure.daughtern.R:Segment.end")
-            - ffeature_float(s,"R:SylStructure.daughter1.R:Segment.p.end");
+        syldur = ffeature_float(s,"R:SylStructure.dn.R:Segment.end")
+            - ffeature_float(s,"R:SylStructure.d1.R:Segment.p.end");
         cst_synthtilt(cg_db,
-		      ffeature_float(s,"R:SylStructure.daughter1.R:Segment.p.end"),
+		      ffeature_float(s,"R:SylStructure.d1.R:Segment.p.end"),
                       cg_db->spamf0_accent_vectors[f][0],
                       cg_db->spamf0_accent_vectors[f][2],
                       syldur,

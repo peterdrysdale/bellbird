@@ -137,20 +137,6 @@ cst_val *val_new_typed(int type,void *vv)
     return v;
 }
 
-void delete_val_list(cst_val *v)
-{
-    if (v)
-    {
-	if (cst_val_consp(v))
-	{
-	    delete_val_list(CST_VAL_CDR(v));
-	    cst_free(v);
-	}
-	else
-	    delete_val(v);
-    }
-}
-
 void delete_val(cst_val *v)
 {
     if (v)

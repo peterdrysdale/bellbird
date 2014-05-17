@@ -63,14 +63,6 @@ int cst_regex_match(const cst_regex *r, const char *str)
 	return 0;
 }
 
-cst_regstate *cst_regex_match_return(const cst_regex *r, const char *str)
-{
-    if (r == NULL) 
-        return 0;
-
-    return hs_regexec(r, str);
-}
-
 cst_regex *new_cst_regex(const char *str)
 {
     cst_regex *r;

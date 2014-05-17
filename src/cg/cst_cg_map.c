@@ -193,7 +193,10 @@ static char** cst_read_tree_feats(cst_file fd)
     feats = cst_alloc(char *,numfeats+1);
 
     for (i=0;i<numfeats;i++)
+    {
         feats[i] = cst_read_string(fd);
+//      cst_errmsg("tree_feats:%s\n",feats[i]);
+    }
     feats[i] = 0;
   
     return feats;

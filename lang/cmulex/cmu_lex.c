@@ -208,7 +208,7 @@ static int cmulex_onset_trigram(const cst_val *rest)
     return FALSE;
 }
 
-int cmu_syl_boundary_mo(const cst_item *i,const cst_val *rest)
+static int cmu_syl_boundary_mo(const cst_item *i,const cst_val *rest)
 {
     /* syl boundary maximal onset */
     int d2v;

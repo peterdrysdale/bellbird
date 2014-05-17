@@ -113,7 +113,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
 
    /* load endtone */
    endtone = cst_strdup(ffeature_string(item,
-                                                                                              ("R:SylStructure.parent.parent.R:Phrase.parent.daughtern.R:SylStructure.daughtern.endtone")));
+                                                                                              ("R:SylStructure.parent.parent.R:Phrase.parent.dn.R:SylStructure.dn.endtone")));
 
    if (cst_streq(seg_c, "pau")) {
       /* for pause */

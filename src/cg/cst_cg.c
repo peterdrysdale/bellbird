@@ -260,7 +260,7 @@ static cst_utterance *cg_make_params(cst_utterance *utt)
 
     /* Copy duration up onto Segment relation */
     for (s = UTT_REL_HEAD(utt,"Segment"); s; s=item_next(s))
-        item_set(s,"end",ffeature(s,"R:segstate.daughtern.end"));
+        item_set(s,"end",ffeature(s,"R:segstate.dn.end"));
 
     UTT_SET_FEAT_INT(utt,"param_track_num_frames",num_frames);
 

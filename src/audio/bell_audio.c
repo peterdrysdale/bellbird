@@ -7,7 +7,7 @@
 #include "bell_audio.h"
 #include "native_audio.h"
 
-int play_wave(cst_wave *w)
+bell_boolean play_wave(cst_wave *w)
 {
     cst_audiodev *ad;
     int retval = TRUE;
