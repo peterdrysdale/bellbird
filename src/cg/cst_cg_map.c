@@ -47,6 +47,8 @@
 #include "cst_string.h"
 #include "cst_cg_map.h"
 #include "bell_file.h"
+#include "bell_ff_sym.h"
+#include "bell_relation_sym.h"
 
 static char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v1.5.4";
 // This is the supported voice type for this module
@@ -183,19 +185,230 @@ static cst_cart_node* cst_read_tree_nodes(cst_file fd)
     return nodes;
 }
 
+static char* replacefeat(const char * feat, const char* old, const char* new)
+{
+// Recursively replace internal_ff strings in feat.
+// Using shorter ones improves performance of internal_ff
+// which was the third most time expensive function
+    char* retstring = NULL;  // current string to return (will be recursively updated)
+    char* tempstring = NULL; // working copy of string
+    size_t retstringlen;     // length of string to return
+    size_t oldlen;           // length of old directive
+    size_t newlen;           // length of new directive
+    size_t offset;           // index of start of directive to be replaced
+    char* foundstr;
+    const char* p = feat;
+    int first = TRUE;        // Is this the first loop of recursion
+    size_t i;
+    size_t j;
+
+    oldlen = cst_strlen(old);
+    newlen = cst_strlen(new);
+    while ( (foundstr = strstr(p,old)) != NULL)
+    {
+        offset = foundstr - p;
+        retstringlen = cst_strlen(p) + newlen - oldlen;
+        tempstring = cst_alloc(char, retstringlen+1);
+
+        // copy with replacement to tempstring
+        // we copy directly - testing suggests faster on these short strings
+        for (i=0; i<offset; i++)
+        {
+            tempstring[i] = p[i];
+        }
+        for (i=0,j=offset; i<newlen; i++,j++)
+        {
+            tempstring[j] = new[i];
+        }
+        for (i=offset+oldlen,j=offset+newlen; j< retstringlen ;i++,j++)
+        {
+            tempstring[j] = p[i];
+        }
+        tempstring[retstringlen] = '\0';
+
+        if (!first)
+        {
+            cst_free(retstring);
+        }
+        else
+        {
+            first = FALSE;
+        }
+        p = tempstring;
+        retstring = tempstring;
+    }
+    return retstring;
+}
+
+const char * const ff_translation[] =
+{
+    "ph_vc",                  PH_VC,
+    "ph_vlng",                PH_VLNG,
+    "ph_vheight",             PH_VHEIGHT,
+    "ph_vfront",              PH_VFRONT,
+    "ph_vrnd",                PH_VRND,
+    "ph_ctype",               PH_CTYPE,
+    "ph_cplace",              PH_CPLACE,
+    "ph_cvox",                PH_CVOX,
+    "lisp_cg_duration",       LISP_CG_DURATION,
+    "lisp_cg_state_pos",      LISP_CG_STATE_POS,
+    "lisp_cg_state_place",    LISP_CG_STATE_PLACE,
+    "lisp_cg_state_index",    LISP_CG_STATE_INDEX,
+    "lisp_cg_state_rindex",   LISP_CG_STATE_RINDEX,
+    "lisp_cg_phone_place",    LISP_CG_PHONE_PLACE,
+    "lisp_cg_phone_index",    LISP_CG_PHONE_INDEX,
+    "lisp_cg_phone_rindex",   LISP_CG_PHONE_RINDEX,
+    "lisp_cg_position_in_phrasep",     LISP_CG_POSITION_IN_PHRASEP,
+    "lisp_cg_find_phrase_number",      LISP_CG_FIND_PHRASE_NUMBER,
+    "lisp_is_pau",            LISP_IS_PAU,
+    "word_numsyls",           WORD_NUMSYLS,
+    "ssyl_in",                SSYL_IN,
+    "ssyl_out",               SSYL_OUT,
+    "syl_in",                 SYL_IN,
+    "syl_out",                SYL_OUT,
+    "syl_break",              SYL_BREAK,
+    "lisp_cg_break",          LISP_CG_BREAK,
+    "syl_onsetsize",          SYL_ONSETSIZE,
+    "syl_codasize",           SYL_CODASIZE,
+    "accented",               ACCENTED,
+    "asyl_in",                ASYL_IN,
+    "asyl_out",               ASYL_OUT,
+    "lisp_coda_fric",         LISP_CODA_FRIC,
+    "lisp_onset_fric",        LISP_ONSET_FRIC,
+    "lisp_coda_stop",         LISP_CODA_STOP,
+    "lisp_onset_stop",        LISP_ONSET_STOP,
+    "lisp_coda_nasal",        LISP_CODA_NASAL,
+    "lisp_onset_nasal",       LISP_ONSET_NASAL,
+    "lisp_coda_glide",        LISP_CODA_GLIDE,
+    "lisp_onset_glide",       LISP_ONSET_GLIDE,
+    "seg_onsetcoda",          SEG_ONSETCODA,
+    "pos_in_syl",             POS_IN_SYL,
+    "position_type",          POSITION_TYPE,
+    "sub_phrases",            SUB_PHRASES,
+    "last_accent",            LAST_ACCENT,
+    "next_accent",            NEXT_ACCENT,
+    "syl_final",              SYL_FINAL,
+    "lisp_cg_syl_ratio",      LISP_CG_SYL_RATIO,
+    "lisp_cg_phrase_ratio",   LISP_CG_PHRASE_RATIO,
+    "lisp_cg_syls_in_phrase", LISP_CG_SYLS_IN_PHRASE,
+    "pos_in_phrase",          POS_IN_PHRASE,
+    "pos_in_word",            POS_IN_WORD,
+    "syllable_duration",      SYLLABLE_DURATION,
+    "syl_vowel",              SYL_VOWEL,
+    "syl_numphones",          SYL_NUMPHONES,
+    NULL,                     NULL
+};
+
+static char* replaceff(const char * feat)
+{
+// Replace last component of feat with compact featfunc symbol
+// This improves cg voice performance
+    size_t featlen;
+    const char * newlast = NULL;
+    char * retstring = NULL;
+    const char * p;
+    char * q;
+    const char * featendpart;
+    int i = 0;
+
+    featlen = cst_strlen(feat);
+    for (featendpart=feat+featlen-1; *featendpart != '.' && featendpart > feat; featendpart--)
+        ;
+    if (*featendpart == '.') featendpart++;
+
+    while (ff_translation[i] != NULL)
+    {
+        if (cst_streq(featendpart,ff_translation[i]))
+        {
+            newlast = ff_translation[i+1];
+            break;
+        }
+        i += 2;
+    }
+
+    if (newlast != NULL)
+    {
+        retstring = cst_alloc(char,featlen-cst_strlen(featendpart)+cst_strlen(newlast)+1);
+        for (p = feat, q=retstring; p < featendpart; )
+        {
+            *q++ = *p++;
+        }
+        for (p = newlast; *p ;)
+        {
+            *q++ = *p++;
+        }
+    }
+    else
+    {
+        retstring = cst_strdup(feat);
+    }
+    return retstring;
+}
+
 static char** cst_read_tree_feats(cst_file fd)
 {
     char** feats;
     int numfeats;
     int i;
+    char* tempfeat;
+    char* tempfeat2;
 
     numfeats = cst_read_int(fd);
     feats = cst_alloc(char *,numfeats+1);
 
     for (i=0;i<numfeats;i++)
     {
-        feats[i] = cst_read_string(fd);
-//      cst_errmsg("tree_feats:%s\n",feats[i]);
+        tempfeat = cst_read_string(fd);
+        tempfeat2 = replacefeat(tempfeat,".parent",".P");
+        if (tempfeat2)
+        {
+            cst_free(tempfeat);
+            tempfeat = tempfeat2;
+        }
+        tempfeat2 = replacefeat(tempfeat,":SylStructure",":"SYLSTRUCTURE);
+        if (tempfeat2)
+        {
+            cst_free(tempfeat);
+            tempfeat = tempfeat2;
+        }
+        tempfeat2 = replacefeat(tempfeat,":segstate",":"SEGSTATE);
+        if (tempfeat2)
+        {
+            cst_free(tempfeat);
+            tempfeat = tempfeat2;
+        }
+        tempfeat2 = replacefeat(tempfeat,":mcep_link",":"MCEP_LINK);
+        if (tempfeat2)
+        {
+            cst_free(tempfeat);
+            tempfeat = tempfeat2;
+        }
+        tempfeat2 = replacefeat(tempfeat,":HMMstate",":"HMMSTATE);
+        if (tempfeat2)
+        {
+            cst_free(tempfeat);
+            tempfeat = tempfeat2;
+        }
+        tempfeat2 = replacefeat(tempfeat,":Syllable",":"SYLLABLE);
+        if (tempfeat2)
+        {
+            cst_free(tempfeat);
+            tempfeat = tempfeat2;
+        }
+        tempfeat2 = replacefeat(tempfeat,":Phrase",":"PHRASE);
+        if (tempfeat2)
+        {
+            cst_free(tempfeat);
+            tempfeat = tempfeat2;
+        }
+        tempfeat2 = replacefeat(tempfeat,":Word",":"WORD);
+        if (tempfeat2)
+        {
+            cst_free(tempfeat);
+            tempfeat = tempfeat2;
+        }
+        feats[i] = replaceff(tempfeat);
+        cst_free(tempfeat);
     }
     feats[i] = 0;
   

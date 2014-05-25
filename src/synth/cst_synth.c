@@ -51,6 +51,8 @@
 #include "cst_synth.h"
 #include "cst_tokenstream.h"
 #include "cst_utt_utils.h"
+#include "bell_ff_sym.h"
+#include "bell_relation_sym.h"
 
 CST_VAL_REGISTER_FUNCPTR(breakfunc,cst_breakfunc)
 
@@ -146,7 +148,7 @@ static cst_utterance *default_tokenization(cst_utterance *u)
     cst_relation *r;
 
     text = utt_input_text(u);
-    r = utt_relation_create(u,"Token");
+    r = utt_relation_create(u,TOKEN);
     fd = ts_open_string(text,
 	get_param_string(u->features,"text_whitespace",NULL),
 	get_param_string(u->features,"text_singlecharsymbols",NULL),
@@ -186,10 +188,10 @@ static cst_utterance *default_textanalysis(cst_utterance *u)
     const cst_val *w;
     const cst_val *ttwv;
 
-    word_rel = utt_relation_create(u,"Word");
+    word_rel = utt_relation_create(u,WORD);
     ttwv = feat_val(u->features, "tokentowords_func");
 
-    for (t=relation_head(utt_relation(u,"Token")); t; t=item_next(t))
+    for (t=relation_head(utt_relation(u,TOKEN)); t; t=item_next(t))
     {
 	if (ttwv)
 	    words = (cst_val *)(*val_itemfunc(ttwv))(t);
@@ -222,10 +224,10 @@ cst_utterance *default_phrasing(cst_utterance *u)
     const cst_val *v;
     cst_cart *phrasing_cart;
 
-    r = utt_relation_create(u,"Phrase");
+    r = utt_relation_create(u,PHRASE);
     phrasing_cart = val_cart(feat_val(u->features,"phrasing_cart"));
 
-    for (p=NULL,w=relation_head(utt_relation(u,"Word")); w; w=item_next(w))
+    for (p=NULL,w=relation_head(utt_relation(u,WORD)); w; w=item_next(w))
     {
 	if (p == NULL)
 	{
@@ -252,10 +254,10 @@ cst_utterance *hts_phrasing(cst_utterance *u)
     const cst_val *v;
     cst_cart *phrasing_cart;
 
-    r = utt_relation_create(u,"Phrase");
+    r = utt_relation_create(u,PHRASE);
     phrasing_cart = val_cart(feat_val(u->features,"phrasing_cart"));
 
-    for (p=NULL,w=relation_head(utt_relation(u,"Word")); w; w=item_next(w))
+    for (p=NULL,w=relation_head(utt_relation(u,WORD)); w; w=item_next(w))
     {
 	if (p == NULL)
 	{
@@ -285,18 +287,18 @@ static cst_utterance *default_pause_insertion(cst_utterance *u)
     silence = val_string(feat_val(u->features,"silence"));
 
     /* Insert initial silence */
-    s = relation_head(utt_relation(u,"Segment"));
+    s = relation_head(utt_relation(u,SEGMENT));
     if (s == NULL)
-	s = relation_append(utt_relation(u,"Segment"),NULL);
+	s = relation_append(utt_relation(u,SEGMENT),NULL);
     else
 	s = item_prepend(s,NULL);
     item_set_string(s,"name",silence);
 
-    for (p=relation_head(utt_relation(u,"Phrase")); p; p=item_next(p))
+    for (p=relation_head(utt_relation(u,PHRASE)); p; p=item_next(p))
     {
 	for (w = item_last_daughter(p); w; w=item_prev(w))
 	{
-	    s = path_to_item(w,"R:SylStructure.dn.dn.R:Segment");
+	    s = path_to_item(w,"R:"SYLSTRUCTURE".dn.dn.R:"SEGMENT);
 	    if (s)
 	    {
 		s = item_append(s,NULL);
@@ -321,7 +323,7 @@ cst_utterance *cart_intonation(cst_utterance *u)
     accents = val_cart(feat_val(u->features,"int_cart_accents"));
     tones = val_cart(feat_val(u->features,"int_cart_tones"));
     
-    for (s=relation_head(utt_relation(u,"Syllable")); s; s=item_next(s))
+    for (s=relation_head(utt_relation(u,SYLLABLE)); s; s=item_next(s))
     {
 	v = cart_interpret(s,accents);
 	if (!cst_streq("NONE",val_string(v)))
@@ -330,11 +332,11 @@ cst_utterance *cart_intonation(cst_utterance *u)
 	if (!cst_streq("NONE",val_string(v)))
 	    item_set_string(s,"endtone",val_string(v));
 	DPRINTF(0,("word %s gpos %s stress %s ssyl_in %s ssyl_out %s accent %s endtone %s\n",
-		   ffeature_string(s,"R:SylStructure.parent.name"),
-		   ffeature_string(s,"R:SylStructure.parent.gpos"),
+		   ffeature_string(s,"R:"SYLSTRUCTURE".P.name"),
+		   ffeature_string(s,"R:"SYLSTRUCTURE".P.gpos"),
 		   ffeature_string(s,"stress"),
-		   ffeature_string(s,"ssyl_in"),
-		   ffeature_string(s,"ssyl_out"),
+		   ffeature_string(s,SSYL_IN),
+		   ffeature_string(s,SSYL_OUT),
 		   ffeature_string(s,"accent"),
 		   ffeature_string(s,"endtone")));
     }
@@ -353,7 +355,7 @@ static cst_utterance *default_pos_tagger(cst_utterance *u)
         return u;
     tagger = val_cart(p);
 
-    for (word=relation_head(utt_relation(u,"Word")); 
+    for (word=relation_head(utt_relation(u,WORD));
 	 word; word=item_next(word))
     {
         p = cart_interpret(word,tagger);
@@ -382,11 +384,11 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
     if (lex->lex_addenda)
 	lex_addenda = lex->lex_addenda;
 
-    syl = utt_relation_create(u,"Syllable");
-    sylstructure = utt_relation_create(u,"SylStructure");
-    seg = utt_relation_create(u,"Segment");
+    syl = utt_relation_create(u,SYLLABLE);
+    sylstructure = utt_relation_create(u,SYLSTRUCTURE);
+    seg = utt_relation_create(u,SEGMENT);
 
-    for (word=relation_head(utt_relation(u,"Word")); 
+    for (word=relation_head(utt_relation(u,WORD));
 	 word; word=item_next(word))
     {
 	ssword = relation_append(sylstructure,word);
@@ -403,9 +405,9 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
 	/* FIXME: need to make sure that textanalysis won't split
            tokens with explicit pronunciation (or that it will
            propagate such to words, then we can remove the path here) */
-	if (item_feat_present(item_parent(item_as(word, "Token")), "phones"))
+	if (item_feat_present(item_parent(item_as(word, TOKEN)), "phones"))
         {
-            vpn = item_feat(item_parent(item_as(word, "Token")), "phones");
+            vpn = item_feat(item_parent(item_as(word, TOKEN)), "phones");
             if (cst_val_consp(vpn))
             {   /* for SAPI ?? */
                 /* awb oct11: this seems wrong -- */
@@ -416,7 +418,7 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
             {
                 dp = 1;
                 if (cst_streq(val_string(vpn),
-                              ffeature_string(word,"p.R:Token.parent.phones")))
+                              ffeature_string(word,"p.R:"TOKEN".P.phones")))
                     phones = NULL; /* Already given these phones */
                 else
                     phones = val_readlist_string(val_string(vpn));
@@ -489,12 +491,12 @@ static cst_utterance *tokentosegs(cst_utterance *u)
 
     ps = val_phoneset(UTT_FEAT_VAL(u, "phoneset"));
     /* Just copy tokens into the Segment relation */
-    seg = utt_relation_create(u, "Segment");
-    syl = utt_relation_create(u, "Syllable");
-    word = utt_relation_create(u, "Word");
-    sylstructure = utt_relation_create(u, "SylStructure");
+    seg = utt_relation_create(u, SEGMENT);
+    syl = utt_relation_create(u, SYLLABLE);
+    word = utt_relation_create(u, WORD);
+    sylstructure = utt_relation_create(u, SYLSTRUCTURE);
     sssyl = sylitem = worditem = sylstructureitem = 0;
-    for (t = relation_head(utt_relation(u, "Token")); t; t = item_next(t)) 
+    for (t = relation_head(utt_relation(u, TOKEN)); t; t = item_next(t))
     {
 	cst_item *segitem = relation_append(seg, NULL);
 	char const *pname = item_feat_string(t, "name");

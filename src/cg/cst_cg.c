@@ -60,6 +60,8 @@
 #include "cst_spamf0.h"
 #include "cst_utt_utils.h"
 #include "cst_utterance.h"
+#include "bell_ff_sym.h"
+#include "bell_relation_sym.h"
 
 CST_VAL_REGISTER_TYPE(cg_db,cst_cg_db)
 
@@ -198,10 +200,10 @@ static cst_utterance *cg_make_hmmstates(cst_utterance *utt)
     int sp,p;
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
-    hmmstate = utt_relation_create(utt,"HMMstate");
-    segstate = utt_relation_create(utt,"segstate");
+    hmmstate = utt_relation_create(utt,HMMSTATE);
+    segstate = utt_relation_create(utt,SEGSTATE);
 
-    for (seg = UTT_REL_HEAD(utt,"Segment"); seg; seg=item_next(seg))
+    for (seg = UTT_REL_HEAD(utt,SEGMENT); seg; seg=item_next(seg))
     {
         ss = relation_append(segstate,seg);
         segname = item_feat_string(seg,"name");
@@ -234,16 +236,16 @@ static cst_utterance *cg_make_params(cst_utterance *utt)
     float dur_stretch, tok_stretch;
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
-    mcep = utt_relation_create(utt,"mcep");
-    mcep_link = utt_relation_create(utt,"mcep_link");
+    mcep = utt_relation_create(utt,MCEP);
+    mcep_link = utt_relation_create(utt,MCEP_LINK);
     end = 0.0;
     num_frames = 0;
     dur_stretch = get_param_float(utt->features,"duration_stretch", 1.0);
 
-    for (s = UTT_REL_HEAD(utt,"HMMstate"); s; s=item_next(s))
+    for (s = UTT_REL_HEAD(utt,HMMSTATE); s; s=item_next(s))
     {
         start = end;
-        tok_stretch = ffeature_float(s,"R:segstate.parent.R:SylStructure.parent.parent.R:Token.parent.local_duration_stretch");
+        tok_stretch = ffeature_float(s,"R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"TOKEN".P.local_duration_stretch");
         if (tok_stretch == 0)
             tok_stretch = 1.0;
         end = start + (tok_stretch*dur_stretch*cg_state_duration(s,cg_db));
@@ -259,8 +261,8 @@ static cst_utterance *cg_make_params(cst_utterance *utt)
     }
 
     /* Copy duration up onto Segment relation */
-    for (s = UTT_REL_HEAD(utt,"Segment"); s; s=item_next(s))
-        item_set(s,"end",ffeature(s,"R:segstate.dn.end"));
+    for (s = UTT_REL_HEAD(utt,SEGMENT); s; s=item_next(s))
+        item_set(s,"end",ffeature(s,"R:"SEGSTATE".dn.end"));
 
     UTT_SET_FEAT_INT(utt,"param_track_num_frames",num_frames);
 
@@ -272,8 +274,8 @@ static int voiced_frame(cst_item *m)
     const char *ph_vc;
     const char *ph_name;
 
-    ph_vc = ffeature_string(m,"R:mcep_link.parent.R:segstate.parent.ph_vc");
-    ph_name = ffeature_string(m,"R:mcep_link.parent.R:segstate.parent.name");
+    ph_vc = ffeature_string(m,"R:"MCEP_LINK".P.R:"SEGSTATE".P."PH_VC);
+    ph_name = ffeature_string(m,"R:"MCEP_LINK".P.R:"SEGSTATE".P.name");
 
     if (cst_streq(ph_name,"pau"))
         return 0; /* unvoiced */
@@ -320,7 +322,7 @@ static void cg_smooth_F0(cst_utterance *utt,cst_cg_db *cg_db,
     stddev = 
         get_param_float(utt->features,"int_f0_target_stddev", cg_db->f0_stddev);
     
-    for (i=0,mcep=UTT_REL_HEAD(utt,"mcep"); mcep; i++,mcep=item_next(mcep))
+    for (i=0,mcep=UTT_REL_HEAD(utt,MCEP); mcep; i++,mcep=item_next(mcep))
     {
         if (voiced_frame(mcep))
         {
@@ -375,7 +377,7 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
                      UTT_FEAT_INT(utt,"param_track_num_frames"),
                      (cg_db->num_channels0/fff)-
                        (2 * extra_feats));/* no voicing or str */
-    for (i=0,mcep=UTT_REL_HEAD(utt,"mcep"); mcep; i++,mcep=item_next(mcep))
+    for (i=0,mcep=UTT_REL_HEAD(utt,MCEP); mcep; i++,mcep=item_next(mcep))
     {
         mname = item_feat_string(mcep,"name");
         for (p=0; cg_db->types[p]; p++)

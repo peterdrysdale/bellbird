@@ -68,6 +68,7 @@
 #include "cst_tokenstream.h"
 #include "flite.h"
 #include "bell_file.h"
+#include "bell_relation_sym.h"
 
 static const char *ssml_singlecharsymbols_general = "<>&/\";";
 static const char *ssml_singlecharsymbols_inattr = "=>;/\"";
@@ -170,7 +171,7 @@ static cst_utterance *ssml_apply_tag(const char *tag,
     else if (cst_streq("BREAK",tag))
     {
         if (u && 
-            ((r = utt_relation(u,"Token")) != NULL) &&
+            ((r = utt_relation(u,TOKEN)) != NULL) &&
             ((t = relation_tail(r)) != NULL))
         {
             item_set_string(t,"break","1");
@@ -287,7 +288,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     num_tokens = 0;
     utt = new_utterance();
 
-    tokrel = utt_relation_create(utt, "Token");
+    tokrel = utt_relation_create(utt, TOKEN);
     while (!ts_eof(ts) || num_tokens > 0)
     {
         current_voice = 
@@ -351,7 +352,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             if (ts_eof(ts)) break;
             
             utt = new_utterance();
-            tokrel = utt_relation_create(utt, "Token");
+            tokrel = utt_relation_create(utt, TOKEN);
             num_tokens = 0;
         }
 
@@ -368,7 +369,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             delete_utterance(utt);
 
             utt = new_utterance();
-            tokrel = utt_relation_create(utt, "Token");
+            tokrel = utt_relation_create(utt, TOKEN);
             num_tokens = 0;
 
             feat_remove(ssml_word_feats,"ssml_play_audio");

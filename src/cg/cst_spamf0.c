@@ -46,6 +46,7 @@
 #include "cst_track.h"
 #include "cst_utterance.h"
 #include "cst_utt_utils.h"
+#include "bell_relation_sym.h"
 
 static void cst_synthtilt(const cst_cg_db *cg_db, 
                           const float start, const float peak, const float tiltamp, 
@@ -70,7 +71,7 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
     phrase_tree = cg_db->spamf0_phrase_tree;
     end = 0.0;
     num_frames = 0;
-    for (s = UTT_REL_HEAD(utt,"Segment"); s; s=item_next(s))
+    for (s = UTT_REL_HEAD(utt,SEGMENT); s; s=item_next(s))
     {
         end = ffeature_float(s,"end");
         if (cst_streq("pau",ffeature_string(s,"name")))
@@ -88,13 +89,13 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
         }
     }
 
-    for (s=UTT_REL_HEAD(utt,"Syllable"); s; s=item_next(s))
+    for (s=UTT_REL_HEAD(utt,SYLLABLE); s; s=item_next(s))
     {
         f = val_int(cart_interpret(s,acc_tree));
-        syldur = ffeature_float(s,"R:SylStructure.dn.R:Segment.end")
-            - ffeature_float(s,"R:SylStructure.d1.R:Segment.p.end");
+        syldur = ffeature_float(s,"R:"SYLSTRUCTURE".dn.R:"SEGMENT".end")
+            - ffeature_float(s,"R:"SYLSTRUCTURE".d1.R:"SEGMENT".p.end");
         cst_synthtilt(cg_db,
-		      ffeature_float(s,"R:SylStructure.d1.R:Segment.p.end"),
+		      ffeature_float(s,"R:"SYLSTRUCTURE".d1.R:"SEGMENT".p.end"),
                       cg_db->spamf0_accent_vectors[f][0],
                       cg_db->spamf0_accent_vectors[f][2],
                       syldur,

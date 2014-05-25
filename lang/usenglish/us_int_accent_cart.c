@@ -49,6 +49,8 @@
 #include "cst_string.h"
 #include "cst_cart.h"
 #include "cst_regex.h"
+#include "bell_ff_sym.h"
+#include "bell_relation_sym.h"
 #include "us_int_accent_cart.h"
 
 extern const cst_cart us_int_accent_cart;
@@ -208,24 +210,24 @@ static const cst_cart_node us_int_accent_cart_nodes[] = {
 
 
 static const char * const us_int_accent_feat_table[] = {
-"R:SylStructure.parent.R:Token.parent.EMPH",
-"n.R:SylStructure.parent.R:Token.parent.EMPH",
-"p.R:SylStructure.parent.R:Token.parent.EMPH",
-"ssyl_in",
-"R:SylStructure.parent.gpos",
-"ssyl_out",
+"R:"SYLSTRUCTURE".P.R:"TOKEN".P.EMPH",
+"n.R:"SYLSTRUCTURE".P.R:"TOKEN".P.EMPH",
+"p.R:"SYLSTRUCTURE".P.R:"TOKEN".P.EMPH",
+SSYL_IN,
+"R:"SYLSTRUCTURE".P.gpos",
+SSYL_OUT,
 "stress",
-"R:SylStructure.parent.R:Word.p.gpos",
-"p.syl_break",
-"syl_break",
-"p.p.syl_break",
-"R:SylStructure.parent.R:Word.p.p.gpos",
-"syl_out",
-"R:SylStructure.parent.R:Word.n.gpos",
+"R:"SYLSTRUCTURE".P.R:"WORD".p.gpos",
+"p."SYL_BREAK,
+SYL_BREAK,
+"p.p."SYL_BREAK,
+"R:"SYLSTRUCTURE".P.R:"WORD".p.p.gpos",
+SYL_OUT,
+"R:"SYLSTRUCTURE".P.R:"WORD".n.gpos",
 "n.stress",
-"syl_in",
-"n.syl_break",
-"n.n.syl_break",
+SYL_IN,
+"n."SYL_BREAK,
+"n.n."SYL_BREAK,
 NULL };
 
 const cst_cart us_int_accent_cart = {

@@ -51,6 +51,7 @@
 #include "cst_utt_utils.h"
 #include "flite.h"
 #include "bell_audio.h"
+#include "bell_relation_sym.h"
 
 /* This is a global, which isn't ideal, this may change */
 cst_lang flite_lang_list[20];
@@ -150,7 +151,7 @@ float flite_ts_to_speech(cst_tokenstream *ts,
 
     num_tokens = 0;
     utt = new_utterance();
-    tokrel = utt_relation_create(utt, "Token");
+    tokrel = utt_relation_create(utt, TOKEN);
     while (!ts_eof(ts) || num_tokens > 0)
     {
 	token = ts_get(ts);
@@ -180,7 +181,7 @@ float flite_ts_to_speech(cst_tokenstream *ts,
 	    if (ts_eof(ts)) break;
 
 	    utt = new_utterance();
-	    tokrel = utt_relation_create(utt, "Token");
+	    tokrel = utt_relation_create(utt, TOKEN);
 	    num_tokens = 0;
 	}
 	num_tokens++;

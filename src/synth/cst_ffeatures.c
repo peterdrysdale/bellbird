@@ -45,6 +45,8 @@
 
 #include "cst_phoneset.h"
 #include "cst_regex.h"
+#include "bell_ff_sym.h"
+#include "bell_relation_sym.h"
 
 static const cst_val *word_break(const cst_item *word);
 static const cst_val *word_punc(const cst_item *word);
@@ -132,8 +134,8 @@ static const cst_val *cg_state_place(const cst_item *p)
 {
     float start, end;
     int this;
-    start = (float)ffeature_int(p,"R:mcep_link.parent.d1.frame_number");
-    end = (float)ffeature_int(p,"R:mcep_link.parent.dn.frame_number");
+    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.d1.frame_number");
+    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.dn.frame_number");
     this = item_feat_int(p,"frame_number");
     if ((end-start) == 0.0)
         return float_val(0.0);
@@ -145,7 +147,7 @@ static const cst_val *cg_state_index(const cst_item *p)
 {
     float start;
     int this;
-    start = (float)ffeature_int(p,"R:mcep_link.parent.d1.frame_number");
+    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.d1.frame_number");
     this = item_feat_int(p,"frame_number");
     return float_val(this-start);
 }
@@ -154,7 +156,7 @@ static const cst_val *cg_state_rindex(const cst_item *p)
 {
     float end;
     int this;
-    end = (float)ffeature_int(p,"R:mcep_link.parent.dn.frame_number");
+    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.dn.frame_number");
     this = item_feat_int(p,"frame_number");
     return float_val(end-this);
 }
@@ -163,8 +165,8 @@ static const cst_val *cg_phone_place(const cst_item *p)
 {
     float start, end;
     int this;
-    start = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.d1.R:mcep_link.d1.frame_number");
-    end = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.dn.R:mcep_link.dn.frame_number");
+    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.d1.R:"MCEP_LINK".d1.frame_number");
+    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.dn.R:"MCEP_LINK".dn.frame_number");
     this = item_feat_int(p,"frame_number");
     if ((end-start) == 0.0)
         return float_val(0.0);
@@ -176,7 +178,7 @@ static const cst_val *cg_phone_index(const cst_item *p)
 {
     float start;
     int this;
-    start = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.d1.R:mcep_link.d1.frame_number");
+    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.d1.R:"MCEP_LINK".d1.frame_number");
     this = item_feat_int(p,"frame_number");
     return float_val(this-start);
 }
@@ -185,7 +187,7 @@ static const cst_val *cg_phone_rindex(const cst_item *p)
 {
     float end;
     int this;
-    end = (float)ffeature_int(p,"R:mcep_link.parent.R:segstate.parent.dn.R:mcep_link.dn.frame_number");
+    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.dn.R:"MCEP_LINK".dn.frame_number");
     this = item_feat_int(p,"frame_number");
     return float_val(end-this);
 }
@@ -215,9 +217,9 @@ static const cst_val *cg_position_in_phrasep(const cst_item *p)
     float x;
     #define CG_FRAME_SHIFT 0.005 
 
-    pstart = ffeature_float(p,"R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.d1.R:SylStructure.d1.d1.R:Segment.p.end");
-    pend = ffeature_float(p,"R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.dn.R:SylStructure.dn.dn.R:Segment.end");
-    phrasenumber = ffeature_float(p,"R:mcep_link.parent.R:segstate.parent.R:SylStructure.parent.parent.R:Phrase.parent.lisp_cg_find_phrase_number");
+    pstart = ffeature_float(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1.d1.R:"SEGMENT".p.end");
+    pend = ffeature_float(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn.dn.R:"SEGMENT".end");
+    phrasenumber = ffeature_float(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_CG_FIND_PHRASE_NUMBER);
     if ((pend - pstart) == 0.0)
         return float_val(-1.0);
     else
@@ -234,15 +236,15 @@ static const cst_val *pos_in_word(const cst_item *p)
 {
 	const cst_item *s;
 	int i=0;
-	p=item_as(p,"Syllable");
-	s=item_as(path_to_item(p,"R:SylStructure.parent.d1"),"Syllable");
+	p=item_as(p,SYLLABLE);
+	s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".P.d1"),SYLLABLE);
 	for (;s && !item_equal(p,s);s=item_next(s),i++){}
 	return val_string_n(i);
 }
 
 static const cst_val *syllable_duration(const cst_item *p)
 {
-	return float_val(ffeature_float(p,"R:SylStructure.dn.R:Segment.end") - ffeature_float(p,"R:SylStructure.d1.R:Segment.p.end"));
+	return float_val(ffeature_float(p,"R:"SYLSTRUCTURE".dn.R:"SEGMENT".end") - ffeature_float(p,"R:"SYLSTRUCTURE".d1.R:"SEGMENT".p.end"));
 }
 
 static const cst_val *syl_vowel(const cst_item *p)
@@ -250,8 +252,8 @@ static const cst_val *syl_vowel(const cst_item *p)
     /* Do not call this ffeature with ffeature_string as it will leak a   */
     /* temporary cst_val return value. Call ffeature explicitly instead   */
 	const cst_item *s,*ls;
-	s=item_as(path_to_item(p,"R:SylStructure.d1"),"Segment");
-	ls=item_as(path_to_item(p,"R:SylStructure.dn"),"Segment");
+	s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".d1"),SEGMENT);
+	ls=item_as(path_to_item(p,"R:"SYLSTRUCTURE".dn"),SEGMENT);
 	for (;s && !item_equal(s,ls);s=item_next(s))
 	{
 		if (cst_streq("+",val_string(ph_vc(s)))){ return string_val(ITEM_NAME(s));}
@@ -264,8 +266,8 @@ static const cst_val *syl_numphones(const cst_item *p)
 {
 	int i;
 	const cst_item *s,*ls;
-	s=item_as(path_to_item(p,"R:SylStructure.d1"),"Segment");
-	ls=item_as(path_to_item(p,"R:SylStructure.dn"),"Segment");
+	s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".d1"),SEGMENT);
+	ls=item_as(path_to_item(p,"R:"SYLSTRUCTURE".dn"),SEGMENT);
 	for (i=1;s && !item_equal(s,ls);s=item_next(s)){i++;}
 	return val_string_n(i);
 }
@@ -275,15 +277,15 @@ static const cst_val *pos_in_phrase(const cst_item *p)
 {
 	const cst_item *s;
 	int i=0;
-	p=item_as(p,"Word");
-	s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.d1"),"Word");
+	p=item_as(p,WORD);
+	s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".R:"PHRASE".P.d1"),WORD);
 	for (;s && !item_equal(p,s);s=item_next(s),i++){}
 	return val_string_n(i);
 }
 
 static const cst_val *cg_syl_ratio(const cst_item *p)
 {
-	return float_val (( 1 + ffeature_float(p,"syl_in"))/(1 + ffeature_float(p,"syl_in") + ffeature_float(p,"syl_out")));
+	return float_val (( 1 + ffeature_float(p,SYL_IN))/(1 + ffeature_float(p,SYL_IN) + ffeature_float(p,SYL_OUT)));
 }
 
 
@@ -291,13 +293,13 @@ static const cst_val *cg_phrase_ratio(const cst_item *p)
 {
 	const cst_item *lp=p;
 	while (item_next(lp)){lp=item_next(lp);}
-	return float_val ((1 + ffeature_float(p,"lisp_cg_find_phrase_number"))/(1 + ffeature_float(lp,"lisp_cg_find_phrase_number")));
+	return float_val ((1 + ffeature_float(p,LISP_CG_FIND_PHRASE_NUMBER))/(1 + ffeature_float(lp,LISP_CG_FIND_PHRASE_NUMBER)));
 }
 
 static const cst_val *cg_syls_in_phrase(const cst_item *p)
 {
-	cst_item *s=item_as(item_daughter(p),"Word");
-	return float_val(1 + ffeature_float(s,"R:SylStructure.d1.R:Syllable.syl_out"));
+	cst_item *s=item_as(item_daughter(p),WORD);
+	return float_val(1 + ffeature_float(s,"R:"SYLSTRUCTURE".d1.R:"SYLLABLE"."SYL_OUT));
 }
 
 
@@ -315,7 +317,7 @@ static const cst_val *seg_coda_ctype(const cst_item *seg, const char *ctype)
     const cst_item *s;
     const cst_phoneset *ps = item_phoneset(seg);
     
-    for (s=item_last_daughter(item_parent(item_as(seg,"SylStructure")));
+    for (s=item_last_daughter(item_parent(item_as(seg,SYLSTRUCTURE)));
 	 s;
 	 s=item_prev(s))
     {
@@ -335,7 +337,7 @@ static const cst_val *seg_onset_ctype(const cst_item *seg, const char *ctype)
     const cst_item *s;
     const cst_phoneset *ps = item_phoneset(seg);
     
-    for (s=item_daughter(item_parent(item_as(seg,"SylStructure")));
+    for (s=item_daughter(item_parent(item_as(seg,SYLSTRUCTURE)));
 	 s;
 	 s=item_next(s))
     {
@@ -400,7 +402,7 @@ static const cst_val *seg_onsetcoda(const cst_item *seg)
     const cst_phoneset *ps = item_phoneset(seg);
 
     if (!seg) return &val_string_0;
-    for (s=item_next(item_as(seg,"SylStructure"));
+    for (s=item_next(item_as(seg,SYLSTRUCTURE));
 	 s;
 	 s=item_next(s))
     {
@@ -416,7 +418,7 @@ static const cst_val *pos_in_syl(const cst_item *seg)
     const cst_item *s;
     int c;
     
-    for (c=-1,s=item_as(seg,"SylStructure");
+    for (c=-1,s=item_as(seg,SYLSTRUCTURE);
 	 s;
 	 s=item_prev(s),c++);
 
@@ -425,7 +427,7 @@ static const cst_val *pos_in_syl(const cst_item *seg)
 
 static const cst_val *position_type(const cst_item *syl)
 {
-    const cst_item *s = item_as(syl,"SylStructure");
+    const cst_item *s = item_as(syl,SYLSTRUCTURE);
 
     if (s == 0)
 	return (cst_val *)&val_string_single;
@@ -447,7 +449,7 @@ static const cst_val *sub_phrases(const cst_item *syl)
     const cst_item *s;
     int c;
     
-    for (c=0,s=path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.p");
+    for (c=0,s=path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.p");
 	 s && (c < CST_CONST_INT_MAX); 
 	 s=item_prev(s),c++);
 
@@ -459,7 +461,7 @@ static const cst_val *last_accent(const cst_item *syl)
     const cst_item *s;
     int c;
     
-    for (c=0,s=item_as(syl,"Syllable");
+    for (c=0,s=item_as(syl,SYLLABLE);
 	 s && (c < CST_CONST_INT_MAX); 
 	 s=item_prev(s),c++)
     {
@@ -475,7 +477,7 @@ static const cst_val *next_accent(const cst_item *syl)
     const cst_item *s;
     int c;
 
-    s=item_as(syl,"Syllable");
+    s=item_as(syl,SYLLABLE);
     if (s)
         s = item_next(s);
     else
@@ -493,7 +495,7 @@ static const cst_val *next_accent(const cst_item *syl)
 
 static const cst_val *syl_final(const cst_item *seg)
 {   /* last segment in a syllable */
-    const cst_item *s = item_as(seg,"SylStructure");
+    const cst_item *s = item_as(seg,SYLSTRUCTURE);
 
     if (!s || (item_next(s) == NULL))
 	return &val_string_1;
@@ -506,7 +508,7 @@ static const cst_val *word_punc(const cst_item *word)
     cst_item *ww;
     const cst_val *v;
 
-    ww = item_as(word,"Token");
+    ww = item_as(word,TOKEN);
 
     if ((ww != NULL) && (item_next(ww) != 0))
 	v = &val_string_empty;
@@ -526,7 +528,7 @@ static const cst_val *word_break(const cst_item *word)
     cst_item *ww,*pp;
     const char *pname;
 
-    ww = item_as(word,"Phrase");
+    ww = item_as(word,PHRASE);
 
     if ((ww == NULL) || (item_next(ww) != 0))
 	return &val_string_1;
@@ -548,7 +550,7 @@ static const cst_val *word_numsyls(const cst_item *word)
     cst_item *d;
     int c;
     
-    for (c=0,d=item_daughter(item_as(word,"SylStructure"));
+    for (c=0,d=item_daughter(item_as(word,SYLSTRUCTURE));
 	 d;
 	 d=item_next(d),c++);
 
@@ -561,9 +563,9 @@ static const cst_val *ssyl_in(const cst_item *syl)
     const cst_item *ss,*p,*fs;
     int c;
 
-    ss = item_as(syl,"Syllable");
+    ss = item_as(syl,SYLLABLE);
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
 
     /* This should actually include the first syllable, but Festival's
        doesn't. */
@@ -584,9 +586,9 @@ static const cst_val *ssyl_out(const cst_item *syl)
     const cst_item *ss,*p,*fs;
     int c;
 
-    ss = item_as(syl,"Syllable");
+    ss = item_as(syl,SYLLABLE);
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
 
     for (c=0, p=item_next(ss); 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -607,9 +609,9 @@ static const cst_val *syl_in(const cst_item *syl)
     const cst_item *ss,*p,*fs;
     int c;
 
-    ss = item_as(syl,"Syllable");
+    ss = item_as(syl,SYLLABLE);
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -626,9 +628,9 @@ static const cst_val *syl_out(const cst_item *syl)
     const cst_item *fs;
     int c;
 
-    ss = item_as(syl,"Syllable");
+    ss = item_as(syl,SYLLABLE);
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -643,7 +645,7 @@ static const cst_val *syl_break(const cst_item *syl)
     /* Break level after this syllable */
     cst_item *ss;
 
-    ss = item_as(syl,"SylStructure");
+    ss = item_as(syl,SYLSTRUCTURE);
 
     if (ss == NULL)
 	return &val_string_1;  /* hmm, no sylstructure */
@@ -661,15 +663,15 @@ static const cst_val *cg_break(const cst_item *syl)
     /* we go with this more robust technique */
     cst_item *ss;
 
-    ss = item_as(syl,"SylStructure");
+    ss = item_as(syl,SYLSTRUCTURE);
 
     if (ss == NULL)
 	return &val_string_0;  /* hmm, no sylstructure */
     else if (item_next(ss) != NULL)
 	return &val_string_0;  /* word internal */
-    else if (path_to_item(ss,"R:SylStructure.parent.R:Word.n") == NULL)
+    else if (path_to_item(ss,"R:"SYLSTRUCTURE".P.R:"WORD".n") == NULL)
         return &val_string_4;  /* utterance final */
-    else if (path_to_item(ss,"R:SylStructure.parent.R:Phrase.n") == NULL)
+    else if (path_to_item(ss,"R:"SYLSTRUCTURE".P.R:"PHRASE".n") == NULL)
         return &val_string_3;  /* phrase final */
     else
 	return &val_string_1;  /* word final */
@@ -680,7 +682,7 @@ static const cst_val *syl_codasize(const cst_item *syl)
     cst_item *d;
     int c;
 
-    for (c=1,d=item_last_daughter(item_as(syl,"SylStructure"));
+    for (c=1,d=item_last_daughter(item_as(syl,SYLSTRUCTURE));
 	 d;
 	 d=item_prev(d),c++)
     {
@@ -696,7 +698,7 @@ static const cst_val *syl_onsetsize(const cst_item *syl)
     cst_item *d;
     int c;
     
-    for (c=0,d=item_daughter(item_as(syl,"SylStructure"));
+    for (c=0,d=item_daughter(item_as(syl,SYLSTRUCTURE));
 	 d;
 	 d=item_next(d),c++)
     {
@@ -713,9 +715,9 @@ static const cst_val *asyl_in(const cst_item *syl)
     const cst_item *ss,*p,*fs;
     int c;
 
-    ss = item_as(syl,"Syllable");
+    ss = item_as(syl,SYLLABLE);
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -737,9 +739,9 @@ static const cst_val *asyl_out(const cst_item *syl)
     const cst_item *fs;
     int c;
 
-    ss = item_as(syl,"Syllable");
+    ss = item_as(syl,SYLLABLE);
 
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
 
     for (c=0, p=ss; 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -755,7 +757,7 @@ static const cst_val *asyl_out(const cst_item *syl)
 
 static const cst_val *segment_duration(const cst_item *seg)
 {
-    const cst_item *s = item_as(seg,"Segment");
+    const cst_item *s = item_as(seg,SEGMENT);
 
     if (!s)
 	return &val_string_0;
@@ -774,65 +776,65 @@ static const cst_val *segment_duration(const cst_item *seg)
 
 void basic_ff_register(cst_features *ffunctions)
 {
-    ff_register(ffunctions, "ph_vc",ph_vc);
-    ff_register(ffunctions, "ph_vlng",ph_vlng);
-    ff_register(ffunctions, "ph_vheight",ph_vheight);
-    ff_register(ffunctions, "ph_vfront",ph_vfront);
-    ff_register(ffunctions, "ph_vrnd",ph_vrnd);
-    ff_register(ffunctions, "ph_ctype",ph_ctype);
-    ff_register(ffunctions, "ph_cplace",ph_cplace);
-    ff_register(ffunctions, "ph_cvox",ph_cvox);
+    ff_register(ffunctions, PH_VC,ph_vc);
+    ff_register(ffunctions, PH_VLNG,ph_vlng);
+    ff_register(ffunctions, PH_VHEIGHT,ph_vheight);
+    ff_register(ffunctions, PH_VFRONT,ph_vfront);
+    ff_register(ffunctions, PH_VRND,ph_vrnd);
+    ff_register(ffunctions, PH_CTYPE,ph_ctype);
+    ff_register(ffunctions, PH_CPLACE,ph_cplace);
+    ff_register(ffunctions, PH_CVOX,ph_cvox);
 
-    ff_register(ffunctions, "lisp_cg_duration", cg_duration);
-    ff_register(ffunctions, "lisp_cg_state_pos", cg_state_pos);
-    ff_register(ffunctions, "lisp_cg_state_place", cg_state_place);
-    ff_register(ffunctions, "lisp_cg_state_index", cg_state_index);
-    ff_register(ffunctions, "lisp_cg_state_rindex", cg_state_rindex);
-    ff_register(ffunctions, "lisp_cg_phone_place", cg_phone_place);
-    ff_register(ffunctions, "lisp_cg_phone_index", cg_phone_index);
-    ff_register(ffunctions, "lisp_cg_phone_rindex", cg_phone_rindex);
+    ff_register(ffunctions, LISP_CG_DURATION, cg_duration);
+    ff_register(ffunctions, LISP_CG_STATE_POS, cg_state_pos);
+    ff_register(ffunctions, LISP_CG_STATE_PLACE, cg_state_place);
+    ff_register(ffunctions, LISP_CG_STATE_INDEX, cg_state_index);
+    ff_register(ffunctions, LISP_CG_STATE_RINDEX, cg_state_rindex);
+    ff_register(ffunctions, LISP_CG_PHONE_PLACE, cg_phone_place);
+    ff_register(ffunctions, LISP_CG_PHONE_INDEX, cg_phone_index);
+    ff_register(ffunctions, LISP_CG_PHONE_RINDEX, cg_phone_rindex);
 
-    ff_register(ffunctions, "lisp_cg_position_in_phrasep", cg_position_in_phrasep);
-    ff_register(ffunctions, "lisp_cg_find_phrase_number", cg_find_phrase_number);
-    ff_register(ffunctions, "lisp_is_pau", cg_is_pau);
+    ff_register(ffunctions, LISP_CG_POSITION_IN_PHRASEP, cg_position_in_phrasep);
+    ff_register(ffunctions, LISP_CG_FIND_PHRASE_NUMBER, cg_find_phrase_number);
+    ff_register(ffunctions, LISP_IS_PAU, cg_is_pau);
 
-    ff_register(ffunctions, "word_numsyls",word_numsyls);
-    ff_register(ffunctions, "word_break",word_break);
-    ff_register(ffunctions, "word_punc",word_punc);
-    ff_register(ffunctions, "ssyl_in",ssyl_in);
-    ff_register(ffunctions, "ssyl_out",ssyl_out);
-    ff_register(ffunctions, "syl_in",syl_in);
-    ff_register(ffunctions, "syl_out",syl_out);
-    ff_register(ffunctions, "syl_break",syl_break);
-    ff_register(ffunctions, "lisp_cg_break",cg_break);
-    ff_register(ffunctions, "old_syl_break",syl_break);
-    ff_register(ffunctions, "syl_onsetsize",syl_onsetsize);
-    ff_register(ffunctions, "syl_codasize",syl_codasize);
-    ff_register(ffunctions, "accented",accented);
-    ff_register(ffunctions, "asyl_in",asyl_in);
-    ff_register(ffunctions, "asyl_out",asyl_out);
-    ff_register(ffunctions, "lisp_coda_fric",seg_coda_fric);
-    ff_register(ffunctions, "lisp_onset_fric",seg_onset_fric);
-    ff_register(ffunctions, "lisp_coda_stop",seg_coda_stop);
-    ff_register(ffunctions, "lisp_onset_stop",seg_onset_stop);
-    ff_register(ffunctions, "lisp_coda_nasal",seg_coda_nasal);
-    ff_register(ffunctions, "lisp_onset_nasal",seg_onset_nasal);
-    ff_register(ffunctions, "lisp_coda_glide",seg_coda_glide);
-    ff_register(ffunctions, "lisp_onset_glide",seg_onset_glide);
-    ff_register(ffunctions, "seg_onsetcoda",seg_onsetcoda);
-    ff_register(ffunctions, "pos_in_syl",pos_in_syl);
-    ff_register(ffunctions, "position_type",position_type);
-    ff_register(ffunctions, "sub_phrases",sub_phrases);
-    ff_register(ffunctions, "last_accent",last_accent);
-    ff_register(ffunctions, "next_accent",next_accent);
-    ff_register(ffunctions, "syl_final",syl_final);
-    ff_register(ffunctions, "segment_duration",segment_duration);
-    ff_register(ffunctions, "lisp_cg_syl_ratio",cg_syl_ratio);
-    ff_register(ffunctions, "lisp_cg_phrase_ratio",cg_phrase_ratio);
-    ff_register(ffunctions, "lisp_cg_syls_in_phrase",cg_syls_in_phrase);
-    ff_register(ffunctions, "pos_in_phrase",pos_in_phrase);
-    ff_register(ffunctions, "pos_in_word",pos_in_word);
-    ff_register(ffunctions, "syllable_duration",syllable_duration);
-    ff_register(ffunctions, "syl_vowel",syl_vowel);
-    ff_register(ffunctions, "syl_numphones",syl_numphones);
+    ff_register(ffunctions, WORD_NUMSYLS,word_numsyls);
+    ff_register(ffunctions, WORD_BREAK,word_break);
+    ff_register(ffunctions, WORD_PUNC,word_punc);
+    ff_register(ffunctions, SSYL_IN,ssyl_in);
+    ff_register(ffunctions, SSYL_OUT,ssyl_out);
+    ff_register(ffunctions, SYL_IN,syl_in);
+    ff_register(ffunctions, SYL_OUT,syl_out);
+    ff_register(ffunctions, SYL_BREAK,syl_break);
+    ff_register(ffunctions, LISP_CG_BREAK,cg_break);
+    ff_register(ffunctions, OLD_SYL_BREAK,syl_break);
+    ff_register(ffunctions, SYL_ONSETSIZE,syl_onsetsize);
+    ff_register(ffunctions, SYL_CODASIZE,syl_codasize);
+    ff_register(ffunctions, ACCENTED,accented);
+    ff_register(ffunctions, ASYL_IN,asyl_in);
+    ff_register(ffunctions, ASYL_OUT,asyl_out);
+    ff_register(ffunctions, LISP_CODA_FRIC,seg_coda_fric);
+    ff_register(ffunctions, LISP_ONSET_FRIC,seg_onset_fric);
+    ff_register(ffunctions, LISP_CODA_STOP,seg_coda_stop);
+    ff_register(ffunctions, LISP_ONSET_STOP,seg_onset_stop);
+    ff_register(ffunctions, LISP_CODA_NASAL,seg_coda_nasal);
+    ff_register(ffunctions, LISP_ONSET_NASAL,seg_onset_nasal);
+    ff_register(ffunctions, LISP_CODA_GLIDE,seg_coda_glide);
+    ff_register(ffunctions, LISP_ONSET_GLIDE,seg_onset_glide);
+    ff_register(ffunctions, SEG_ONSETCODA,seg_onsetcoda);
+    ff_register(ffunctions, POS_IN_SYL,pos_in_syl);
+    ff_register(ffunctions, POSITION_TYPE,position_type);
+    ff_register(ffunctions, SUB_PHRASES,sub_phrases);
+    ff_register(ffunctions, LAST_ACCENT,last_accent);
+    ff_register(ffunctions, NEXT_ACCENT,next_accent);
+    ff_register(ffunctions, SYL_FINAL,syl_final);
+    ff_register(ffunctions, SEGMENT_DURATION,segment_duration);
+    ff_register(ffunctions, LISP_CG_SYL_RATIO,cg_syl_ratio);
+    ff_register(ffunctions, LISP_CG_PHRASE_RATIO,cg_phrase_ratio);
+    ff_register(ffunctions, LISP_CG_SYLS_IN_PHRASE,cg_syls_in_phrase);
+    ff_register(ffunctions, POS_IN_PHRASE,pos_in_phrase);
+    ff_register(ffunctions, POS_IN_WORD,pos_in_word);
+    ff_register(ffunctions, SYLLABLE_DURATION,syllable_duration);
+    ff_register(ffunctions, SYL_VOWEL,syl_vowel);
+    ff_register(ffunctions, SYL_NUMPHONES,syl_numphones);
 }

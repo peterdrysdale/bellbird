@@ -93,6 +93,7 @@
 #include "cst_utt_utils.h"
 #include "flite.h"
 #include "bell_driver.h"
+#include "bell_relation_sym.h"
 #include "../lang/cmulex/cmu_lex.h"
 
 #ifdef HAVE_CONFIG_H
@@ -164,8 +165,8 @@ static cst_utterance *print_info(cst_utterance *u)
     {
 	printf("%s ",item_feat_string(item,"name"));
 #if 0
-        if (cst_streq("+",ffeature_string(item,"ph_vc")))
-            printf("%s",ffeature_string(item,"R:SylStructure.parent.stress"));
+        if (cst_streq("+",ffeature_string(item,PH_VC)))
+            printf("%s",ffeature_string(item,"R:"SYLSTRUCTURE".P.stress"));
         printf(" ");
 #endif
     }
@@ -315,13 +316,13 @@ int main(int argc, char **argv)
         }
 	else if (cst_streq(argv[i],"-pw"))
 	{
-	    feat_set_string(extra_feats,"print_info_relation","Word");
+	    feat_set_string(extra_feats,"print_info_relation",WORD);
 	    feat_set(extra_feats,"post_synth_hook_func",
 		     uttfunc_val(&print_info));
 	}
 	else if (cst_streq(argv[i],"-ps"))
 	{
-	    feat_set_string(extra_feats,"print_info_relation","Segment");
+	    feat_set_string(extra_feats,"print_info_relation",SEGMENT);
 	    feat_set(extra_feats,"post_synth_hook_func",
 		     uttfunc_val(&print_info));
 	}

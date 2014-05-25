@@ -16,7 +16,8 @@ FLITEHEADERS = cst_alloc.h \
 HTSENGINEHEADERS = HTS_engine.h
 
 BELLBIRDHEADERS = bell_audio.h bell_driver.h \
-        bell_file.h nitech_engine.h
+        bell_file.h bell_ff_sym.h bell_relation_sym.h \
+        nitech_engine.h
 
 myinclude_HEADERS = $(FLITEHEADERS) \
                     $(HTSENGINEHEADERS) \

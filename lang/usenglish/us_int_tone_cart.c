@@ -49,6 +49,8 @@
 #include "cst_string.h"
 #include "cst_cart.h"
 #include "cst_regex.h"
+#include "bell_ff_sym.h"
+#include "bell_relation_sym.h"
 #include "us_int_tone_cart.h"
 
 extern const cst_cart us_int_tone_cart;
@@ -155,20 +157,20 @@ static const cst_cart_node us_int_tone_cart_nodes[] = {
 
 static const char * const us_int_tone_feat_table[] = {
 "lisp_syl_yn_question",
-"R:SylStructure.parent.gpos",
-"ssyl_in",
-"p.old_syl_break",
-"n.old_syl_break",
-"old_syl_break",
-"R:SylStructure.parent.R:Word.n.gpos",
-"R:SylStructure.parent.R:Word.p.gpos",
-"syl_in",
-"sub_phrases",
+"R:"SYLSTRUCTURE".P.gpos",
+SSYL_IN,
+"p."OLD_SYL_BREAK,
+"n."OLD_SYL_BREAK,
+OLD_SYL_BREAK,
+"R:"SYLSTRUCTURE".P.R:"WORD".n.gpos",
+"R:"SYLSTRUCTURE".P.R:"WORD".p.gpos",
+SYL_IN,
+SUB_PHRASES,
 "n.stress",
-"R:SylStructure.parent.R:Word.n.n.gpos",
-"p.p.old_syl_break",
-"n.n.old_syl_break",
-"R:SylStructure.parent.R:Word.p.p.gpos",
+"R:"SYLSTRUCTURE".P.R:"WORD".n.n.gpos",
+"p.p."OLD_SYL_BREAK,
+"n.n."OLD_SYL_BREAK,
+"R:"SYLSTRUCTURE".P.R:"WORD".p.p.gpos",
 NULL };
 
 const cst_cart us_int_tone_cart = {

@@ -5,6 +5,7 @@
 #include "cst_string.h"
 #include "cst_cart.h"
 #include "cst_regex.h"
+#include "bell_relation_sym.h"
 #include "us_phrasing_cart.h"
 extern const cst_cart us_phrasing_cart;
 
@@ -30,10 +31,10 @@ static const cst_cart_node us_phrasing_cart_nodes[] = {
 
 
 static const char * const us_phrasing_feat_table[] = {
-"R:Token.parent.n.name",
-"R:Token.n.name",
-"R:Token.parent.punc",
-"R:Token.parent.break",
+"R:"TOKEN".P.n.name",
+"R:"TOKEN".n.name",
+"R:"TOKEN".P.punc",
+"R:"TOKEN".P.break",
 "break",
 "n.name",
 NULL };

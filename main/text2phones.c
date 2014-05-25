@@ -56,6 +56,8 @@
 #include "cst_tokenstream.h"
 #include "cst_features.h"
 #include "cst_error.h"
+#include "bell_ff_sym.h"
+#include "bell_relation_sym.h"
 
 #include "../lang/usenglish/usenglish.h"
 #include "../lang/cmulex/cmu_lex.h"
@@ -142,15 +144,15 @@ int main(int argc, char **argv)
     utt_set_input_text(u,text);
     u=flite_do_synth(u, v, utt_synth);
 
-    for (s=relation_head(utt_relation(u,"Segment"));
+    for (s=relation_head(utt_relation(u,SEGMENT));
 	 s;
 	 s = item_next(s))
     {
 	name = item_feat_string(s,"name");
 	printf("%s",name);
 	/* If its a vowel and is stessed output stress value */
-	if ((cst_streq("+",ffeature_string(s,"ph_vc"))) &&
-	    (cst_streq("1",ffeature_string(s,"R:SylStructure.parent.stress"))))
+	if ((cst_streq("+",ffeature_string(s,PH_VC))) &&
+	    (cst_streq("1",ffeature_string(s,"R:"SYLSTRUCTURE".P.stress"))))
 	    printf("1");
 	printf(" ");
     }

@@ -51,6 +51,8 @@
 #include "cst_phoneset.h"
 #include "cst_regex.h"
 #include "cst_ffeatures.h"
+#include "bell_ff_sym.h"
+#include "bell_relation_sym.h"
 #include "us_ffeatures.h"
 
 static const cst_val *gpos(const cst_item *word);
@@ -81,8 +83,8 @@ static const cst_val *lisp_distance_to_p_stress(const cst_item *syl)
     const cst_item *s, *fs;
     int c;
 
-    s=item_as(syl,"Syllable");
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
+    s=item_as(syl,SYLLABLE);
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_prev(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_prev(s),c++)
@@ -105,8 +107,8 @@ static const cst_val *lisp_distance_to_n_stress(const cst_item *syl)
     const cst_item *s, *fs;
     int c;
 
-    s=item_as(syl,"Syllable");
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
+    s=item_as(syl,SYLLABLE);
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_next(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
@@ -129,8 +131,8 @@ static const cst_val *lisp_distance_to_p_accent(const cst_item *syl)
     const cst_item *s, *fs;
     int c;
 
-    s=item_as(syl,"Syllable");
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.d1.R:SylStructure.d1");
+    s=item_as(syl,SYLLABLE);
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_prev(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_prev(s),c++)
@@ -153,8 +155,8 @@ static const cst_val *lisp_distance_to_n_accent(const cst_item *syl)
     const cst_item *s, *fs;
     int c;
 
-    s=item_as(syl,"Syllable");
-    fs = path_to_item(syl,"R:SylStructure.parent.R:Phrase.parent.dn.R:SylStructure.dn");
+    s=item_as(syl,SYLLABLE);
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_next(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
@@ -177,7 +179,7 @@ static const cst_val *words_out(const cst_item *syl)
     const cst_item *ss,*p;
     int c = 0;
 
-    ss = item_as(syl,"Phrase");
+    ss = item_as(syl,PHRASE);
     for (p = ss;p;p=item_next(p),c++);
     return val_string_n(c);
 }
@@ -188,7 +190,7 @@ static const cst_val *hts_content_words_in(const cst_item *word)
     const cst_item *p,*fs;
     int c;
   
-    fs = path_to_item(word,"R:Phrase.parent.d1");
+    fs = path_to_item(word,"R:"PHRASE".P.d1");
     for (c=0,p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); p=item_prev(p))
     {
         if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
@@ -202,7 +204,7 @@ static const cst_val *hts_content_words_out(const cst_item *word)
     const cst_item *p,*fs;
     int c;
 
-    fs = path_to_item(word,"R:Phrase.parent.dn");
+    fs = path_to_item(word,"R:"PHRASE".P.dn");
     for (c=0, p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); p=item_next(p))
     {
         if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
@@ -216,7 +218,7 @@ static const cst_val *lisp_distance_to_p_content(const cst_item *syl)
     const cst_item *p;
     int c = 0;
 
-    for (p=item_prev(item_as(syl,"Phrase"));p;p=item_prev(p))
+    for (p=item_prev(item_as(syl,PHRASE));p;p=item_prev(p))
     {
         c++;
         if (gpos(p)==(cst_val*)&val_string_content)
@@ -231,7 +233,7 @@ static const cst_val *lisp_distance_to_n_content(const cst_item *syl)
     const cst_item *p;
     int c = 0;
 
-    for (p=item_next(item_as(syl,"Phrase"));p;p=item_next(p))
+    for (p=item_next(item_as(syl,PHRASE));p;p=item_next(p))
     {
         c++;
         if (gpos(p)==(cst_val*)&val_string_content)
@@ -250,9 +252,9 @@ static const cst_val *lisp_num_syls_in_phrase(const cst_item *phrase)
     fw = path_to_item(phrase,"dn");
     for (c=0; sw && (!item_equal(sw,fw)) && (c < CST_CONST_INT_MAX); sw=item_next(sw))
     {
-        c += ffeature_int(sw, "word_numsyls");
+        c += ffeature_int(sw, WORD_NUMSYLS);
     }
-    c += ffeature_int(sw, "word_numsyls");
+    c += ffeature_int(sw, WORD_NUMSYLS);
     return val_string_n(c);
 }
 
@@ -283,9 +285,9 @@ static const cst_val *lisp_total_syls(const cst_item *phrase)
     while (item_next(fp) != NULL) fp = item_next(fp);
     for (c = 0; sp && (!item_equal(sp, fp)) && (c < CST_CONST_INT_MAX); sp = item_next(sp))
     {
-        c += ffeature_int(sp, "lisp_num_syls_in_phrase");
+        c += ffeature_int(sp, LISP_NUM_SYLS_IN_PHRASE);
     }
-    c += ffeature_int(sp, "lisp_num_syls_in_phrase");
+    c += ffeature_int(sp, LISP_NUM_SYLS_IN_PHRASE);
     return val_string_n(c);
 }
 
@@ -301,9 +303,9 @@ static const cst_val *lisp_total_words(const cst_item *phrase)
     while (item_next(fp) != NULL) fp = item_next(fp);
     for (c = 0; sp && (!item_equal(sp, fp)) && (c < CST_CONST_INT_MAX); sp = item_next(sp))
     {
-        c += ffeature_int(sp, "lisp_num_words_in_phrase");
+        c += ffeature_int(sp, LISP_NUM_WORDS_IN_PHRASE);
     }
-    c += ffeature_int(sp, "lisp_num_words_in_phrase");
+    c += ffeature_int(sp, LISP_NUM_WORDS_IN_PHRASE);
     return val_string_n(c);
 }
 
@@ -328,18 +330,18 @@ void us_ff_register_hts(cst_features *ffunctions)
 {
     us_ff_register(ffunctions);
 
-    ff_register(ffunctions, "lisp_distance_to_p_stress",lisp_distance_to_p_stress); /* 21 */
-    ff_register(ffunctions, "lisp_distance_to_n_stress",lisp_distance_to_n_stress); /* 22 */
-    ff_register(ffunctions, "lisp_distance_to_p_accent",lisp_distance_to_p_accent); /* 23 */
-    ff_register(ffunctions, "lisp_distance_to_n_accent",lisp_distance_to_n_accent); /* 24 */
-    ff_register(ffunctions, "words_out",words_out); /* 33 */
-    ff_register(ffunctions, "hts_content_words_in",hts_content_words_in); /* 34 */
-    ff_register(ffunctions, "hts_content_words_out",hts_content_words_out); /* 35 */
-    ff_register(ffunctions, "lisp_distance_to_p_content",lisp_distance_to_p_content); /* 36 */
-    ff_register(ffunctions, "lisp_distance_to_n_content",lisp_distance_to_n_content); /* 37 */
-    ff_register(ffunctions, "lisp_num_syls_in_phrase",lisp_num_syls_in_phrase); /* 38 39 40 59 60 */
-    ff_register(ffunctions, "lisp_num_words_in_phrase",lisp_num_words_in_phrase); /* 41 42 43 61 62 */
-    ff_register(ffunctions, "lisp_total_syls",lisp_total_syls); /* 46 */
-    ff_register(ffunctions, "lisp_total_words",lisp_total_words); /* 47 */
-    ff_register(ffunctions, "lisp_total_phrases",lisp_total_phrases); /* 48 */
+    ff_register(ffunctions, LISP_DISTANCE_TO_P_STRESS,lisp_distance_to_p_stress); /* 21 */
+    ff_register(ffunctions, LISP_DISTANCE_TO_N_STRESS,lisp_distance_to_n_stress); /* 22 */
+    ff_register(ffunctions, LISP_DISTANCE_TO_P_ACCENT,lisp_distance_to_p_accent); /* 23 */
+    ff_register(ffunctions, LISP_DISTANCE_TO_N_ACCENT,lisp_distance_to_n_accent); /* 24 */
+    ff_register(ffunctions, WORDS_OUT,words_out); /* 33 */
+    ff_register(ffunctions, HTS_CONTENT_WORDS_IN,hts_content_words_in); /* 34 */
+    ff_register(ffunctions, HTS_CONTENT_WORDS_OUT,hts_content_words_out); /* 35 */
+    ff_register(ffunctions, LISP_DISTANCE_TO_P_CONTENT,lisp_distance_to_p_content); /* 36 */
+    ff_register(ffunctions, LISP_DISTANCE_TO_N_CONTENT,lisp_distance_to_n_content); /* 37 */
+    ff_register(ffunctions, LISP_NUM_SYLS_IN_PHRASE,lisp_num_syls_in_phrase); /* 38 39 40 59 60 */
+    ff_register(ffunctions, LISP_NUM_WORDS_IN_PHRASE,lisp_num_words_in_phrase); /* 41 42 43 61 62 */
+    ff_register(ffunctions, LISP_TOTAL_SYLS,lisp_total_syls); /* 46 */
+    ff_register(ffunctions, LISP_TOTAL_WORDS,lisp_total_words); /* 47 */
+    ff_register(ffunctions, LISP_TOTAL_PHRASES,lisp_total_phrases); /* 48 */
 }

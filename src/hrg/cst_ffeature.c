@@ -127,7 +127,7 @@ static const void *internal_ff(const cst_item *item,
 	    relation = tk+2; /* the bit past the 'R:' */
 	    pitem = item_as(pitem,relation);
 	}
-	else if (cst_streq(tk,"parent"))
+	else if (cst_streq(tk,"P"))
 	    pitem = item_parent(pitem);
 	else if (cst_streq(tk,"n"))
 	    pitem = item_next(pitem);

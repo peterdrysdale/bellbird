@@ -48,6 +48,7 @@
 #include "cst_phoneset.h"
 #include "cst_regex.h"
 #include "cst_ffeatures.h"
+#include "bell_relation_sym.h"
 #include "us_ffeatures.h"
 
 static const cst_val *gpos(const cst_item *word);
@@ -168,8 +169,8 @@ static const cst_val *content_words_in(const cst_item *p)
 {
     const cst_item *s;
     int i=0;
-    p=item_as(p,"Word");
-    s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.d1"),"Word");
+    p=item_as(p,WORD);
+    s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".R:"PHRASE".P.d1"),WORD);
     for (;s && !item_equal(p,s);s=item_next(s))
     {
         if (!strcmp(ffeature_string(s,"gpos"),"content"))
@@ -183,8 +184,8 @@ static const cst_val *content_words_out(const cst_item *p)
 {
     const cst_item *s;
     int i=0;
-    p=item_as(p,"Word");
-    s=item_as(path_to_item(p,"R:SylStructure.R:Phrase.parent.dn"),"Word");
+    p=item_as(p,WORD);
+    s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".R:"PHRASE".P.dn"),WORD);
     for (;s && !item_equal(p,s);p=item_next(p))
     {
         if (!strcmp(ffeature_string(p,"gpos"),"content"))
@@ -196,7 +197,7 @@ static const cst_val *content_words_out(const cst_item *p)
 
 static const cst_val *lisp_cg_content_words_in_phrase(const cst_item *p)
 {
-	return float_val(ffeature_float(p,"R:SylStructure.parent.parent.R:Word.content_words_in") + ffeature_float(p,"R:SylStructure.parent.parent.R:Word.content_words_out")) ;//- (strcmp(ffeature_string(p,"R:SylStructure.parent.parent.R:Word.gpos"),"content")==0?1:0));
+	return float_val(ffeature_float(p,"R:"SYLSTRUCTURE".P.P.R:"WORD".content_words_in") + ffeature_float(p,"R:"SYLSTRUCTURE".P.P.R:"WORD".content_words_out")) ;//- (strcmp(ffeature_string(p,"R:"SYLSTRUCTURE".P.P.R:"WORD".gpos"),"content")==0?1:0));
 }
 
 
