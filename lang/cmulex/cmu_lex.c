@@ -60,56 +60,6 @@ static int cmu_is_silence(const char *p);
 static int cmu_has_vowel_in_list(const cst_val *v);
 static int cmu_has_vowel_in_syl(const cst_item *i);
 
-static const char * const addenda0[] = { "p,", NULL };
-static const char * const addenda1[] = { "p.", NULL };
-static const char * const addenda2[] = { "p(", NULL };
-static const char * const addenda3[] = { "p)", NULL };
-static const char * const addenda4[] = { "p[", NULL };
-static const char * const addenda5[] = { "p]", NULL };
-static const char * const addenda6[] = { "p{", NULL };
-static const char * const addenda7[] = { "p}", NULL };
-static const char * const addenda8[] = { "p:", NULL };
-static const char * const addenda9[] = { "p;", NULL };
-static const char * const addenda10[] = { "p?", NULL};
-static const char * const addenda11[] = { "p!", NULL };
-static const char * const addenda12[] = { "p'",NULL};
-static const char * const addenda13[] = { "p`",NULL};
-static const char * const addenda14[] = { "p\"",NULL};
-static const char * const addenda15[] = { "p-",NULL};
-static const char * const addenda16[] = { "p<",NULL};
-static const char * const addenda17[] = { "p>",NULL};
-static const char * const addenda18[] = { "s's","z",NULL};
-static const char * const addenda19[] = { "nim","ay1","m",NULL};
-static const char * const addenda20[] = { "nin","ih","n",NULL};
-static const char * const addenda21[] = { "nto","t","ax",NULL};
-static const char * const addenda22[] = { "0_a","ey",NULL};
-
-static const char * const * const addenda[] = {
-    addenda0,
-    addenda1,
-    addenda2,
-    addenda3,
-    addenda4,
-    addenda5,
-    addenda6,
-    addenda7,
-    addenda8,
-    addenda9,
-    addenda10,
-    addenda11,
-    addenda12,
-    addenda13,
-    addenda14,
-    addenda15,
-    addenda16,
-    addenda17,
-    addenda18,
-    addenda19,
-    addenda20,
-    addenda21,
-    addenda22,
-    NULL };
-
 static int cmu_is_silence(const char *p)
 {
     if (cst_streq(p,"pau"))
@@ -279,7 +229,6 @@ cst_lexicon *cmu_lex_init()
     cmu_lex.num_bytes = cmu_lex_num_bytes;
     cmu_lex.phone_table = (char **) cmu_lex_phone_table;
     cmu_lex.syl_boundary = cmu_syl_boundary_mo;
-    cmu_lex.addenda = (char ***) addenda;
     cmu_lex.lts_rule_set = (cst_lts_rules *) &cmu_lts_rules;
 
     cmu_lex.phone_hufftable = cmu_lex_phones_huff_table;

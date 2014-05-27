@@ -59,7 +59,6 @@ typedef struct lexicon_struct {
     
     cst_val *(*lts_function)(const struct lexicon_struct *l, const char *word, const char *pos);
 
-    char ***addenda;
     /* ngram frequency table used for packed entries */
     const char * const *phone_hufftable;
     const char * const *entry_hufftable;

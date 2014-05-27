@@ -53,9 +53,6 @@ CST_VAL_REGISTER_TYPE_NODEL(lexicon,cst_lexicon)
 
 #define WP_SIZE 64
 
-static cst_val *lex_lookup_addenda(const char *wp,const cst_lexicon *l,
-                                   int *found);
-
 static int lex_match_entry(const char *a, const char *b);
 static int lex_lookup_bsearch(const cst_lexicon *l,const char *word);
 static int find_full_match(const cst_lexicon *l,
@@ -183,7 +180,7 @@ cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
 int in_lex(const cst_lexicon *l, const char *word, const char *pos)
 {
     /* return TRUE is its in the lexicon */
-    int r = FALSE, i;
+    int r = FALSE;
     char *wp;
     size_t wordlen;
 
@@ -191,17 +188,7 @@ int in_lex(const cst_lexicon *l, const char *word, const char *pos)
     wp = cst_alloc(char,wordlen+2);
     bell_snprintf(wp,wordlen+2,"%c%s",(pos ? pos[0] : '0'),word);
 
-    for (i=0; l->addenda && l->addenda[i]; i++)
-    {
-	if (((wp[0] == '0') || (wp[0] == l->addenda[i][0][0])) &&
-	    (cst_streq(wp+1,l->addenda[i][0]+1)))
-	{
-	    r = TRUE;
-	    break;
-	}
-    }
-
-    if (!r && (lex_lookup_bsearch(l,wp) >= 0))
+    if (lex_lookup_bsearch(l,wp) >= 0)
 	r = TRUE;
 
     cst_free(wp);
@@ -215,70 +202,37 @@ cst_val *lex_lookup(const cst_lexicon *l, const char *word, const char *pos)
     const char *q;
     char *wp;
     cst_val *phones = 0;
-    int found = FALSE;
     size_t wordlen;
 
     wordlen = cst_strlen(word);
     wp = cst_alloc(char,wordlen+2);
     bell_snprintf(wp,wordlen+2,"%c%s",(pos ? pos[0] : '0'),word);
 
-    if (l->addenda)
-	phones = lex_lookup_addenda(wp,l,&found);
+    index = lex_lookup_bsearch(l,wp);
 
-    if (!found)
+    if (index >= 0)
     {
-	index = lex_lookup_bsearch(l,wp);
+        for (p=index-2; l->data[p]; p--)
+            for (q=l->phone_hufftable[l->data[p]]; *q; q++)
+                phones = cons_val(string_val(l->phone_table[(unsigned char)*q]),
+                                 phones);
 
-	if (index >= 0)
-	{
-            for (p=index-2; l->data[p]; p--)
-                for (q=l->phone_hufftable[l->data[p]]; *q; q++)
-                    phones = cons_val(string_val(l->phone_table[(unsigned char)*q]),
-                                     phones);
-
-	    phones = val_reverse(phones);
-	}
-	else if (l->lts_function)
-	{
-	    phones = (l->lts_function)(l,word,"");
-	}
-	else if (l->lts_rule_set)
-	{
-	    phones = lts_apply(word,
-			       "",  /* more features if we had them */
-			       l->lts_rule_set);
-	}
+        phones = val_reverse(phones);
+    }
+    else if (l->lts_function)
+    {
+        phones = (l->lts_function)(l,word,"");
+    }
+    else if (l->lts_rule_set)
+    {
+        phones = lts_apply(word,
+                          "",  /* more features if we had them */
+                          l->lts_rule_set);
     }
 
     cst_free(wp);
     
     return phones;
-}
-
-static cst_val *lex_lookup_addenda(const char *wp,const cst_lexicon *l, 
-				   int *found)
-{
-    /* For those other words */
-    int i,j;
-    cst_val *phones;
-    
-    phones = NULL;
-
-    for (i=0; l->addenda[i]; i++)
-    {
-	if (((wp[0] == '0') || 
-             (wp[0] == l->addenda[i][0][0]) || 
-             (l->addenda[i][0][0] == '0')) &&
-	    (cst_streq(wp+1,l->addenda[i][0]+1)))
-	{
-	    for (j=1; l->addenda[i][j]; j++)
-		phones = cons_val(string_val(l->addenda[i][j]),phones);
-	    *found = TRUE;
-	    return val_reverse(phones);
-	}
-    }
-    
-    return NULL;
 }
 
 static int lex_uncompress_word(char *ucword,int p,const cst_lexicon *l)
