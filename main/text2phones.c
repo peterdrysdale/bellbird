@@ -45,24 +45,17 @@
 /*************************************************************************/
 
 #include <stdio.h>
-#include <string.h>
-#include <sys/time.h>
-#include <unistd.h>
 
 #include "cst_voice.h"
 #include "cst_utterance.h"
 #include "cst_utt_utils.h"
 #include "flite.h"
-#include "cst_tokenstream.h"
 #include "cst_features.h"
-#include "cst_error.h"
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 
 #include "../lang/usenglish/usenglish.h"
 #include "../lang/cmulex/cmu_lex.h"
-
-static cst_voice *cmu_us_no_wave = NULL;
 
 static cst_utterance *no_wave_synth(cst_utterance *u)
 {
@@ -84,65 +77,35 @@ static cst_voice *register_cmu_us_no_wave(void)
     lex = cmu_lex_init();
     feat_set(v->features,"lexicon",lexicon_val(lex));
 
-    /* Intonation */
-    feat_set_float(v->features,"int_f0_target_mean",95.0);
-    feat_set_float(v->features,"int_f0_target_stddev",11.0);
-
-    feat_set_float(v->features,"duration_stretch",1.1); 
-
     /* Post lexical rules */
     feat_set(v->features,"postlex_func",uttfunc_val(lex->postlex));
 
-    /* Waveform synthesis: diphone_synth */
+    /* Waveform synthesis: no_wave_synth */
     feat_set(v->features,"wave_synth_func",uttfunc_val(&no_wave_synth));
 
-    cmu_us_no_wave = v;
-
-    return cmu_us_no_wave;
-}
-
-static void t2p_usage()
-{
-    printf("text2phones: text to phones test program\n");
-    printf("usage: text2phones \"word word word\"\n");
+    return v;
 }
 
 int main(int argc, char **argv)
 {
-    cst_val *files = NULL;
-    cst_features *args=new_features();
     cst_voice *v;
     cst_utterance *u;
     cst_item *s;
-    const char *text, *name;
-    int i;
+    const char *name;
 
-    if (argc == 1 || cst_streq(argv[1],"-h") || cst_streq(argv[1],"--help") ||
+    if (argc != 2 || cst_streq(argv[1],"-h") || cst_streq(argv[1],"--help") ||
         cst_streq(argv[1],"-?"))
     {
-	    t2p_usage();
-            return 0;
+        printf("text2phones: text to phones test program\n");
+        printf("usage: text2phones \"word word word\"\n");
+        return 0;
     }
 
-    for (i=1; i<argc; i++)
-    {
-	files = cons_val(string_val(argv[i]),files);
-    }
-    val_reverse(files);
-
-    if (files)
-	text = val_string(val_car(files));
-    else
-    {
-	fprintf(stderr,"no text specified\n");
-	exit(-1);
-    }
-    
     v = register_cmu_us_no_wave();
 
     u = new_utterance();
-    utt_set_input_text(u,text);
-    u=flite_do_synth(u, v, utt_synth);
+    utt_set_input_text(u,argv[1]);
+    u = flite_do_synth(u, v, utt_synth);
 
     for (s=relation_head(utt_relation(u,SEGMENT));
 	 s;
@@ -160,8 +123,6 @@ int main(int argc, char **argv)
     printf("\n");
 
     delete_utterance(u);
-    delete_features(args);
-    delete_val(files);
     delete_voice(v);
     
     return 0;
