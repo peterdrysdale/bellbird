@@ -408,21 +408,12 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
 	if (item_feat_present(item_parent(item_as(word, TOKEN)), "phones"))
         {
             vpn = item_feat(item_parent(item_as(word, TOKEN)), "phones");
-            if (cst_val_consp(vpn))
-            {   /* for SAPI ?? */
-                /* awb oct11: this seems wrong -- */
-                /* not sure SAPI still (ever) works Oct11 */
-                phones = (cst_val *) vpn;  
-            }
+            dp = 1;
+            if (cst_streq(val_string(vpn),
+                          ffeature_string(word,"p.R:"TOKEN".P.phones")))
+                phones = NULL; /* Already given these phones */
             else
-            {
-                dp = 1;
-                if (cst_streq(val_string(vpn),
-                              ffeature_string(word,"p.R:"TOKEN".P.phones")))
-                    phones = NULL; /* Already given these phones */
-                else
-                    phones = val_readlist_string(val_string(vpn));
-            }
+                phones = val_readlist_string(val_string(vpn));
         }
 	else
 	{
