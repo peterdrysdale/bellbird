@@ -256,19 +256,6 @@ int cst_val_consp(const cst_val *v)
     /* with non-zero values in the least significant bit of the first */
     /* address in the cell (this is a standard technique used on Lisp */
     /* machines)                                                      */
-#if 0
-    void *t;
-    int t1;
-
-    /* Hmm this still isn't right (it can be) but this isn't it */
-    t = CST_VAL_CAR(v);
-    t1 = *(int *)&t;
-
-    if ((t1&0x1) == 0)
-	return TRUE;
-    else
-	return FALSE;
-#endif
     const cst_val_atom *t;
 
     t = (const cst_val_atom *)v;
