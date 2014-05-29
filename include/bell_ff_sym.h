@@ -1,6 +1,10 @@
 #ifndef _BELL_FF_SYM_H_
 #define _BELL_FF_SYM_H_
 
+// These are compact forms of featfunc symbols
+// Using these definitions improves performance of internal_ff
+// The values themselves are irrelevant it is only required they are unique
+
 #define PH_VC "\x01"
 #define PH_VLNG "\x02"
 #define PH_VHEIGHT "\x03"
@@ -63,7 +67,7 @@
 #define SYL_VOWEL "\x55"
 #define SYL_NUMPHONES "\x56"
 
-// US HTS symbols
+// en_US HTS symbols
 #define LISP_DISTANCE_TO_P_STRESS "\x60"
 #define LISP_DISTANCE_TO_N_STRESS "\x61"
 #define LISP_DISTANCE_TO_P_ACCENT "\x62"
@@ -78,5 +82,14 @@
 #define LISP_TOTAL_SYLS "\x6b"
 #define LISP_TOTAL_WORDS "\x6c"
 #define LISP_TOTAL_PHRASES "\x6d"
+
+// en_US symbols
+#define GPOS "\x70"
+#define NUM_DIGITS "\x71"
+#define MONTH_RANGE "\x72"
+#define TOKEN_POS_GUESS "\x73"
+#define CONTENT_WORDS_IN "\x74"
+#define CONTENT_WORDS_OUT "\x75"
+#define LISP_CG_CONTENT_WORDS_IN_PHRASE "\x76"
 
 #endif

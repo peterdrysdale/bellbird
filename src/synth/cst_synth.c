@@ -333,7 +333,7 @@ cst_utterance *cart_intonation(cst_utterance *u)
 	    item_set_string(s,"endtone",val_string(v));
 	DPRINTF(0,("word %s gpos %s stress %s ssyl_in %s ssyl_out %s accent %s endtone %s\n",
 		   ffeature_string(s,"R:"SYLSTRUCTURE".P.name"),
-		   ffeature_string(s,"R:"SYLSTRUCTURE".P.gpos"),
+		   ffeature_string(s,"R:"SYLSTRUCTURE".P."GPOS),
 		   ffeature_string(s,"stress"),
 		   ffeature_string(s,SSYL_IN),
 		   ffeature_string(s,SSYL_OUT),
@@ -400,7 +400,7 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
         /*        printf("awb_debug word %s pos %s gpos %s\n",
                item_feat_string(word,"name"),
                pos,
-               ffeature_string(word,"gpos")); */
+               ffeature_string(word,GPOS)); */
 
 	/* FIXME: need to make sure that textanalysis won't split
            tokens with explicit pronunciation (or that it will

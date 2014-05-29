@@ -170,7 +170,7 @@ static const void *internal_ff(const cst_item *item,
                        get_param_string(pitem->contents->features,"name","noname"));
             else
             {
-                if (cst_streq("gpos",tk))
+                if (cst_streq(GPOS,tk))
                     printf("awb_debug2\n");
                 printf("awb_debug didn't find %s %s\n",tk,featpath);
             }

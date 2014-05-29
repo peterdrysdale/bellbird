@@ -296,6 +296,8 @@ const char * const ff_translation[] =
     "syllable_duration",      SYLLABLE_DURATION,
     "syl_vowel",              SYL_VOWEL,
     "syl_numphones",          SYL_NUMPHONES,
+    "gpos",                   GPOS,
+    "lisp_cg_content_words_in_phrase",   LISP_CG_CONTENT_WORDS_IN_PHRASE,
     NULL,                     NULL
 };
 

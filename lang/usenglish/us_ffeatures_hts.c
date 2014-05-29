@@ -193,7 +193,7 @@ static const cst_val *hts_content_words_in(const cst_item *word)
     fs = path_to_item(word,"R:"PHRASE".P.d1");
     for (c=0,p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); p=item_prev(p))
     {
-        if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
+        if (cst_streq("content", ffeature_string(p,GPOS))) c++;
     }
     return val_string_n(c);  /* its used randomly as int and float */
 }
@@ -207,7 +207,7 @@ static const cst_val *hts_content_words_out(const cst_item *word)
     fs = path_to_item(word,"R:"PHRASE".P.dn");
     for (c=0, p=word; p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX); p=item_next(p))
     {
-        if (cst_streq("content", ffeature_string(p,"gpos"))) c++;
+        if (cst_streq("content", ffeature_string(p,GPOS))) c++;
     }
     return val_string_n(c);  /* its used randomly as int and float */
 }

@@ -157,20 +157,20 @@ static const cst_cart_node us_int_tone_cart_nodes[] = {
 
 static const char * const us_int_tone_feat_table[] = {
 "lisp_syl_yn_question",
-"R:"SYLSTRUCTURE".P.gpos",
+"R:"SYLSTRUCTURE".P."GPOS,
 SSYL_IN,
 "p."OLD_SYL_BREAK,
 "n."OLD_SYL_BREAK,
 OLD_SYL_BREAK,
-"R:"SYLSTRUCTURE".P.R:"WORD".n.gpos",
-"R:"SYLSTRUCTURE".P.R:"WORD".p.gpos",
+"R:"SYLSTRUCTURE".P.R:"WORD".n."GPOS,
+"R:"SYLSTRUCTURE".P.R:"WORD".p."GPOS,
 SYL_IN,
 SUB_PHRASES,
 "n.stress",
-"R:"SYLSTRUCTURE".P.R:"WORD".n.n.gpos",
+"R:"SYLSTRUCTURE".P.R:"WORD".n.n."GPOS,
 "p.p."OLD_SYL_BREAK,
 "n.n."OLD_SYL_BREAK,
-"R:"SYLSTRUCTURE".P.R:"WORD".p.p.gpos",
+"R:"SYLSTRUCTURE".P.R:"WORD".p.p."GPOS,
 NULL };
 
 const cst_cart us_int_tone_cart = {

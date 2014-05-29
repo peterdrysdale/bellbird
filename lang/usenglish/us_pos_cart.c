@@ -5,6 +5,7 @@
 #include "cst_string.h"
 #include "cst_cart.h"
 #include "cst_regex.h"
+#include "bell_ff_sym.h"
 #include "us_pos_cart.h"
 
 static const cst_cart_node us_pos_cart_nodes[] = {
@@ -379,14 +380,14 @@ static const cst_cart_node us_pos_cart_nodes[] = {
 
 
 static const char * const us_pos_feat_table[] = {
-"gpos",
+GPOS,
 "name",
 "p.name",
-"n.gpos",
-"p.gpos",
+"n."GPOS,
+"p."GPOS,
 "n.n.name",
-"p.p.gpos",
-"n.n.gpos",
+"p.p."GPOS,
+"n.n."GPOS,
 "p.p.name",
 "n.name",
 NULL };

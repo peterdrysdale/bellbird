@@ -5,6 +5,7 @@
 #include "cst_string.h"
 #include "cst_cart.h"
 #include "cst_regex.h"
+#include "bell_ff_sym.h"
 #include "us_nums_cart.h"
 extern const cst_cart us_nums_cart;
 
@@ -112,12 +113,12 @@ static const cst_cart_node us_nums_cart_nodes[] = {
 
 
 static const char * const us_nums_feat_table[] = {
-"num_digits",
-"p.token_pos_guess",
-"month_range",
-"n.token_pos_guess",
-"p.p.token_pos_guess",
-"n.n.token_pos_guess",
+NUM_DIGITS,
+"p."TOKEN_POS_GUESS,
+MONTH_RANGE,
+"n."TOKEN_POS_GUESS,
+"p.p."TOKEN_POS_GUESS,
+"n.n."TOKEN_POS_GUESS,
 "name",
 NULL };
 
