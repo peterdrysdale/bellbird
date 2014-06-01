@@ -127,19 +127,19 @@ static const void *internal_ff(const cst_item *item,
 	    relation = tk+2; /* the bit past the 'R:' */
 	    pitem = item_as(pitem,relation);
 	}
-	else if (cst_streq(tk,"P"))
+	else if (tk[0]=='P' && tk[1]=='\0')
 	    pitem = item_parent(pitem);
-	else if (cst_streq(tk,"n"))
+	else if (tk[0]=='n' && tk[1]=='\0')
 	    pitem = item_next(pitem);
-	else if (cst_streq(tk,"p"))
+	else if (tk[0]=='p' && tk[1]=='\0')
 	    pitem = item_prev(pitem);
-	else if (cst_streq(tk,"pp"))
+	else if (tk[0]=='p' && tk[1]=='p' && tk[2]=='\0')
 	    pitem = item_prev(item_prev(pitem));
-	else if (cst_streq(tk,"nn"))
+	else if (tk[0]=='n' && tk[1]=='n' && tk[2]=='\0')
 	    pitem = item_next(item_next(pitem));
-	else if (cst_streq(tk,"d1"))
+	else if (tk[0]=='d' && tk[1]=='1' && tk[2]=='\0')
 	    pitem = item_daughter(pitem);
-	else if (cst_streq(tk,"dn"))
+	else if (tk[0]=='d' && tk[1]=='n' && tk[2]=='\0')
 	    pitem = item_last_daughter(pitem);
 	else
 	{
