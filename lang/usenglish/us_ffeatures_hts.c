@@ -70,11 +70,11 @@ static const cst_val *gpos(const cst_item *word)
     w = item_feat_string(word,"name");
     for (s=0; us_gpos[s]; s++)
     {
-	for (t=1; us_gpos[s][t]; t++)
-	    if (cst_streq(w,val_string(us_gpos[s][t])))
-		return us_gpos[s][0];
+	for (t=0; us_gpos_words[s][t]; t++)
+	    if (cst_streq(w,us_gpos_words[s][t]))
+		return us_gpos[s];
     }
-    return (cst_val *)&val_string_content;
+    return &val_string_content;
 }
 
 /* 21 by Toda-san */

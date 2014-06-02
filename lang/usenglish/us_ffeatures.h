@@ -44,6 +44,7 @@
 
 void us_ff_register(cst_features *ffunctions);
 
-extern const cst_val * const * const us_gpos[];
+extern const cst_val * us_gpos[];
+extern const char * const * const us_gpos_words[];
 
 #endif /* _US_FFEATURES_H */
