@@ -220,6 +220,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
     const char *nsw = "";
     cst_lexicon *lex;
     cst_utterance *utt;
+    int is_in_lex;
     /* printf("token_name %s name %s\n",ITEM_NAME(token),name); */
     /* FIXME: For SAPI and friends, any tokens with explicit
        pronunciations need to be passed through as-is.  This should be
@@ -745,42 +746,46 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 
         cst_free(aaa);
     }
-    else if ((cst_strlen(name) > 1) && (!cst_regex_match(cst_rx_alpha,name))
-              && (!in_lex(lex,name,NULL)) )
-    {   /* its not just alphas */
-	for (i=0; name[i] != '\0'; i++)
-	    if (text_splitable(name,i))
-		break;
-	aaa = cst_strdup(name);
-	aaa[i+1] = '\0';
-	bbb = cst_strdup(&name[i+1]);
-	item_set_string(token,"nsw","nide");
-	r = val_append(us_tokentowords_one(token,aaa),
-		       us_tokentowords_one(token,bbb));
-	cst_free(aaa);
-	cst_free(bbb);
-    }
-    else if ((s = state_name(name,token)))
+    else
     {
-	r = s;
-    }
-    else if ((cst_strlen(name) > 1) && 
-	     (cst_regex_match(cst_rx_alpha,name)) &&
-             (!in_lex(lex,name,NULL)) &&
-	     (!us_aswd(name)))
-        /* Still not quiet right, if there is a user_lex we need to check */
-        /* it too -- but user_lex isn't user setable yet */
-	/* Need common exception list */
-	/* unpronouncable list of alphas */
-	r = en_exp_letters(name);
+        ccc = cst_downcase(name);
+        is_in_lex = in_lex(lex,ccc,NULL);
+        if ((cst_strlen(name) > 1) && (!cst_regex_match(cst_rx_alpha,name))
+                  && (!is_in_lex) )
+        {   /* its not just alphas */
+            for (i=0; name[i] != '\0'; i++)
+	        if (text_splitable(name,i))
+		    break;
+	    aaa = cst_strdup(name);
+	    aaa[i+1] = '\0';
+	    bbb = cst_strdup(&name[i+1]);
+	    item_set_string(token,"nsw","nide");
+	    r = val_append(us_tokentowords_one(token,aaa),
+		           us_tokentowords_one(token,bbb));
+	    cst_free(aaa);
+	    cst_free(bbb);
+        }
+        else if ((s = state_name(name,token)))
+        {
+	    r = s;
+        }
+        else if ((cst_strlen(name) > 1) &&
+	         (cst_regex_match(cst_rx_alpha,name)) &&
+                 (!is_in_lex) &&
+	         (!us_aswd(name)))
+            /* Still not quiet right, if there is a user_lex we need to check */
+            /* it too -- but user_lex isn't user setable yet */
+	    /* Need common exception list */
+	    /* unpronouncable list of alphas */
+	    r = en_exp_letters(name);
 
-    /* buckets of other stuff missing */
+        /* buckets of other stuff missing */
 
-    else  /* just a word */
-    {
-	aaa = cst_downcase(name);
-	r = cons_val(string_val(aaa),0);
-	cst_free(aaa);
+        else  /* just a word */
+        {
+            r = cons_val(string_val(ccc),0);
+        }
+        cst_free(ccc);
     }
     return r;
 }
