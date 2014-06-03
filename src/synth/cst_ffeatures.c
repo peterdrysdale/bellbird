@@ -123,11 +123,11 @@ static const cst_val *cg_state_pos(const cst_item *p)
     const char *name;
     name = item_feat_string(p,"name");
     if (!cst_streq(name,ffeature_string(p,"p.name")))
-        return (cst_val *)&val_string_pos_b;
+        return &val_string_pos_b;
     if (cst_streq(name,ffeature_string(p,"n.name")))
-        return (cst_val *)&val_string_pos_m;
+        return &val_string_pos_m;
     else
-        return (cst_val *)&val_string_pos_e;
+        return &val_string_pos_e;
 }
 
 static const cst_val *cg_state_place(const cst_item *p)
@@ -408,9 +408,9 @@ static const cst_val *seg_onsetcoda(const cst_item *seg)
     {
 	if (cst_streq("+",phone_feature_string(ps,item_feat_string(s,"name"),
 					       "vc")))
-	    return (cst_val *)&val_string_onset;
+	    return &val_string_onset;
     }
-    return (cst_val *)&val_string_coda;
+    return &val_string_coda;
 }
 
 static const cst_val *pos_in_syl(const cst_item *seg)
@@ -430,18 +430,18 @@ static const cst_val *position_type(const cst_item *syl)
     const cst_item *s = item_as(syl,SYLSTRUCTURE);
 
     if (s == 0)
-	return (cst_val *)&val_string_single;
+	return &val_string_single;
     else if (item_next(s) == 0)
     {
 	if (item_prev(s) == 0)
-	    return (cst_val *)&val_string_single;
+	    return &val_string_single;
 	else
-	    return (cst_val *)&val_string_final;
+	    return &val_string_final;
     }
     else if (item_prev(s) == 0)
-	return (cst_val *)&val_string_initial;
+	return &val_string_initial;
     else
-	return (cst_val *)&val_string_mid;
+	return &val_string_mid;
 }
 
 static const cst_val *sub_phrases(const cst_item *syl)

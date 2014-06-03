@@ -72,7 +72,7 @@ void *cst_safe_alloc(int size)
 
 void cst_free(void *p)
 {
-    if (p != NULL) free(p);
+    free(p);
 }
 
 double **bell_alloc_dmatrix(size_t row, size_t col)

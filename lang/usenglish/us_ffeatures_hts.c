@@ -221,7 +221,7 @@ static const cst_val *lisp_distance_to_p_content(const cst_item *syl)
     for (p=item_prev(item_as(syl,PHRASE));p;p=item_prev(p))
     {
         c++;
-        if (gpos(p)==(cst_val*)&val_string_content)
+        if (gpos(p)==&val_string_content)
             break;
     }
     return val_string_n(c);
@@ -236,7 +236,7 @@ static const cst_val *lisp_distance_to_n_content(const cst_item *syl)
     for (p=item_next(item_as(syl,PHRASE));p;p=item_next(p))
     {
         c++;
-        if (gpos(p)==(cst_val*)&val_string_content)
+        if (gpos(p)==&val_string_content)
             break;
     }
     return val_string_n(c);
