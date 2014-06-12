@@ -48,9 +48,6 @@
 #include "bell_file.h"
 
 const cst_string * const cst_ts_default_whitespacesymbols = " \t\n\r";
-const cst_string * const cst_ts_default_singlecharsymbols = "(){}[]";
-const cst_string * const cst_ts_default_prepunctuationsymbols = "\"'`({[";
-const cst_string * const cst_ts_default_postpunctuationsymbols = "\"'`.,:;!?(){}[]";
 
 #define TS_BUFFER_SIZE 256
 #define TS_EOF -1
@@ -80,20 +77,14 @@ static void set_charclass_table(cst_tokenstream *ts)
     return;
 }
 
-void set_charclasses(cst_tokenstream *ts,
-		     const cst_string *whitespace,
-		     const cst_string *singlecharsymbols,
-		     const cst_string *prepunctuation,
-		     const cst_string *postpunctuation)
+void set_singlecharsymbols(cst_tokenstream *ts,
+                     const cst_string *singlecharsymbols)
 {
-    ts->p_whitespacesymbols = 
-	(whitespace ? whitespace : cst_ts_default_whitespacesymbols);
-    ts->p_singlecharsymbols = 
-    (singlecharsymbols ? singlecharsymbols : cst_ts_default_singlecharsymbols);
-    ts->p_prepunctuationsymbols = 
-    (prepunctuation ? prepunctuation : cst_ts_default_prepunctuationsymbols);
-    ts->p_postpunctuationsymbols =
-   (postpunctuation ? postpunctuation : cst_ts_default_postpunctuationsymbols);
+// function for resetting singlecharsymbols for ssml parsing
+// the interface for resetting whitespace, prepunct and postpunct
+// symbols has been removed since it was unused and led to logic errors
+// within the tokenstream module
+    ts->p_singlecharsymbols = singlecharsymbols;
 
     set_charclass_table(ts);
     return;
@@ -112,10 +103,10 @@ static void extend_buffer(cst_string **buffer,int *buffer_max)
     *buffer_max = new_max;
 }			  
 
-static cst_tokenstream *new_tokenstream(const cst_string *whitespace,
-					const cst_string *singlechars,
-					const cst_string *prepunct,
-					const cst_string *postpunct)
+static cst_tokenstream *new_tokenstream(const cst_string *whitespacesymbols,
+					const cst_string *singlecharsymbols,
+					const cst_string *prepunctsymbols,
+					const cst_string *postpunctsymbols)
 {   /* Constructor function */
     cst_tokenstream *ts = cst_alloc(cst_tokenstream,1);
     ts->fd = NULL;
@@ -125,20 +116,35 @@ static cst_tokenstream *new_tokenstream(const cst_string *whitespace,
     ts->token_pos = 0;
     ts->whitespace = cst_alloc(cst_string,TS_BUFFER_SIZE);
     ts->ws_max = TS_BUFFER_SIZE;
-    if (prepunct && prepunct[0])
+    if (prepunctsymbols && prepunctsymbols[0])
     {
         ts->prepunctuation = cst_alloc(cst_string,TS_BUFFER_SIZE);
         ts->prep_max = TS_BUFFER_SIZE;
     }
+    else
+    {
+        ts->prepunctuation = NULL;
+        ts->prep_max = 0;
+    }
     ts->token = cst_alloc(cst_string,TS_BUFFER_SIZE);
     ts->token_max = TS_BUFFER_SIZE;
-    if (postpunct && postpunct[0])
+    if (postpunctsymbols && postpunctsymbols[0])
     {
         ts->postpunctuation = cst_alloc(cst_string,TS_BUFFER_SIZE);
         ts->postp_max = TS_BUFFER_SIZE;
     }
+    else
+    {
+        ts->postpunctuation = NULL;
+        ts->postp_max = 0;
+    }
 
-    set_charclasses(ts,whitespace,singlechars,prepunct,postpunct);
+    ts->p_whitespacesymbols = whitespacesymbols;
+    ts->p_singlecharsymbols = singlecharsymbols;
+    ts->p_prepunctuationsymbols = prepunctsymbols;
+    ts->p_postpunctuationsymbols = postpunctsymbols;
+    set_charclass_table(ts);
+
     ts->current_char = 0;
 
     return ts;
@@ -154,15 +160,15 @@ static void delete_tokenstream(cst_tokenstream *ts)
 }
 
 cst_tokenstream *ts_open(const char *filename,
-			 const cst_string *whitespace,
-			 const cst_string *singlechars,
-			 const cst_string *prepunct,
-			 const cst_string *postpunct)
+			 const cst_string *whitespacesymbols,
+			 const cst_string *singlecharsymbols,
+			 const cst_string *prepunctsymbols,
+			 const cst_string *postpunctsymbols)
 {
-    cst_tokenstream *ts = new_tokenstream(whitespace,
-					  singlechars,
-					  prepunct,
-					  postpunct);
+    cst_tokenstream *ts = new_tokenstream(whitespacesymbols,
+					  singlecharsymbols,
+					  prepunctsymbols,
+					  postpunctsymbols);
 
     if (cst_streq("-",filename))
 	ts->fd = stdin;
@@ -180,15 +186,15 @@ cst_tokenstream *ts_open(const char *filename,
 }
 
 cst_tokenstream *ts_open_string(const cst_string *string,
-				const cst_string *whitespace,
-				const cst_string *singlechars,
-				const cst_string *prepunct,
-				const cst_string *postpunct)
+				const cst_string *whitespacesymbols,
+				const cst_string *singlecharsymbols,
+				const cst_string *prepunctsymbols,
+				const cst_string *postpunctsymbols)
 {
-    cst_tokenstream *ts = new_tokenstream(whitespace,
-					  singlechars,
-					  prepunct,
-					  postpunct);
+    cst_tokenstream *ts = new_tokenstream(whitespacesymbols,
+					  singlecharsymbols,
+					  prepunctsymbols,
+					  postpunctsymbols);
 
     ts->string_buffer = cst_strdup(string);
     ts_getc(ts);
@@ -379,12 +385,17 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
     else /* its not quoted, like to be careful dont you */
     {    /* treat is as standard token                  */
 	/* Get prepunctuation */
-        extend_buffer(&ts->prepunctuation,&ts->prep_max);
-	get_token_sub_part(ts,TS_CHARCLASS_PREPUNCT,
-			   &ts->prepunctuation,
-			   &ts->prep_max);
+        if (ts->current_char != TS_EOF &&
+            TS_CHARCLASS(ts->current_char,TS_CHARCLASS_PREPUNCT,ts))
+            get_token_sub_part(ts,
+                               TS_CHARCLASS_PREPUNCT,
+                               &ts->prepunctuation,
+                               &ts->prep_max);
+        else if (ts->prepunctuation)
+            ts->prepunctuation[0] = '\0';
 	/* Get the symbol itself */
-	if (TS_CHARCLASS(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
+        if (ts->current_char != TS_EOF &&
+            TS_CHARCLASS(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
 	{
 	    if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max);
 	    ts->token[0] = ts->current_char;
@@ -398,7 +409,12 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
 				 &ts->token_max);
 	/* This'll have token *plus* post punctuation in ts->token */
 	/* Get postpunctuation */
-	get_token_postpunctuation(ts);
+        if (ts->postpunctuation)
+        {
+            ts->postpunctuation[0] = '\0';
+            if (ts->p_postpunctuationsymbols[0])
+                get_token_postpunctuation(ts);
+        }
     }
 
     return ts->token;
@@ -443,9 +459,11 @@ const cst_string *ts_get(cst_tokenstream *ts)
     /* This'll have token *plus* post punctuation in ts->token */
     /* Get postpunctuation */
     if (ts->postpunctuation)
+    {
 	ts->postpunctuation[0] = '\0';
-    if (ts->p_postpunctuationsymbols[0])
-        get_token_postpunctuation(ts);
+        if (ts->p_postpunctuationsymbols[0])
+            get_token_postpunctuation(ts);
+    }
 
     return ts->token;
 }

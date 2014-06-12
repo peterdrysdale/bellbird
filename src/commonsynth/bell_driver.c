@@ -246,10 +246,12 @@ float bell_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
     cst_tokenstream *ts;
 
     if ((ts = ts_open(filename,
-         get_param_string(voice->features,"text_whitespace",NULL),
-         get_param_string(voice->features,"text_singlecharsymbols",NULL),
-         get_param_string(voice->features,"text_prepunctuation",NULL),
-         get_param_string(voice->features,"text_postpunctuation",NULL)))
+         get_param_string(voice->features,
+                          "text_whitespace",
+                          cst_ts_default_whitespacesymbols),
+         get_param_string(voice->features,"text_singlecharsymbols",""),
+         get_param_string(voice->features,"text_prepunctuation",""),
+         get_param_string(voice->features,"text_postpunctuation","")))
         == NULL)
     {
         cst_errmsg("Failed to open file \"%s\" for reading\n",filename);

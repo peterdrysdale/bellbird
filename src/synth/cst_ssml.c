@@ -89,11 +89,7 @@ static cst_features *ssml_get_attributes(cst_tokenstream *ts)
     cst_features *a = new_features();
     const char* name, *val;
 
-    set_charclasses(ts,
-                    ts->p_whitespacesymbols,
-                    ssml_singlecharsymbols_inattr,
-                    ts->p_prepunctuationsymbols,
-                    ts->p_postpunctuationsymbols);
+    set_singlecharsymbols(ts, ssml_singlecharsymbols_inattr);
 
     name = ts_get(ts);
     while (!cst_streq(">",name))
@@ -119,11 +115,7 @@ static cst_features *ssml_get_attributes(cst_tokenstream *ts)
         name = ts_get(ts);
     }
 	
-    set_charclasses(ts,
-                    ts->p_whitespacesymbols,
-                    ssml_singlecharsymbols_general,
-                    ts->p_prepunctuationsymbols,
-                    ts->p_postpunctuationsymbols);
+    set_singlecharsymbols(ts, ssml_singlecharsymbols_general);
 
     return a;
 }
@@ -260,12 +252,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     feat_set(ssml_feats,"current_voice",userdata_val(voice));
     feat_set(ssml_feats,"default_voice",userdata_val(voice));
     ssml_word_feats = new_features();
-    set_charclasses(ts,
-                    " \t\n\r",
-                    ssml_singlecharsymbols_general,
-                    get_param_string(voice->features,"text_prepunctuation",""),
-                    get_param_string(voice->features,"text_postpunctuation","")
-                    );
+    set_singlecharsymbols(ts, ssml_singlecharsymbols_general);
 
     if (feat_present(voice->features,"utt_break"))
 	breakfunc = val_breakfunc(feat_val(voice->features,"utt_break"));
@@ -410,10 +397,10 @@ float flite_ssml_file_to_speech(const char *filename,
     float d;
 
     if ((ts = ts_open(filename,
-	      get_param_string(voice->features,"text_whitespace",NULL),
-	      get_param_string(voice->features,"text_singlecharsymbols",NULL),
-	      get_param_string(voice->features,"text_prepunctuation",NULL),
-	      get_param_string(voice->features,"text_postpunctuation",NULL)))
+              cst_ts_default_whitespacesymbols,
+	      get_param_string(voice->features,"text_singlecharsymbols",""),
+	      get_param_string(voice->features,"text_prepunctuation",""),
+	      get_param_string(voice->features,"text_postpunctuation","")))
 	== NULL)
     {
 	cst_errmsg("failed to open file \"%s\" for ssml reading\n",
@@ -454,10 +441,10 @@ float flite_ssml_text_to_speech(const char *text,
     float d;
 
     if ((ts = ts_open_string(text,
-	      get_param_string(voice->features,"text_whitespace",NULL),
-	      get_param_string(voice->features,"text_singlecharsymbols",NULL),
-	      get_param_string(voice->features,"text_prepunctuation",NULL),
-	      get_param_string(voice->features,"text_postpunctuation",NULL)))
+              cst_ts_default_whitespacesymbols,
+	      get_param_string(voice->features,"text_singlecharsymbols",""),
+	      get_param_string(voice->features,"text_prepunctuation",""),
+	      get_param_string(voice->features,"text_postpunctuation","")))
 	== NULL)
     {
 	return 1;
@@ -485,5 +472,4 @@ float flite_ssml_text_to_speech(const char *text,
     return d;
 
 }
-
 

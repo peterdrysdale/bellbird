@@ -80,9 +80,6 @@ typedef struct  cst_tokenstream_struct {
 } cst_tokenstream;
 
 extern const cst_string * const cst_ts_default_whitespacesymbols;
-extern const cst_string * const cst_ts_default_prepunctuationsymbols;
-extern const cst_string * const cst_ts_default_postpunctuationsymbols;
-extern const cst_string * const cst_ts_default_singlecharsymbols;
 
 /* Public functions for tokenstream manipulation */
 cst_tokenstream *ts_open(const char *filename,
@@ -104,11 +101,8 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
 				char quote,
 				char escape);
 
-void set_charclasses(cst_tokenstream *ts,
-		     const cst_string *whitespace,
-		     const cst_string *singlecharsymbols,
-		     const cst_string *prepunctuation,
-		     const cst_string *postpunctuation);
+void set_singlecharsymbols(cst_tokenstream *ts,
+		           const cst_string *singlecharsymbols);
 
 int ts_set_stream_pos(cst_tokenstream *ts,int pos);
 int ts_get_stream_pos(cst_tokenstream *ts);
