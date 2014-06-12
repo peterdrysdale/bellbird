@@ -231,7 +231,7 @@ static HTS_Boolean HTS_Question_load(HTS_Question * question, HTS_File * fp)
             return FALSE;
          }
          pattern = cst_alloc(HTS_Pattern,1);
-         if (question->head != NULL)
+         if (last_pattern)
             last_pattern->next = pattern;
          else                   /* first time */
             question->head = pattern;
@@ -653,7 +653,7 @@ static HTS_Boolean HTS_Model_load_tree(HTS_Model * model, HTS_File * fp)
             HTS_Model_clear(model);
             return FALSE;
          }
-         if (model->question)
+         if (last_question)
             last_question->next = question;
          else
             model->question = question;
@@ -672,7 +672,7 @@ static HTS_Boolean HTS_Model_load_tree(HTS_Model * model, HTS_File * fp)
             HTS_Model_clear(model);
             return FALSE;
          }
-         if (model->tree)
+         if (last_tree)
             last_tree->next = tree;
          else
             model->tree = tree;
