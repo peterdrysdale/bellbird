@@ -137,14 +137,9 @@ void delete_item(cst_item *item)
     }
     if (item->p != NULL) item->p->n = item->n;
     if (item->u != NULL) item->u->d = item->n; /* when first daughter */
-    
-    if (item->relation)
-    {
-	if (item->relation->head == item)
-	    item->relation->head = item->n;
-	if (item->relation->tail == item)
-	    item->relation->tail = item->p;
-    }
+
+    if (item->relation->head == item) item->relation->head = item->n;
+    if (item->relation->tail == item) item->relation->tail = item->p;
 
     /* Delete all the daughters of item */
     for (ds = item->d; ds; ds=nds)
