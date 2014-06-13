@@ -6,7 +6,7 @@ AC_INIT([bellbird], dnl Package name
 AC_CANONICAL_TARGET
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign])
-dnl AM_SILENT_RULES([yes])
+AM_SILENT_RULES([yes])
 AC_CONFIG_HEADERS([include/config.h])
 LT_PREREQ([2.2])
 LT_INIT([disable-static, disable-shared])
