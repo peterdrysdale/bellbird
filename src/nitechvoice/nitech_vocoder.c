@@ -86,7 +86,7 @@ void vocoder (double p, double *mc, int m, cst_wave *w, int samp_offset, nitechP
 {
    double inc, x;
    int i, j, k; 
-   short xs;
+   int16_t xint16;
    double a = gp->alpha;
    
    if (p!=0.0) 
@@ -136,9 +136,9 @@ void vocoder (double p, double *mc, int m, cst_wave *w, int samp_offset, nitechP
       x *= exp(vs->c[0]);
 
       x = mlsadf(x, vs->c, m, a, vs->pd, vs->d1, vs);
-      xs = (short) x;
+      xint16 = (int16_t) x;
 
-      w->samples[samp_offset]=xs;
+      w->samples[samp_offset]=xint16;
       samp_offset++;
 
       if (!--i) {

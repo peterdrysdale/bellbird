@@ -62,6 +62,7 @@
 HTS_ENGINE_H_START;
 
 #include <stdio.h>
+#include <stdint.h>
 
 /* common ---------------------------------------------------------- */
 
@@ -249,7 +250,7 @@ typedef struct _HTS_GStreamSet {
    size_t total_frame;          /* total frame */
    size_t nstream;              /* # of streams */
    HTS_GStream *gstream;        /* generated parameter streams */
-   short *gspeech;             /* generated speech */
+   int16_t *gspeech;             /* generated speech */
 } HTS_GStreamSet;
 
 /* engine ---------------------------------------------------------- */

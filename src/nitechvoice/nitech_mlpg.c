@@ -228,7 +228,7 @@ cst_wave * pdf2speech(PStreamChol *mceppst, PStreamChol *lf0pst, nitechP *gp, Mo
     w=new_wave();
     w->num_channels=1;
     CST_WAVE_SET_NUM_SAMPLES(w,mceppst->T*fperiod);
-    CST_WAVE_SAMPLES(w) = cst_alloc(short,CST_WAVE_NUM_SAMPLES(w));
+    CST_WAVE_SAMPLES(w) = cst_alloc(int16_t,CST_WAVE_NUM_SAMPLES(w));
     CST_WAVE_SET_SAMPLE_RATE(w,vs->rate);
 
     InitPStream(mceppst);

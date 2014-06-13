@@ -6,7 +6,7 @@ AC_INIT([bellbird], dnl Package name
 AC_CANONICAL_TARGET
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign])
-AM_SILENT_RULES([yes])
+dnl AM_SILENT_RULES([yes])
 AC_CONFIG_HEADERS([include/config.h])
 LT_PREREQ([2.2])
 LT_INIT([disable-static, disable-shared])
@@ -38,6 +38,19 @@ LIBBELLBIRD_CMULEX_VERSION="0:0:0"
 AC_SUBST(LIBBELLBIRD_CMULEX_VERSION)
 LIBBELLBIRD_USENGLISH_VERSION="0:0:0"
 AC_SUBST(LIBBELLBIRD_USENGLISH_VERSION)
+
+dnl 32bit linux systems need _FILE_OFFSET_BITS=64 to access
+dnl files >2Gb. AC_SYS_LARGEFILE only sets _FILE_OFFSET_BITS
+dnl as a #define in config.h. Thus config.h must be the absolutely first
+dnl include in every *.c file which includes stdio.h. If
+dnl it is accidentally left out at some stage in the future it
+dnl can lead to complex to debug problems. We select a less brittle
+dnl solution by forcing it as a command line option for the C compiler
+dnl for affected systems.
+AC_SYS_LARGEFILE
+if test "x$ac_cv_sys_file_offset_bits" = x64; then
+  CFLAGS=$CFLAGS" -D_FILE_OFFSET_BITS=64"
+fi
 
 dnl determine audio type or use none if none supported on this platform
 AUDIODRIVER=none

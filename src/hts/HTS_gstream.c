@@ -103,7 +103,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
       for (j = 0; j < gss->total_frame; j++)
          gss->gstream[i].par[j] = cst_alloc(double,gss->gstream[i].vector_length);
    }
-   gss->gspeech = cst_alloc(short,gss->total_nsample);
+   gss->gspeech = cst_alloc(int16_t,gss->total_nsample);
 
    /* copy generated parameter */
    for (i = 0; i < gss->nstream; i++) {
@@ -164,11 +164,11 @@ size_t HTS_GStreamSet_get_total_nsamples(HTS_GStreamSet * gss)
    return gss->total_nsample;
 }
 
-short * HTS_GStreamSet_get_speech_array(HTS_GStreamSet * gss)
+int16_t * HTS_GStreamSet_get_speech_array(HTS_GStreamSet * gss)
 {
 // Transfer ownership of generated speech array to caller
 // Call HTS_GStreamSet_get_total_nsamples() first to know how many samples are received by caller
-    short * retval;
+    int16_t * retval;
 
     retval = gss->gspeech;
     gss->gspeech = NULL; // GStreamSet no longer owns this array

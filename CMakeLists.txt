@@ -1,6 +1,4 @@
 # The projects name is bellbird.
-# This is a quick and dirty experimental build system for developers.
-# Users are not recommended to use this system at the current time.
 PROJECT(BELLBIRD C)
 
 if( NOT VERSION )
@@ -13,6 +11,14 @@ if( COMMAND cmake_policy )
     cmake_policy( SET CMP0005 NEW )
 endif( COMMAND cmake_policy)
 SET( CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts )
+
+# Check for 32bit linux systems which require _FILE_OFFSET_BITS
+# set to be able to read and write files >2Gb
+INCLUDE(CheckFileOffsetBits)
+CHECK_FILE_OFFSET_BITS()
+if( _FILE_OFFSET_BITS )
+    ADD_DEFINITIONS (-D_FILE_OFFSET_BITS=64)
+endif( _FILE_OFFSET_BITS)
 
 option( ENABLE_ALSA "Build with ALSA support" ON )
 option( ENABLE_O2 "Build with -O2 optimization" ON )

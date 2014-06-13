@@ -46,6 +46,7 @@
 #ifndef _CST_WAVE_H__
 #define _CST_WAVE_H__
 
+#include <stdint.h>
 #include "cst_file.h"
 #include "cst_val.h"
 
@@ -53,17 +54,8 @@ typedef struct  cst_wave_struct {
     int sample_rate;
     int num_samples;
     int num_channels;
-    short *samples;
+    int16_t *samples;
 } cst_wave;
-
-typedef struct  cst_wave_header_struct {
-    const char *type;
-    int hsize;
-    int num_bytes;
-    int sample_rate;
-    int num_samples;
-    int num_channels;
-} cst_wave_header;
 
 cst_wave *new_wave();
 void delete_wave(cst_wave *val);

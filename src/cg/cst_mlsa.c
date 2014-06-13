@@ -427,7 +427,7 @@ static void vocoder(double p, double *mc,
 
 	x = mlsadf(x, vs->c, m, cg_db->mlsa_alpha, vs->pd, vs->d1, vs);
 
-        wav->samples[*pos] = (short)x;
+        wav->samples[*pos] = (int16_t) x;
 	*pos += 1;
 
 	if (!--i) {

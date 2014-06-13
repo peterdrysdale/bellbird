@@ -56,6 +56,6 @@
 #define SWAPSHORT(x) ((((unsigned short)x) & 0xff) << 8 | \
         (((unsigned short)x) & 0xff00) >> 8)
 
-void swap_bytes_short(short * b,int n);
+void swap_bytes_int16(int16_t * b,int n);
 
 #endif
