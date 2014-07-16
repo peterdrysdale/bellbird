@@ -66,6 +66,8 @@ typedef struct _VocoderSetup {
    double pade[11]; //  Pade approximants coefficients
    double *c, *cc, *cinc, *d1;
    double rate;     //  output wave's sample rate
+
+   int d2offset;
    
    int sw;          //  switch for Gaussian random number generator since numbers are thrown in pairs
    double r1, r2, s;//  intermediate values of Gaussian random number generator

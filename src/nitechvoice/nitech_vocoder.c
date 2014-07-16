@@ -64,6 +64,8 @@ void init_vocoder(int m, VocoderSetup *vs)
 
    vs->next =1;
 
+   vs->d2offset = 1;
+
    /* Pade' approximants 4th and 5th order */
    vs->pade[0]=1.0; vs->pade[1]=0.4999273; vs->pade[2]=0.1067005; vs->pade[3]=0.01170221; vs->pade[4]=0.0005656279;
    vs->pade[5]=1.0; vs->pade[6]=0.4999391; vs->pade[7]=0.1107098; vs->pade[8]=0.01369984; vs->pade[9]=0.0009564853;
@@ -71,7 +73,7 @@ void init_vocoder(int m, VocoderSetup *vs)
 
    vs->rate=16000;    // Nitech voices had output sample rate of 16000Hz
                   
-   vs->c = cst_alloc(double,3*(m+1)+3*(vs->pd+1)+vs->pd*(m+2));
+   vs->c = cst_alloc(double,3*(m+1)+3*(vs->pd+1)+vs->pd*(m+4));
    
    vs->p1 = -1;
    vs->sw = 0;        // init random number switch to unused state
@@ -86,7 +88,6 @@ void vocoder (double p, double *mc, int m, cst_wave *w, int samp_offset, nitechP
 {
    double inc, x;
    int i, j, k; 
-   int16_t xint16;
    double a = gp->alpha;
    
    if (p!=0.0) 
@@ -136,9 +137,8 @@ void vocoder (double p, double *mc, int m, cst_wave *w, int samp_offset, nitechP
       x *= exp(vs->c[0]);
 
       x = mlsadf(x, vs->c, m, a, vs->pd, vs->d1, vs);
-      xint16 = (int16_t) x;
 
-      w->samples[samp_offset]=xint16;
+      w->samples[samp_offset] = (int16_t) x;
       samp_offset++;
 
       if (!--i) {

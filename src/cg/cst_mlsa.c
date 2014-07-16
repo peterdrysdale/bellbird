@@ -98,6 +98,9 @@ typedef struct _VocoderSetup {
    double *ir;
    int o;
    int irleng;
+
+// d2 offset to avoid shuffle
+   int d2offset;
    
     /* for MIXED EXCITATION */
     int ME_order;
@@ -138,7 +141,7 @@ static void init_vocoder(double fs, int framel, int m,
     vs->pade[10]=0.00003041721;
 
     vs->rate = fs;
-    vs->c = cst_alloc(double,3 * (m + 1) + 3 * (vs->pd + 1) + vs->pd * (m + 2));
+    vs->c = cst_alloc(double,3 * (m + 1) + 3 * (vs->pd + 1) + vs->pd * (m + 4));
    
     vs->p1 = -1;
     vs->sw = 0;
@@ -148,6 +151,8 @@ static void init_vocoder(double fs, int framel, int m,
     vs->o  = 0;
     vs->d  = NULL;
     vs->irleng= 64;
+
+    vs->d2offset = 1;
    
     // for MIXED EXCITATION
     vs->ME_order = cg_db->ME_order;
@@ -500,8 +505,6 @@ cst_wave *mlsa_resynthesis(const cst_track *params,
                            cst_cg_db *cg_db)
 {
     /* Resynthesizes a wave from given track */
-    cst_wave *wave = 0;
-    int sr = cg_db->sample_rate;
     double shift;
 
     if (params->num_frames > 1)
@@ -513,7 +516,5 @@ cst_wave *mlsa_resynthesis(const cst_track *params,
         shift = 5.0;
     }
 
-    wave = synthesis_body(params,str,sr,shift,cg_db);
-
-    return wave;
+    return synthesis_body(params,str,cg_db->sample_rate,shift,cg_db);
 }

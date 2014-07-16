@@ -52,36 +52,50 @@
 
 #define RANDMAX 32767
 
-static double mlsafir(const double x, const double *b, const int m, const double a, const double aa, double *d)
-{  
+static double mlsafir(const double x, const double *c, const int m, const double a, const double aa, double *d3, const int d2offset, const int offsetend1, const int offsetend2, const int offsetstart2, const int secelement)
+{
+// Filtering but without shuffling history terms.
+// d2offset is index of start of history terms which
+// are stored in a wrap around buffer.
+// Elements d3[0] and d3[m+3] are 'ghost' edge elements
+// to avoid conditionals in stencil (d3[i+1]-d3[i-1])
    double y = 0.0;
    int i;
+   int j = 2; // index for MLSA filter coefficients
 
-   d[0] = x;
-   d[1] = aa*d[0] + a*d[1];
-   for (i=2; i<= m; i++) {
-      d[i] = d[i] + a*(d[i+1]-d[i-1]);
-      y += d[i]*b[i];
+   d3[secelement] = aa*x + a*d3[secelement];
+   for (i=d2offset+2; i<=offsetend1; i++,j++) {
+      d3[i] += a*(d3[i+1]-d3[i-1]);
+      y += d3[i]*c[j];
+   }
+   d3[0] = d3[m+2]; // Update 'ghost' edge element for stencil
+   for (i=offsetstart2; i<=offsetend2; i++,j++) {
+      d3[i] += a*(d3[i+1]-d3[i-1]);
+      y += d3[i]*c[j];
    }
 
-   for (i=m+1; i>1; i--) 
-      d[i] = d[i-1];
+// Copy element which is not shuffled in usual implement. of this function
+   d3[d2offset] = d3[secelement];
+
+// Copy 'ghost' edge elements for stencil in next call of this function
+   d3[0] = d3[m+2];
+   d3[m+3] = d3[1];
 
    return(y);
 }
 
-static double mlsadf1(double x, const double *b, const double a,
-                       const int pd, double *d, const double *ppade)
+static double mlsadf1(double x, const double *c, const double a,
+                       const int pd, double *d1, const double *ppade)
 {
    double v, out = 0.0, *pt, aa;
    int i;
 
    aa = 1 - a*a;
-   pt = &d[pd+1];
+   pt = &d1[pd+1];
 
    for (i=pd; i>=1; i--) {
-      d[i] = aa*pt[i-1] + a*d[i];
-      pt[i] = d[i] * b[1];
+      d1[i] = aa*pt[i-1] + a*d1[i];
+      pt[i] = d1[i] * c[1];
       v = pt[i] * ppade[i];
       x += (1 & i) ? v : -v;
       out += v;
@@ -93,18 +107,35 @@ static double mlsadf1(double x, const double *b, const double a,
    return(out);
 }
 
-static double mlsadf2(double x, const double *b, const int m, const double a,
-                       const int pd, double *d, const double *ppade)
+static double mlsadf2(double x, const double *c, const int m, const double a,
+                       const int pd, double *d2, const double *ppade, int *pd2offset)
 {
-  double v, out = 0.0, *pt;
-  double aa;
-  int i;
-    
-  aa = 1 - a*a;
-   pt = &d[pd * (m+2)];
+// This function and mlsafir() are modified to avoid memory copy
+// operations.
+// This improves performance at the cost of
+// slightly more memory (a few hundred bytes).
+   double v, out = 0.0, *pt;
+   double aa;
+   int i;
+// default values for start and end of mlsafir loops
+   int offsetend1 = m+2;   // end of first loop
+   int offsetend2 = *pd2offset-2; // end of second loop
+   int offsetstart2 = 1;   // start of second loop
+   int secelement = *pd2offset + 1; // index of second element
+// some special cases for loop lengths
+   if (*pd2offset == 1) {
+      offsetend1 = m+1;
+   }
+   if (*pd2offset == m+2) {
+      offsetstart2 = 2;
+      secelement = 1;
+   }
+
+   aa = 1 - a*a;
+   pt = &d2[pd * (m+4)];
 
    for (i=pd; i>=1; i--) {
-       pt[i] = mlsafir (pt[i-1], b, m, a, aa, &d[(i-1)*(m+2)]);
+       pt[i] = mlsafir (pt[i-1], c, m, a, aa, &d2[(i-1)*(m+4)], *pd2offset, offsetend1, offsetend2, offsetstart2, secelement);
 
        v = pt[i] * ppade[i];
 
@@ -115,17 +146,27 @@ static double mlsadf2(double x, const double *b, const int m, const double a,
    pt[0] = x;
    out  += x;
 
+// update index to start of history terms
+   (*pd2offset)--;
+   if (*pd2offset<1) *pd2offset = m+2;
+
    return(out);
 }
 
-static double mlsadf(double x, const double *b, const int m, const double a,
-                      const int pd, double *d, VocoderSetup *vs)
+static double mlsadf(double x, const double *c, const int m, const double a,
+                      const int pd, double *d1, VocoderSetup *vs)
 {
-// the MLSA filter
+// the mel log spectrum approximation (MLSA) digital filter
+// x : input
+// c : MLSA filter coefficients
+// m : order of cepstrum
+// a : alpha, the all-pass constant
+// pd: order of Pade approximation
+// d1: working memory - history terms
    const double *ppade = &(vs->pade[(pd-4)*5]);
     
-   x = mlsadf1 (x, b, a, pd, d, ppade);
-   x = mlsadf2 (x, b, m, a, pd, &d[2*(pd+1)], ppade);
+   x = mlsadf1 (x, c, a, pd, d1, ppade);
+   x = mlsadf2 (x, c, m, a, pd, &d1[2*(pd+1)], ppade, &(vs->d2offset));
 
    return(x);
 }

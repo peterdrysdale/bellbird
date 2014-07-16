@@ -304,6 +304,7 @@ typedef struct _HTS_Vocoder {
    double *postfilter_buff;     /* used in postfiltering */
    size_t postfilter_size;      /* buffer size for postfiltering */
    double *c, *cc, *cinc, *d1;  /* used in the MLSA/MGLSA filter */
+   int    d2offset;             /* start of history terms in wraparound buffer of MLSA filter */
    double *lsp2lpc_buff;        /* used in lsp2lpc */
    size_t lsp2lpc_size;         /* buffer size of lsp2lpc */
    double *gc2gc_buff;          /* used in gc2gc */

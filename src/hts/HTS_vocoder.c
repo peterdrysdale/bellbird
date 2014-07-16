@@ -113,38 +113,50 @@ static void HTS_movem(double *a, double *b, const int nitem)
    }
 }
 
-/* HTS_mlsafir: sub functions for MLSA filter */
-static double HTS_mlsafir(const double x, const double *b, const int m, const double a, const double aa, double *d)
+static double mlsafir(const double x, const double *c, const int m, const double a, const double aa, double *d3, const int d2offset, const int offsetend1, const int offsetend2, const int offsetstart2, const int secelement)
 {
+// Filtering but without shuffling history terms.
+// d2offset is index of start of history terms which
+// are stored in a wrap around buffer.
+// Elements d3[0] and d3[m+3] are 'ghost' edge elements
+// to avoid conditionals in stencil (d3[i+1]-d3[i-1])
    double y = 0.0;
    int i;
+   int j = 2; // index for MLSA filter coefficients
 
-   d[0] = x;
-   d[1] = aa * d[0] + a * d[1];
-
-   for (i = 2; i <= m; i++)
-   {
-      d[i] += a * (d[i + 1] - d[i - 1]);
-      y += d[i] * b[i];
+   d3[secelement] = aa*x + a*d3[secelement];
+   for (i=d2offset+2; i<=offsetend1; i++,j++) {
+      d3[i] += a*(d3[i+1]-d3[i-1]);
+      y += d3[i]*c[j];
    }
-   
-   for (i = m; i > 0; i--)
-      d[i+1] = d[i];
+   d3[0] = d3[m+2]; // Update 'ghost' edge element for stencil
+   for (i=offsetstart2; i<=offsetend2; i++,j++) {
+      d3[i] += a*(d3[i+1]-d3[i-1]);
+      y += d3[i]*c[j];
+   }
 
-   return (y);
+// Copy element which is not shuffled in usual implement. of this function
+   d3[d2offset] = d3[secelement];
+
+// Copy 'ghost' edge elements for stencil in next call of this function
+   d3[0] = d3[m+2];
+   d3[m+3] = d3[1];
+
+   return(y);
 }
 
-/* HTS_mlsadf1: sub functions for MLSA filter */
-static double HTS_mlsadf1(double x, const double *b, const double a, const double aa, const int pd, double *d, const double *ppade)
+static double mlsadf1(double x, const double *c, const double a,
+                       const int pd, double *d1, const double *ppade)
 {
-   double v, out = 0.0, *pt;
+   double v, out = 0.0, *pt, aa;
    int i;
 
-   pt = &d[pd + 1];
+   aa = 1 - a*a;
+   pt = &d1[pd+1];
 
-   for (i = pd; i >= 1; i--) {
-      d[i] = aa * pt[i - 1] + a * d[i];
-      pt[i] = d[i] * b[1];
+   for (i=pd; i>=1; i--) {
+      d1[i] = aa*pt[i-1] + a*d1[i];
+      pt[i] = d1[i] * c[1];
       v = pt[i] * ppade[i];
       x += (1 & i) ? v : -v;
       out += v;
@@ -153,39 +165,63 @@ static double HTS_mlsadf1(double x, const double *b, const double a, const doubl
    pt[0] = x;
    out += x;
 
-   return (out);
+   return(out);
 }
 
-/* HTS_mlsadf2: sub functions for MLSA filter */
-static double HTS_mlsadf2(double x, const double *b, const int m, const double a, const double aa, const int pd, double *d, const double *ppade)
+static double mlsadf2(double x, const double *c, const int m, const double a,
+                       const int pd, double *d2, const double *ppade, int *pd2offset)
 {
+// This function and mlsafir() are modified to avoid memory copy
+// operations.
+// This improves performance at the cost of
+// slightly more memory (a few hundred bytes).
    double v, out = 0.0, *pt;
+   double aa;
    int i;
+// default values for start and end of mlsafir loops
+   int offsetend1 = m+2;   // end of first loop
+   int offsetend2 = *pd2offset-2; // end of second loop
+   int offsetstart2 = 1;   // start of second loop
+   int secelement = *pd2offset + 1; // index of second element
+// some special cases for loop lengths
+   if (*pd2offset == 1) {
+      offsetend1 = m+1;
+   }
+   if (*pd2offset == m+2) {
+      offsetstart2 = 2;
+      secelement = 1;
+   }
 
-   pt = &d[pd * (m + 2)];
+   aa = 1 - a*a;
+   pt = &d2[pd * (m+4)];
 
-   for (i = pd; i >= 1; i--) {
-      pt[i] = HTS_mlsafir(pt[i - 1], b, m, a, aa, &d[(i - 1) * (m + 2)]);
-      v = pt[i] * ppade[i];
+   for (i=pd; i>=1; i--) {
+       pt[i] = mlsafir (pt[i-1], c, m, a, aa, &d2[(i-1)*(m+4)], *pd2offset, offsetend1, offsetend2, offsetstart2, secelement);
 
-      x += (1 & i) ? v : -v;
-      out += v;
+       v = pt[i] * ppade[i];
+
+       x  += (1&i) ? v : -v;
+       out += v;
    }
 
    pt[0] = x;
-   out += x;
+   out  += x;
 
-   return (out);
+// update index to start of history terms
+   (*pd2offset)--;
+   if (*pd2offset<1) *pd2offset = m+2;
+
+   return(out);
 }
 
 /* HTS_mlsadf: functions for MLSA filter */
-static double HTS_mlsadf(double x, const double *b, const int m, const double a, const int pd, double *d)
+static double HTS_mlsadf(double x, const double *c, const int m, const double a,
+                         const int pd, double *d1, int * pd2offset)
 {
-   const double aa = 1 - a * a;
    const double *ppade = &(HTS_pade[(pd-4)*5]);
 
-   x = HTS_mlsadf1(x, b, a, aa, pd, d, ppade);
-   x = HTS_mlsadf2(x, b, m, a, aa, pd, &d[2 * (pd + 1)], ppade);
+   x = mlsadf1(x, c, a, pd, d1, ppade);
+   x = mlsadf2(x, c, m, a, pd, &d1[2 * (pd + 1)], ppade, pd2offset);
 
    return (x);
 }
@@ -819,7 +855,7 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean
    v->spectrum2en_buff = NULL;
    v->spectrum2en_size = 0;
    if (v->stage == 0) {         /* for MCP */
-      v->c = cst_alloc(double,(m * (3 + PADEORDER) + 5 * PADEORDER + 6));
+      v->c = cst_alloc(double,(m * (3 + PADEORDER) + 7 * PADEORDER + 6));
       v->cc = v->c + m + 1;
       v->cinc = v->cc + m + 1;
       v->d1 = v->cinc + m + 1;
@@ -829,6 +865,7 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean
       v->cinc = v->cc + m + 1;
       v->d1 = v->cinc + m + 1;
    }
+   v->d2offset = 1;
 }
 
 /* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA/MGLSA filster based waveform synthesis */
@@ -888,7 +925,7 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
       if (v->stage == 0) {      /* for MCP */
          if (x != 0.0)
             x *= exp(v->c[0]);
-         x = HTS_mlsadf(x, v->c, m, alpha, PADEORDER, v->d1);
+         x = HTS_mlsadf(x, v->c, m, alpha, PADEORDER, v->d1, &(v->d2offset));
       } else {                  /* for LSP */
          x *= v->c[0];
          x = HTS_mglsadf(x, v->c, m, alpha, v->stage, v->d1);
