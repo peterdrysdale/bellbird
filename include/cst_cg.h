@@ -130,10 +130,6 @@ typedef struct cst_cg_db_struct {
 
 } cst_cg_db;
 
-/* Access model parameters, unpacking them as required */
-#define CG_MODEL_VECTOR(M,N,X,Y)                                        \
-    (M->model_min[Y]+((float)(M->N[X][Y])/65535.0*M->model_range[Y]))
-
 CST_VAL_USER_TYPE_DCLS(cg_db,cst_cg_db)
 void delete_cg_db(cst_cg_db *db);
 

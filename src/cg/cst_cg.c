@@ -63,6 +63,10 @@
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 
+/* Access model parameters, unpacking them as required */
+#define CG_MODEL_VECTOR(M,N,X,Y)                                        \
+    (M->model_min[Y]+((float)(M->N[X][Y])/65535.0*M->model_range[Y]))
+
 CST_VAL_REGISTER_TYPE(cg_db,cst_cg_db)
 
 static cst_utterance *cg_make_hmmstates(cst_utterance *utt);
