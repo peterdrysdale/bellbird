@@ -94,10 +94,6 @@ void delete_cg_db(cst_cg_db *db)
         delete_cart((cst_cart *)(void *)db->param_trees1[i]);
     cst_free((void *)db->param_trees1);
 
-    for (i=0; db->param_trees2 && db->param_trees2[i]; i++)
-        delete_cart((cst_cart *)(void *)db->param_trees2[i]);
-    cst_free((void *)db->param_trees2);
-
     if (db->spamf0)
     {
         delete_cart((cst_cart *)(void *)db->spamf0_accent_tree);
@@ -113,9 +109,6 @@ void delete_cg_db(cst_cg_db *db)
     for (i=0; i<db->num_frames1; i++)
         cst_free((void *)db->model_vectors1[i]);
     cst_free((void *)db->model_vectors1);
-    for (i=0; i<db->num_frames2; i++)
-        cst_free((void *)db->model_vectors2[i]);
-    cst_free((void *)db->model_vectors2);
 
     cst_free((void *)db->model_min);
     cst_free((void *)db->model_range);
@@ -291,7 +284,7 @@ static int voiced_frame(cst_item *m)
 static void cg_smooth_F0(cst_utterance *utt,cst_cg_db *cg_db,
                          cst_track *param_track)
 {
-    /* Smooth F0 and mark unnoived frames as 0.0 */
+    /* Smooth F0 and mark unvoiced frames as 0.0 */
     cst_item *mcep;
     int i, c;
     float l, s;

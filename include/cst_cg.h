@@ -79,7 +79,6 @@ typedef struct cst_cg_db_struct {
     const cst_cart * const *f0_trees; 
     const cst_cart * const *param_trees0; /* single or static */
     const cst_cart * const *param_trees1; /* deltas */
-    const cst_cart * const *param_trees2; /* me str */
 
     const cst_cart *spamf0_accent_tree; /* spam accent tree */
     const cst_cart *spamf0_phrase_tree; /* spam phrase tree */
@@ -92,10 +91,6 @@ typedef struct cst_cg_db_struct {
     int num_channels1;
     int num_frames1;
     const unsigned short * const * model_vectors1;
-
-    int num_channels2;
-    int num_frames2;
-    const unsigned short * const * model_vectors2;
 
     int num_channels_spamf0_accent;
     int num_frames_spamf0_accent;

@@ -528,7 +528,7 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
     db->f0_trees = (const cst_cart**) cst_read_tree_array(fd);
     db->param_trees0 = (const cst_cart**) cst_read_tree_array(fd);
     db->param_trees1 = (const cst_cart**) cst_read_tree_array(fd);
-    db->param_trees2 = (const cst_cart**) cst_read_tree_array(fd);
+    cst_read_int(fd); // dummy read since param_trees2 unused
 
     db->spamf0 = cst_read_int(fd);
     if (db->spamf0)
@@ -545,10 +545,9 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
     db->num_frames1 = cst_read_int(fd);
     db->model_vectors1 = 
         (const unsigned short * const *)cst_read_2d_array(fd);
-    db->num_channels2 = cst_read_int(fd);
-    db->num_frames2 = cst_read_int(fd);
-    db->model_vectors2 = 
-        (const unsigned short * const *)cst_read_2d_array(fd);
+    cst_read_int(fd); // dummy read since num_channels2 unused
+    cst_read_int(fd); // dummy read since num_frames2 unused
+    cst_read_int(fd); // dummy read since model_vectors2 unused
 
     if (db->spamf0)
     {
