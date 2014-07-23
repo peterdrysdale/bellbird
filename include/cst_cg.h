@@ -78,7 +78,6 @@ typedef struct cst_cg_db_struct {
     /* Cluster trees */
     const cst_cart * const *f0_trees; 
     const cst_cart * const *param_trees0; /* single or static */
-    const cst_cart * const *param_trees1; /* deltas */
 
     const cst_cart *spamf0_accent_tree; /* spam accent tree */
     const cst_cart *spamf0_phrase_tree; /* spam phrase tree */
@@ -87,10 +86,6 @@ typedef struct cst_cg_db_struct {
     int num_channels0;
     int num_frames0;
     const unsigned short * const * model_vectors0;
-
-    int num_channels1;
-    int num_frames1;
-    const unsigned short * const * model_vectors1;
 
     int num_channels_spamf0_accent;
     int num_frames_spamf0_accent;
@@ -110,15 +105,11 @@ typedef struct cst_cg_db_struct {
     const char * const * const *phone_states;
 
     /* Other parameters */    
-    int do_mlpg;  /* implies deltas are in the model_vectors */
     float *dynwin;
     int dynwinsize;
 
     float mlsa_alpha;
     float mlsa_beta;
-
-    int multimodel;
-    int mixed_excitation;
 
     /* filters for Mixed Excitation */
     int ME_num;

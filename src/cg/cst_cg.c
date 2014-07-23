@@ -94,10 +94,6 @@ void delete_cg_db(cst_cg_db *db)
         delete_cart((cst_cart *)(void *)db->param_trees0[i]);
     cst_free((void *)db->param_trees0);
 
-    for (i=0; db->param_trees1 && db->param_trees1[i]; i++)
-        delete_cart((cst_cart *)(void *)db->param_trees1[i]);
-    cst_free((void *)db->param_trees1);
-
     if (db->spamf0)
     {
         delete_cart((cst_cart *)(void *)db->spamf0_accent_tree);
@@ -110,9 +106,6 @@ void delete_cg_db(cst_cg_db *db)
     for (i=0; i<db->num_frames0; i++)
         cst_free((void *)db->model_vectors0[i]);
     cst_free((void *)db->model_vectors0);
-    for (i=0; i<db->num_frames1; i++)
-        cst_free((void *)db->model_vectors1[i]);
-    cst_free((void *)db->model_vectors1);
 
     cst_free((void *)db->model_min);
     cst_free((void *)db->model_range);
@@ -347,32 +340,23 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
     cst_track *str_track = NULL;
     cst_item *mcep;
     const cst_cart *mcep_tree, *f0_tree;
-    int i,j,f,p,fd,o;
+    int i,j,f,p,o;
     const char *mname;
     float f0_val;
-    int fff;
     int extra_feats = 0;
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     param_track = new_track();
-    if (cg_db->do_mlpg) /* which should be the default */
-        fff = 1;  /* copy details with stddevs */
-    else
-        fff = 2;  /* copy details without stddevs */
 
     extra_feats = 1;  /* voicing */
-    if (cg_db->mixed_excitation)
-    {
-        extra_feats += 5;
-        str_track = new_track();
-        cst_track_resize(str_track,
-                         UTT_FEAT_INT(utt,"param_track_num_frames"),
-                         5);
-    }
+//  mixed excitation
+    extra_feats += 5;
+    str_track = new_track();
+    cst_track_resize(str_track,UTT_FEAT_INT(utt,"param_track_num_frames"),5);
     
     cst_track_resize(param_track,
                      UTT_FEAT_INT(utt,"param_track_num_frames"),
-                     (cg_db->num_channels0/fff)-
+                     (cg_db->num_channels0)-
                        (2 * extra_feats));/* no voicing or str */
     for (i=0,mcep=UTT_REL_HEAD(utt,MCEP); mcep; i++,mcep=item_next(mcep))
     {
@@ -389,55 +373,23 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
         param_track->frames[i][0] = f0_val;
         /* what about stddev ? */
 
-        if (cg_db->multimodel)
-        {   /* MULTI model */
-            f = val_int(cart_interpret(mcep,cg_db->param_trees0[p]));
-            fd = val_int(cart_interpret(mcep,cg_db->param_trees1[p]));
-            item_set_int(mcep,"clustergen_param_frame",f);
+        /* Predict Spectral */
+        mcep_tree = cg_db->param_trees0[p];
+        f = val_int(cart_interpret(mcep,mcep_tree));
+        item_set_int(mcep,"clustergen_param_frame",f);
 
-            param_track->frames[i][0] = 
-                (param_track->frames[i][0]+
-                 CG_MODEL_VECTOR(cg_db,model_vectors0,f,0)+
-                 CG_MODEL_VECTOR(cg_db,model_vectors1,fd,0))/3.0;
-            for (j=2; j<param_track->num_channels; j++)
-                param_track->frames[i][j] = 
-                    (CG_MODEL_VECTOR(cg_db,model_vectors0,f,(j)*fff)+
-                     CG_MODEL_VECTOR(cg_db,model_vectors1,fd,(j)*fff))/2.0;
-            if (cg_db->mixed_excitation)
-            {
-                o = j;
-                for (j=0; j<5; j++)
-                {
-                    str_track->frames[i][j] =
-                        (CG_MODEL_VECTOR(cg_db,model_vectors0,f,(o+(2*j))*fff)+
-                         CG_MODEL_VECTOR(cg_db,model_vectors1,fd,(o+(2*j))*fff))/2.0;
-                }
-            }
-        }
-        else  
-        {   /* SINGLE model */
-            /* Predict Spectral */
-            mcep_tree = cg_db->param_trees0[p];
-            f = val_int(cart_interpret(mcep,mcep_tree));
-            item_set_int(mcep,"clustergen_param_frame",f);
+        param_track->frames[i][0] = (param_track->frames[i][0]+
+             CG_MODEL_VECTOR(cg_db,model_vectors0,f,0))/2.0;
 
-            param_track->frames[i][0] = 
-                (param_track->frames[i][0]+
-                 CG_MODEL_VECTOR(cg_db,model_vectors0,f,0))/2.0;
-
-            for (j=2; j<param_track->num_channels; j++)
-                param_track->frames[i][j] =
-                    CG_MODEL_VECTOR(cg_db,model_vectors0,f,(j)*fff);
-
-            if (cg_db->mixed_excitation)
-            {
-                o = j;
-                for (j=0; j<5; j++)
-                {
-                    str_track->frames[i][j] =
-                        CG_MODEL_VECTOR(cg_db,model_vectors0,f,(o+(2*j))*fff);
-                }
-            }
+        for (j=2; j<param_track->num_channels; j++)
+            param_track->frames[i][j] =
+                CG_MODEL_VECTOR(cg_db,model_vectors0,f,j);
+//      mixed excitation
+        o = j;
+        for (j=0; j<5; j++)
+        {
+            str_track->frames[i][j] =
+                CG_MODEL_VECTOR(cg_db,model_vectors0,f,o+(2*j));
         }
 
         /* last coefficient is average voicing for cluster */
@@ -449,8 +401,7 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
     cg_smooth_F0(utt,cg_db,param_track);
 
     UTT_SET_FEAT(utt,"param_track",track_val(param_track));
-    if (cg_db->mixed_excitation)
-        UTT_SET_FEAT(utt,"str_track",track_val(str_track));
+    UTT_SET_FEAT(utt,"str_track",track_val(str_track));
 
     return utt;
 }
@@ -465,17 +416,11 @@ static cst_utterance *cg_resynth(cst_utterance *utt)
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));
-    if (cg_db->mixed_excitation)
-        str_track = val_track(UTT_FEAT_VAL(utt,"str_track"));
+    str_track = val_track(UTT_FEAT_VAL(utt,"str_track"));
 
-    if (cg_db->do_mlpg)
-    {
-        smoothed_track = cg_mlpg(param_track, cg_db);
-        w = mlsa_resynthesis(smoothed_track,str_track,cg_db);
-        delete_track(smoothed_track);
-    }
-    else
-        w=mlsa_resynthesis(param_track,str_track,cg_db);
+    smoothed_track = cg_mlpg(param_track, cg_db);
+    w = mlsa_resynthesis(smoothed_track,str_track,cg_db);
+    delete_track(smoothed_track);
 
     if (w == NULL)
     {

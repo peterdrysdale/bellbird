@@ -527,7 +527,11 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
 
     db->f0_trees = (const cst_cart**) cst_read_tree_array(fd);
     db->param_trees0 = (const cst_cart**) cst_read_tree_array(fd);
-    db->param_trees1 = (const cst_cart**) cst_read_tree_array(fd);
+    if (cst_read_int(fd) != 0 ) // dummy read since multimodel is not supported
+    {
+        cst_errmsg("Warning: multimodel voices are not supported\n");
+        cst_errmsg("No publically available voices of this type are known to bellbird\n");
+    }
     cst_read_int(fd); // dummy read since param_trees2 unused
 
     db->spamf0 = cst_read_int(fd);
@@ -541,10 +545,9 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
     db->num_frames0 = cst_read_int(fd);
     db->model_vectors0 = 
         (const unsigned short * const *)cst_read_2d_array(fd);
-    db->num_channels1 = cst_read_int(fd);
-    db->num_frames1 = cst_read_int(fd);
-    db->model_vectors1 = 
-        (const unsigned short * const *)cst_read_2d_array(fd);
+    cst_read_int(fd); // dummy read since multimodel is not supported
+    cst_read_int(fd); // dummy read since multimodel is not supported
+    cst_read_int(fd); // dummy read since multimodel is not supported
     cst_read_int(fd); // dummy read since num_channels2 unused
     cst_read_int(fd); // dummy read since num_frames2 unused
     cst_read_int(fd); // dummy read since model_vectors2 unused
@@ -568,15 +571,21 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
     db->phone_states = 
         (const char * const * const *)cst_read_phone_states(fd);
 
-    db->do_mlpg = cst_read_int(fd);
+    if (cst_read_int(fd) == 0)
+    {
+        cst_errmsg("Warning: only do_mlpg voice are supported");
+    }
     db->dynwin = cst_read_array(fd);
     db->dynwinsize = cst_read_int(fd);
 
     db->mlsa_alpha = cst_read_float(fd);
     db->mlsa_beta = cst_read_float(fd);
 
-    db->multimodel = cst_read_int(fd);
-    db->mixed_excitation = cst_read_int(fd);
+    cst_read_int(fd); // dummy read since multimodel is not supported
+    if (cst_read_int(fd) == 0)
+    {
+        cst_errmsg("Warning: only mixed_excitation voice are supported");
+    }
 
     db->ME_num = cst_read_int(fd);
     db->ME_order = cst_read_int(fd);
