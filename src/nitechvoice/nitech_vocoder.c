@@ -53,6 +53,7 @@
 #include "nitech_hidden.h"
 
 /* NOTE NOTE NOTE - For performance reasons we "include" static code not header here */
+#include "../commonsynth/mlsacore.c"
 #include "../commonsynth/mlsafunc.c"
 
 void init_vocoder(int m, VocoderSetup *vs)

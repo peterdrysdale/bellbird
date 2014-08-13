@@ -116,6 +116,7 @@ typedef struct _VocoderSetup {
 } VocoderSetup;
 
 /* NOTE NOTE NOTE - For performance reasons we "include" static code not header here */
+#include "../commonsynth/mlsacore.c"
 #include "../commonsynth/mlsafunc.c"
 
 static void init_vocoder(double fs, int framel, int m, 
