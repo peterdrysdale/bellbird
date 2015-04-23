@@ -106,7 +106,7 @@ cst_lexicon *cmu_lex_init(void);
 
 static void bellbird_version()
 {
-    printf("  Copyright (c) 1999-2013. Details of copyright may be seen in COPYING file\n");
+    printf("  Copyright (c) 1999-2015. Details of copyright may be seen in COPYING file\n");
     printf("  version: %s \n", PACKAGE_STRING);
 }
 
