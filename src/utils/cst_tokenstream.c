@@ -56,7 +56,6 @@ const cst_string * const cst_ts_default_whitespacesymbols = " \t\n\r";
 #define TS_CHARCLASS_SINGLECHAR  4
 #define TS_CHARCLASS_PREPUNCT    8
 #define TS_CHARCLASS_POSTPUNCT  16
-#define TS_CHARCLASS_QUOTE      32
 #define TS_CHARCLASS(C,CLASS,TS) ((TS)->charclass[(unsigned char)C] & CLASS)
 
 static cst_string ts_getc(cst_tokenstream *ts);
@@ -90,12 +89,20 @@ void set_singlecharsymbols(cst_tokenstream *ts,
     return;
 }
 
-static void extend_buffer(cst_string **buffer,int *buffer_max)
+static void extend_buffer(cst_string **buffer,int *buffer_max, int proposed_max)
 {
+//  Extend buffer length to be of max. of 20% greater or proposed_max
     int new_max;
     cst_string *new_buffer;
 
-    new_max = (*buffer_max)+(*buffer_max)/5;
+    if ((*buffer_max)+(*buffer_max)/5 > proposed_max)
+    {
+        new_max = (*buffer_max)+(*buffer_max)/5;
+    }
+    else
+    {
+        new_max = proposed_max;
+    }
     new_buffer = cst_alloc(cst_string,new_max);
     memmove(new_buffer,*buffer,*buffer_max);
     cst_free(*buffer);
@@ -230,7 +237,7 @@ static void get_token_sub_part(cst_tokenstream *ts,
 	       (!TS_CHARCLASS(ts->current_char,
 			      TS_CHARCLASS_SINGLECHAR,ts))); p++)
     {
-	if (p+1 >= *buffer_max) extend_buffer(buffer,buffer_max);
+	if (p+1 >= *buffer_max) extend_buffer(buffer,buffer_max,p+1);
 	(*buffer)[p] = ts->current_char;
 	ts_getc(ts);
     }
@@ -239,45 +246,24 @@ static void get_token_sub_part(cst_tokenstream *ts,
 
 /* Can't afford dynamically generate this char class so have separater func */
 static void get_token_sub_part_2(cst_tokenstream *ts,
-				 int endclass1,
 				 cst_string **buffer,
 				 int *buffer_max)
+// Get token up until EOF or whitespace or singlechar character.
+// This will include postpunctuation.
 {
     int p;
 
     for (p=0; ((ts->current_char != TS_EOF) &&
-               (!TS_CHARCLASS(ts->current_char,endclass1,ts)) &&
+               (!TS_CHARCLASS(ts->current_char,TS_CHARCLASS_WHITESPACE,ts)) &&
 	       (!TS_CHARCLASS(ts->current_char,
 			      TS_CHARCLASS_SINGLECHAR,ts)));
          p++)
     {
-	if (p+1 >= *buffer_max) extend_buffer(buffer,buffer_max);
+	if (p+1 >= *buffer_max) extend_buffer(buffer,buffer_max,p+1);
 	(*buffer)[p] = ts->current_char;
 	ts_getc(ts);
     }
     (*buffer)[p] = '\0';
-}
-
-static void get_token_postpunctuation(cst_tokenstream *ts)
-{
-    int p,t;
-
-    t = cst_strlen(ts->token);
-    for (p=t;
-	 (p > 0) && 
-	     ((ts->token[p] == '\0') ||
-	      (TS_CHARCLASS(ts->token[p],TS_CHARCLASS_POSTPUNCT,ts)));
-	 p--);
-
-    if (t != p)
-    {
-	if (t-p >= ts->postp_max) 
-	    extend_buffer(&ts->postpunctuation,&ts->postp_max);
-	/* Copy postpunctuation from token */
-	memmove(ts->postpunctuation,&ts->token[p+1],(t-p));
-	/* truncate token at postpunctuation */
-	ts->token[p+1] = '\0';
-    }
 }
 
 int ts_eof(cst_tokenstream *ts)
@@ -341,6 +327,50 @@ static cst_string ts_getc(cst_tokenstream *ts)
     return ts->current_char;
 }
 
+static void extract_postpunctuation(cst_tokenstream *ts)
+{
+//  Remove postpunctuation from ts->token and add
+//  to ts->postpunctuation
+    int p,t;
+
+    ts->postpunctuation[0] = '\0';
+    if (ts->p_postpunctuationsymbols[0])
+    {
+        t = cst_strlen(ts->token);
+        p=t;
+        while (p > 0)
+        {
+            if ( (ts->token[p] == '\0') ||
+                 (TS_CHARCLASS(ts->token[p],TS_CHARCLASS_POSTPUNCT,ts)) )
+            {
+                p--; // check for '\0' or TS_CHARCLASS_POSTPUNCT char
+            }
+            else if ( ((ts->token[p]&0xf8) == 0x98) &&
+                      ((p-2) > 0) &&
+                      (ts->token[p-1] == '\x80') &&
+                      (ts->token[p-2] == '\xe2') )
+            {
+                p -= 3;  //check for utf-8 quotation marks block
+                         //UTF codes points U+2018 -> U+201F
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (t != p)
+        {
+	    if (t-p >= ts->postp_max)
+	        extend_buffer(&ts->postpunctuation,&ts->postp_max,(t-p));
+            /* Copy postpunctuation from token */
+	    memmove(ts->postpunctuation,&ts->token[p+1],(t-p));
+            /* truncate token at postpunctuation */
+            ts->token[p+1] = '\0';
+        }
+    }
+}
+
 const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
 					 char quote,
 					 char escape)
@@ -348,10 +378,6 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
     /* for reading the next quoted token that starts with quote and
        ends with quote, quote may appear only if preceded by escape */
     int p;
-
-    /* Hmm can't change quotes within a ts */
-    ts->charclass[(unsigned int)quote] |= TS_CHARCLASS_QUOTE;
-    ts->charclass[(unsigned int)escape] |= TS_CHARCLASS_QUOTE;
 
     /* skipping whitespace */
     get_token_sub_part(ts,TS_CHARCLASS_WHITESPACE,
@@ -367,14 +393,14 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
              p++)
         {
             if (p >= ts->token_max) 
-                extend_buffer(&ts->token,&ts->token_max);
+                extend_buffer(&ts->token,&ts->token_max,p);
             ts->token[p] = ts->current_char;
             ts_getc(ts);
             if (ts->current_char == escape)
             {
                 ts_get(ts);
                 if (p >= ts->token_max) 
-                    extend_buffer(&ts->token,&ts->token_max);
+                    extend_buffer(&ts->token,&ts->token_max,p);
                 ts->token[p] = ts->current_char;
                 ts_get(ts);
             }
@@ -397,23 +423,17 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
         if (ts->current_char != TS_EOF &&
             TS_CHARCLASS(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
 	{
-	    if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max);
+	    if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max,2);
 	    ts->token[0] = ts->current_char;
 	    ts->token[1] = '\0';
 	    ts_getc(ts);
 	}
 	else
-	    get_token_sub_part_2(ts,
-				 TS_CHARCLASS_WHITESPACE,    /* end class1 */
-				 &ts->token,
-				 &ts->token_max);
+	    get_token_sub_part_2(ts,&ts->token,&ts->token_max);
 	/* This'll have token *plus* post punctuation in ts->token */
-	/* Get postpunctuation */
         if (ts->postpunctuation)
         {
-            ts->postpunctuation[0] = '\0';
-            if (ts->p_postpunctuationsymbols[0])
-                get_token_postpunctuation(ts);
+            extract_postpunctuation(ts);
         }
     }
 
@@ -446,23 +466,17 @@ const cst_string *ts_get(cst_tokenstream *ts)
     if (ts->current_char != TS_EOF &&
         TS_CHARCLASS(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
     {
-	if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max);
+	if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max,2);
 	ts->token[0] = ts->current_char;
 	ts->token[1] = '\0';
 	ts_getc(ts);
     }
     else
-	get_token_sub_part_2(ts,
-			     TS_CHARCLASS_WHITESPACE,       /* end class1 */
-			     &ts->token,
-			     &ts->token_max);
+	get_token_sub_part_2(ts,&ts->token,&ts->token_max);
     /* This'll have token *plus* post punctuation in ts->token */
-    /* Get postpunctuation */
     if (ts->postpunctuation)
     {
-	ts->postpunctuation[0] = '\0';
-        if (ts->p_postpunctuationsymbols[0])
-            get_token_postpunctuation(ts);
+        extract_postpunctuation(ts);
     }
 
     return ts->token;

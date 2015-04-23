@@ -134,10 +134,11 @@ The preferred features for bellbird are:
  3. compile clean using gcc and clang with -Wall and -Wextra,
  4. only one load of nitech voices per execution,
  5. UTF-8 directional apostrophe support for contraction type words,
- 6. Allow UTF-8 symbols in dictionary words since loan words in English may use accents
+ 6. UTF-8 quotation mark support,
+ 7. Allow UTF-8 symbols in dictionary words since loan words in English may use accents
     (Note automatic case conversion doesn't occur for UTF-8 symbols),
- 7. Large file support - allow WAV file creation upto format max. of 4Gb,
- 8. rapid full tree rebuilds.
+ 8. Large file support - allow WAV file creation upto format max. of 4Gb,
+ 9. rapid full tree rebuilds.
 
 The last feature was largely to enable quick tests of understanding of speech synthesis.
 This has had the side effect that bellbird has many less features than festival and flite 
