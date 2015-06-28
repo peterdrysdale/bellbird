@@ -90,12 +90,6 @@
 #include "cst_file.h"
 #include "cst_string.h"
 
-/*
- * The first byte of the regexp internal "program" is actually this magic
- * number; the start node begins in the second byte.
- */
-#define	CST_REGMAGIC	0234
-
 typedef struct cst_regex_struct {
     char regstart;		/* Internal use only. */
     char reganch;		/* Internal use only. */
@@ -139,6 +133,5 @@ extern const cst_regex * const cst_rx_dotted_abbrev;
 
 /* Table of regexps used in CART trees (only one so far) */
 extern const cst_regex * const cst_regex_table[];
-#define CST_RX_dotted_abbrev_NUM 0
 
 #endif

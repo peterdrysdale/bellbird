@@ -46,6 +46,13 @@
 #include "cst_regex.h"
 
 /*
+ * The first byte of the regexp internal "program" is actually this magic
+ * number; the start node begins in the second byte.
+ */
+
+#define CST_REGMAGIC    0234
+
+/*
  * The "internal use only" fields in regexp.h are present to pass info from
  * compile to execute that permits the execute phase to run lots faster on
  * simple cases.  They are:
