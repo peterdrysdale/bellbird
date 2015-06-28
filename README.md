@@ -55,6 +55,7 @@ This remix version was branched from Flite for Android's version of:
                       version 1.5.6-current
 
 It contains code from:
+  - flite 2.0 (Dec 2014)
   - hts_engine 1.08 (Dec 2013)
   - flite+hts 1.04 (Dec 2012)
   - festival 1.96 hts_engine module (now superceded) for using classic nitech voices

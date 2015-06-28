@@ -98,7 +98,7 @@ cst_voice *cst_cg_load_voice(const char *filename,
     }
 
     /* Load up cg_db from external file */
-    cg_db = cst_cg_load_db(vd);
+    cg_db = cst_cg_load_db(vox,vd);
 
     if (cg_db == NULL)
     {

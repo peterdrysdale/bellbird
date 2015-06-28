@@ -90,9 +90,13 @@ void delete_cg_db(cst_cg_db *db)
         delete_cart((cst_cart *)(void *)db->f0_trees[i]);
     cst_free((void *)db->f0_trees);
 
-    for (i=0; db->param_trees0 && db->param_trees0[i]; i++)
-        delete_cart((cst_cart *)(void *)db->param_trees0[i]);
-    cst_free((void *)db->param_trees0);
+    for (j=0; j<db->num_param_models; j++)
+    {
+        for (i=0; db->param_trees[j] && db->param_trees[j][i]; i++)
+            delete_cart((cst_cart *)(void *)db->param_trees[j][i]);
+        cst_free((void *)db->param_trees[j]);
+    }
+    cst_free((void *)db->param_trees);
 
     if (db->spamf0)
     {
@@ -103,20 +107,30 @@ void delete_cg_db(cst_cg_db *db)
         cst_free((void *)db->spamf0_accent_vectors);
     }
 
-    for (i=0; i<db->num_frames0; i++)
-        cst_free((void *)db->model_vectors0[i]);
-    cst_free((void *)db->model_vectors0);
+    for (j=0; j<db->num_param_models; j++)
+    {
+        for (i=0; i<db->num_frames[j]; i++)
+            cst_free((void *)db->model_vectors[j][i]);
+        cst_free((void *)db->model_vectors[j]);
+    }
+    cst_free(db->num_channels);
+    cst_free(db->num_frames);
+    cst_free((void *)db->model_vectors);
 
     cst_free((void *)db->model_min);
     cst_free((void *)db->model_range);
-
-    for (i=0; db->dur_stats && db->dur_stats[i]; i++)
+    for (j = 0; j<db->num_dur_models; j++)
     {
-        cst_free((void *)db->dur_stats[i]->phone);
-        cst_free((void *)db->dur_stats[i]);
+        for (i=0; db->dur_stats[j] && db->dur_stats[j][i]; i++)
+        {
+            cst_free((void *)db->dur_stats[j][i]->phone);
+            cst_free((void *)db->dur_stats[j][i]);
+        }
+        cst_free((void *)db->dur_stats[j]);
+        delete_cart((void *)db->dur_cart[j]);
     }
     cst_free((void *)db->dur_stats);
-    delete_cart((void *)db->dur_cart);
+    cst_free((void *)db->dur_cart);
 
     for (i=0; db->phone_states && db->phone_states[i]; i++)
     {
@@ -157,23 +171,28 @@ static float cg_state_duration(cst_item *s, cst_cg_db *cg_db)
 {
     float zdur, dur;
     const char *n;
-    int i, x;
+    int i, x, dm;
 
-    zdur = val_float(cart_interpret(s,cg_db->dur_cart));
+    for (dm=0,zdur=0.0; dm < cg_db->num_dur_models; dm++)
+        zdur += val_float(cart_interpret(s,cg_db->dur_cart[dm]));
+    zdur /= dm;  /* get average zdur prediction from all dur models */
     n = item_feat_string(s,"name");
 
-    for (x=i=0; cg_db->dur_stats[i]; i++)
+    /* Note we only use the dur stats from the first model, that is */
+    /* correct, but wouldn't be if the dur tree was trained on different */
+    /* data */
+    for (x=i=0; cg_db->dur_stats[0][i]; i++)
     {
-        if (cst_streq(cg_db->dur_stats[i]->phone,n))
+        if (cst_streq(cg_db->dur_stats[0][i]->phone,n))
         {
             x=i;
             break;
         }
     }
-    if (!cg_db->dur_stats[i])  /* unknown type name */
+    if (!cg_db->dur_stats[0][i])  /* unknown type name */
         x = 0;
 
-    dur = (zdur*cg_db->dur_stats[x]->stddev)+cg_db->dur_stats[x]->mean;
+    dur = (zdur*cg_db->dur_stats[0][x]->stddev)+cg_db->dur_stats[0][x]->mean;
 
     /*    dur = 1.2 * (float)exp((float)dur); */
 
@@ -223,7 +242,7 @@ static cst_utterance *cg_make_params(cst_utterance *utt)
     cst_item *s, *mcep_parent, *mcep_frame;
     int num_frames;
     float start, end;
-    float dur_stretch, tok_stretch;
+    float dur_stretch, tok_stretch, rdur;
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     mcep = utt_relation_create(utt,MCEP);
@@ -238,7 +257,12 @@ static cst_utterance *cg_make_params(cst_utterance *utt)
         tok_stretch = ffeature_float(s,"R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"TOKEN".P.local_duration_stretch");
         if (tok_stretch == 0)
             tok_stretch = 1.0;
-        end = start + (tok_stretch*dur_stretch*cg_state_duration(s,cg_db));
+        rdur = tok_stretch*dur_stretch*cg_state_duration(s,cg_db);
+        /* Guarantee duration to be alt least one frame */
+        if (rdur < cg_db->frame_advance)
+            end = start + cg_db->frame_advance;
+        else
+            end = start + rdur;
         item_set_float(s,"end",end);
         mcep_parent = relation_append(mcep_link, s);
         for ( ; (num_frames * cg_db->frame_advance) <= end; num_frames++ )
@@ -278,34 +302,87 @@ static int voiced_frame(cst_item *m)
         return 0; /* unvoiced */
 }
 
+static float catmull_rom_spline(float p,float p0,float p1,float p2,float p3)
+{
+    float q;
+
+    q = ( 0.5 *
+          ( ( 2.0 * p1 ) +
+            ( p * (-p0 + p2) ) +
+            ( (p*p) * (((2.0 * p0) - (5.0 * p1)) +
+                       ((4.0 * p2) - p3))) +
+            ( (p*p*p) * (-p0 +
+                         ((3.0 * p1) - (3.0 * p2)) +
+                         p3))));
+    return q;
+}
+
+static void cg_F0_interpolate_spline(cst_utterance *utt,
+                                     cst_track *param_track)
+{
+    float start_f0, mid_f0, end_f0;
+    int start_index, end_index, mid_index;
+    int nsi, nei, nmi;  /* next syllable indices */
+    float nmid_f0, pmid_f0;
+    cst_item *syl;
+    int i;
+    float m;
+
+    start_f0 = mid_f0 = end_f0 = -1.0;
+
+    for (syl=UTT_REL_HEAD(utt,SYLLABLE); syl; syl=item_next(syl))
+    {
+        start_index = ffeature_int(syl,"R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK".d1.frame_number");
+        end_index = ffeature_int(syl,"R:"SYLSTRUCTURE".dn.R:"SEGSTATE".dn.R:"MCEP_LINK".dn.frame_number");
+        mid_index = (int)((start_index + end_index)/2.0);
+
+        start_f0 = param_track->frames[start_index][0];
+        if (end_f0 > 0.0)
+            start_f0 = end_f0;  /* not first time through */
+        if (mid_f0 < 0.0)
+            pmid_f0 = start_f0;  /* first time through */
+        else
+            pmid_f0 = mid_f0;
+        mid_f0 =  param_track->frames[mid_index][0];
+        if (item_next(syl)) /* not last syllable */
+            end_f0 = (param_track->frames[end_index-1][0]+
+                      param_track->frames[end_index][0])/2.0;
+        else
+            end_f0 = param_track->frames[end_index-1][0];
+        nmid_f0=end_f0; /* in case there is no next syl */
+
+        if (item_next(syl))
+        {
+            nsi = ffeature_int(syl,"n.R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK".d1.frame_number");
+            nei = ffeature_int(syl,"n.R:"SYLSTRUCTURE".dn.R:"SEGSTATE".dn.R:"MCEP_LINK".dn.frame_number");
+            nmi = (int)((nsi + nei)/2.0);
+            nmid_f0 = param_track->frames[nmi][0];
+        }
+        /* start to mid syl */
+        m = 1.0 / (mid_index - start_index);
+        for (i=0; ((start_index+i)<mid_index); i++)
+            param_track->frames[start_index+i][0] = 
+                 catmull_rom_spline(i*m,pmid_f0,start_f0,mid_f0,end_f0);
+
+        /* mid syl to end */
+        m = 1.0 / (end_index - mid_index);
+        for (i=0; ((mid_index+i)<end_index); i++)
+            param_track->frames[mid_index+i][0] =
+                catmull_rom_spline(i*m,start_f0,mid_f0,end_f0,nmid_f0);
+    }
+
+    return;
+}
+
 static void cg_smooth_F0(cst_utterance *utt,cst_cg_db *cg_db,
                          cst_track *param_track)
 {
     /* Smooth F0 and mark unvoiced frames as 0.0 */
     cst_item *mcep;
-    int i, c;
-    float l, s;
+    int i;
     float mean, stddev;
 
-    l = 0.0;
-    for (i=0; i<param_track->num_frames-1; i++)
-    {
-        c = 0; s = 0;
-        if (l > 0.0)
-        {
-            c++; s+=l;
-        }
-        if (param_track->frames[i+1][0] > 0.0)
-        {
-            c++; s+=param_track->frames[i+1][0];
-        }
-        l = param_track->frames[i][0];
-        if (param_track->frames[i][0] > 0.0)
-        {
-            c++; s+=param_track->frames[i][0];
-            param_track->frames[i][0] = s/c;
-        }
-    }
+    cg_F0_interpolate_spline(utt,param_track);
 
     mean = get_param_float(utt->features,"int_f0_target_mean", cg_db->f0_mean);
     mean *= get_param_float(utt->features,"f0_shift", 1.0);
@@ -340,9 +417,10 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
     cst_track *str_track = NULL;
     cst_item *mcep;
     const cst_cart *mcep_tree, *f0_tree;
-    int i,j,f,p,o;
+    int i,j,f,p,o,pm;
     const char *mname;
     float f0_val;
+    float local_gain, voicing;
     int extra_feats = 0;
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
@@ -356,15 +434,18 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
     
     cst_track_resize(param_track,
                      UTT_FEAT_INT(utt,"param_track_num_frames"),
-                     (cg_db->num_channels0)-
+                     (cg_db->num_channels[0])-
                        (2 * extra_feats));/* no voicing or str */
+    f=0;
     for (i=0,mcep=UTT_REL_HEAD(utt,MCEP); mcep; i++,mcep=item_next(mcep))
     {
         mname = item_feat_string(mcep,"name");
+        local_gain = ffeature_float(mcep,"R:"MCEP_LINK".P.R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"TOKEN".P.local_gain");
+        if (local_gain == 0.0) local_gain = 1.0;
         for (p=0; cg_db->types[p]; p++)
             if (cst_streq(mname,cg_db->types[p]))
                 break;
-        if (cg_db->types[0] == NULL)
+        if (cg_db->types[p] == NULL)
             p=0; /* if there isn't a matching tree, use the first one */
 
         /* Predict F0 */
@@ -373,29 +454,79 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
         param_track->frames[i][0] = f0_val;
         /* what about stddev ? */
 
-        /* Predict Spectral */
-        mcep_tree = cg_db->param_trees0[p];
-        f = val_int(cart_interpret(mcep,mcep_tree));
-        item_set_int(mcep,"clustergen_param_frame",f);
+        if (cg_db->multimodel)
+        {   /* MULTI model */
+            /* Predict spectral coeffs */
+            voicing = 0.0;
+            for (pm=0; pm<cg_db->num_param_models; pm++)
+            {
+                mcep_tree = cg_db->param_trees[pm][p];
+                f = val_int(cart_interpret(mcep,mcep_tree));
+                /* If there is one model this will be fine, if there are */
+                /* multiple models this will be the nth model */
+                item_set_int(mcep,"clustergen_param_frame",f);
 
-        param_track->frames[i][0] = (param_track->frames[i][0]+
-             CG_MODEL_VECTOR(cg_db,model_vectors0,f,0))/2.0;
+                /* Old code used to average in param[0] with F0 too (???) */
 
-        for (j=2; j<param_track->num_channels; j++)
-            param_track->frames[i][j] =
-                CG_MODEL_VECTOR(cg_db,model_vectors0,f,j);
-//      mixed excitation
-        o = j;
-        for (j=0; j<5; j++)
-        {
-            str_track->frames[i][j] =
-                CG_MODEL_VECTOR(cg_db,model_vectors0,f,o+(2*j));
+                for (j=2; j<param_track->num_channels; j++)
+                {
+                    if (pm == 0) param_track->frames[i][j] = 0.0;
+                    param_track->frames[i][j] +=
+                        CG_MODEL_VECTOR(cg_db,model_vectors[pm],f,(j))/
+                        (float)cg_db->num_param_models;
+                }
+
+//              mixed excitation
+                o = j;
+                for (j=0; j<5; j++)
+                {
+                    if (pm == 0) str_track->frames[i][j] = 0.0;
+                    str_track->frames[i][j] +=
+                        CG_MODEL_VECTOR(cg_db,model_vectors[pm],f,
+                                        (o+(2*j))) /
+                        (float)cg_db->num_param_models;
+                }
+
+                /* last coefficient is average voicing for cluster */
+                voicing /= (float)(pm+1);
+                voicing +=
+                    CG_MODEL_VECTOR(cg_db,model_vectors[pm],f,
+                                    cg_db->num_channels[pm]-2) /
+                    (float)(pm+1);
+            }
+            item_set_float(mcep,"voicing",voicing);
+            /* Apply local gain to c0 */
+            param_track->frames[i][2] *= local_gain;
+
+        }
+        else
+        {   /* SINGLE model */
+            /* Predict Spectral */
+            mcep_tree = cg_db->param_trees[0][p];
+            f = val_int(cart_interpret(mcep,mcep_tree));
+            item_set_int(mcep,"clustergen_param_frame",f);
+
+            param_track->frames[i][0] =
+                (param_track->frames[i][0]+
+                 CG_MODEL_VECTOR(cg_db,model_vectors[0],f,0))/2.0;
+
+            for (j=2; j<param_track->num_channels; j++)
+                param_track->frames[i][j] =
+                    CG_MODEL_VECTOR(cg_db,model_vectors[0],f,(j));
+
+//          mixed excitation
+            o = j;
+            for (j=0; j<5; j++)
+            {
+                str_track->frames[i][j] =
+                    CG_MODEL_VECTOR(cg_db,model_vectors[0],f,(o+(2*j)));
+            }
         }
 
         /* last coefficient is average voicing for cluster */
         item_set_float(mcep,"voicing",
-                       CG_MODEL_VECTOR(cg_db,model_vectors0,f,
-                                       cg_db->num_channels0-2));
+                       CG_MODEL_VECTOR(cg_db,model_vectors[0],f,
+                                       cg_db->num_channels[0]-2));
     }
 
     cg_smooth_F0(utt,cg_db,param_track);

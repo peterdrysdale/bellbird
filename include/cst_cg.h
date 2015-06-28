@@ -77,15 +77,17 @@ typedef struct cst_cg_db_struct {
 
     /* Cluster trees */
     const cst_cart * const *f0_trees; 
-    const cst_cart * const *param_trees0; /* single or static */
+
+    int num_param_models;
+    const cst_cart *** param_trees;
 
     const cst_cart *spamf0_accent_tree; /* spam accent tree */
     const cst_cart *spamf0_phrase_tree; /* spam phrase tree */
 
     /* Model params e.g. mceps, deltas intersliced with stddevs */
-    int num_channels0;
-    int num_frames0;
-    const unsigned short * const * model_vectors0;
+    int *num_channels;
+    int *num_frames;
+    const unsigned short *** model_vectors;
 
     int num_channels_spamf0_accent;
     int num_frames_spamf0_accent;
@@ -98,8 +100,9 @@ typedef struct cst_cg_db_struct {
     float frame_advance; 
 
     /* duration model (cart + phonedurs) */
-    const dur_stat * const *dur_stats;
-    const cst_cart *dur_cart;
+    int num_dur_models;
+    const dur_stat *** dur_stats;
+    const cst_cart ** dur_cart;
 
     /* phone to states map */
     const char * const * const *phone_states;
@@ -110,6 +113,8 @@ typedef struct cst_cg_db_struct {
 
     float mlsa_alpha;
     float mlsa_beta;
+
+    int multimodel;
 
     /* filters for Mixed Excitation */
     int ME_num;
@@ -135,3 +140,4 @@ cst_voice *cst_cg_load_voice(const char *voxdir,
 cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db);
 
 #endif
+

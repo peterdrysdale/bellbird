@@ -50,7 +50,7 @@
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 
-static char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v1.5.4";
+static char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v2.0";
 // This is the supported voice type for this module
 // This string must not be set to greater than 199 chars
 
@@ -513,9 +513,10 @@ int cst_cg_read_header(cst_file fd)
     return 0;
 }
 
-cst_cg_db *cst_cg_load_db(cst_file fd)
+cst_cg_db *cst_cg_load_db(cst_voice *vox,cst_file fd)
 {
     cst_cg_db* db = cst_alloc(cst_cg_db,1);
+    int i;
 
     db->name = cst_read_string(fd);
     db->types = (const char**)cst_read_db_types(fd);
@@ -526,13 +527,11 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
     db->f0_stddev = cst_read_float(fd);
 
     db->f0_trees = (const cst_cart**) cst_read_tree_array(fd);
-    db->param_trees0 = (const cst_cart**) cst_read_tree_array(fd);
-    if (cst_read_int(fd) != 0 ) // dummy read since multimodel is not supported
-    {
-        cst_errmsg("Warning: multimodel voices are not supported\n");
-        cst_errmsg("No publically available voices of this type are known to bellbird\n");
-    }
-    cst_read_int(fd); // dummy read since param_trees2 unused
+
+    db->num_param_models = get_param_int(vox->features,"num_param_models",3);
+    db->param_trees = cst_alloc(const cst_cart **,db->num_param_models);
+    for (i=0; i<db->num_param_models; i++)
+        db->param_trees[i] = (const cst_cart **) cst_read_tree_array(fd);
 
     db->spamf0 = cst_read_int(fd);
     if (db->spamf0)
@@ -541,16 +540,26 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
         db->spamf0_phrase_tree = cst_read_tree(fd);
     }
 
-    db->num_channels0 = cst_read_int(fd);
-    db->num_frames0 = cst_read_int(fd);
-    db->model_vectors0 = 
-        (const unsigned short * const *)cst_read_2d_array(fd);
-    cst_read_int(fd); // dummy read since multimodel is not supported
-    cst_read_int(fd); // dummy read since multimodel is not supported
-    cst_read_int(fd); // dummy read since multimodel is not supported
-    cst_read_int(fd); // dummy read since num_channels2 unused
-    cst_read_int(fd); // dummy read since num_frames2 unused
-    cst_read_int(fd); // dummy read since model_vectors2 unused
+    db->num_channels = cst_alloc(int,db->num_param_models);
+    db->num_frames = cst_alloc(int,db->num_param_models);
+    db->model_vectors = cst_alloc(const unsigned short **,db->num_param_models);
+    for (i=0; i<db->num_param_models; i++)
+    {
+        db->num_channels[i] = cst_read_int(fd);
+        db->num_frames[i] = cst_read_int(fd);
+        db->model_vectors[i] =
+            (const unsigned short **)cst_read_2d_array(fd);
+    }
+    /* In voices that were built before, they might have NULLs as the */
+    /* the vectors rather than a real model, so adjust the num_param_models */
+    /* accordingly -- this wont cause a leak as there is no alloc'd memory */
+    /* in the later unset vectors */
+    for (i=0; i<db->num_param_models; i++)
+    {
+        if (db->model_vectors[i] == NULL)
+            break;
+    }
+    db->num_param_models = i;
 
     if (db->spamf0)
     {
@@ -565,8 +574,15 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
 
     db->frame_advance = cst_read_float(fd);
 
-    db->dur_stats = (const dur_stat * const *)cst_read_dur_stats(fd);
-    db->dur_cart = (const cst_cart *)cst_read_tree(fd);
+    db->num_dur_models = get_param_int(vox->features,"num_dur_models",1);
+    db->dur_stats = cst_alloc(const dur_stat **,db->num_dur_models);
+    db->dur_cart = cst_alloc(const cst_cart *,db->num_dur_models);
+
+    for (i=0; i<db->num_dur_models; i++)
+    {
+        db->dur_stats[i] = (const dur_stat **)cst_read_dur_stats(fd);
+        db->dur_cart[i] = (const cst_cart *)cst_read_tree(fd);
+    }
 
     db->phone_states = 
         (const char * const * const *)cst_read_phone_states(fd);
@@ -581,7 +597,7 @@ cst_cg_db *cst_cg_load_db(cst_file fd)
     db->mlsa_alpha = cst_read_float(fd);
     db->mlsa_beta = cst_read_float(fd);
 
-    cst_read_int(fd); // dummy read since multimodel is not supported
+    db->multimodel = cst_read_int(fd);
     if (cst_read_int(fd) == 0)
     {
         cst_errmsg("Warning: only mixed_excitation voice are supported");
