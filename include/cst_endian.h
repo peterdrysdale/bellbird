@@ -46,6 +46,7 @@
 #ifndef __CST_ENDIAN_H__
 #define __CST_ENDIAN_H__
 
+#include<stdint.h>
 /* Big endian support is signalled in this code by defining WORDS_BIGENDIAN */
 /* If this is not set then little endian support is assumed */
 

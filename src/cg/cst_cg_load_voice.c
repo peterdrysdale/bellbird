@@ -64,7 +64,7 @@ cst_voice *cst_cg_load_voice(const char *filename,
     char* fval;
     cst_file vd;
 
-    if ((vd = bell_fopen(filename,"r")) == NULL)
+    if ((vd = bell_fopen(filename,"rb")) == NULL)
     {
         cst_errmsg("Unable to open clustergen voice: \"%s\" \n",filename);
 	cst_error();

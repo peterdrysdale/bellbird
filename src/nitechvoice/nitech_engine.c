@@ -61,6 +61,17 @@
 #include "HTS_misc.h"
 #include "bell_file.h"
 
+// Choose between Unix and Windows directory separator character
+#ifdef BELL_REV_DIR_SEP
+
+#define DIR_SEP "\\"
+
+#else
+
+#define DIR_SEP "/"
+
+#endif
+
 static cst_wave * nitech_process (char **lines, size_t num_lines,
                    PStreamChol *mceppst, PStreamChol *lf0pst, nitechP *gp,
                    ModelSet *ms, TreeSet *ts, VocoderSetup *vs)
@@ -181,16 +192,16 @@ bell_boolean nitech_engine_initialize(nitech_engine *ntengine, const char * fn_v
 
     /* delta window handler for log f0 */
     ntengine->lf0pst.dw.fn = cst_alloc(char *,3);
-    ntengine->lf0pst.dw.fn[1] = bell_build_filename(fn_voice,"hts/lf0_dyn.win");
-    ntengine->lf0pst.dw.fn[2] = bell_build_filename(fn_voice,"hts/lf0_acc.win");
+    ntengine->lf0pst.dw.fn[1] = bell_build_filename(fn_voice,"hts"DIR_SEP"lf0_dyn.win");
+    ntengine->lf0pst.dw.fn[2] = bell_build_filename(fn_voice,"hts"DIR_SEP"lf0_acc.win");
     ntengine->lf0pst.dw.num = 3;
 
     ReadWin(&(ntengine->lf0pst));
 
     /* delta window handler for mel-cepstrum */
     ntengine->mceppst.dw.fn = cst_alloc(char *,3);
-    ntengine->mceppst.dw.fn[1] = bell_build_filename(fn_voice,"hts/mcep_dyn.win");
-    ntengine->mceppst.dw.fn[2] = bell_build_filename(fn_voice,"hts/mcep_acc.win");
+    ntengine->mceppst.dw.fn[1] = bell_build_filename(fn_voice,"hts"DIR_SEP"mcep_dyn.win");
+    ntengine->mceppst.dw.fn[2] = bell_build_filename(fn_voice,"hts"DIR_SEP"mcep_acc.win");
     ntengine->mceppst.dw.num = 3;
 
     ReadWin(&(ntengine->mceppst));
@@ -201,47 +212,47 @@ bell_boolean nitech_engine_initialize(nitech_engine *ntengine, const char * fn_v
     ntengine->ms = NULL;
     ntengine->ms = InitModelSet();
 
-    filename = bell_build_filename(fn_voice,"hts/trees-dur.inf");
+    filename = bell_build_filename(fn_voice,"hts"DIR_SEP"trees-dur.inf");
     ntengine->ts->fp[DUR]=bell_fopen(filename,"r");
     cst_free(filename);
     if (ntengine->ts->fp[DUR] == NULL)
     {
-        cst_errmsg("nitech_engine: can't open hts/trees-dur.inf file\n");
+        cst_errmsg("nitech_engine: can't open hts"DIR_SEP"trees-dur.inf file\n");
         retval = FALSE;
     }
-    filename = bell_build_filename(fn_voice,"hts/trees-lf0.inf");
+    filename = bell_build_filename(fn_voice,"hts"DIR_SEP"trees-lf0.inf");
     ntengine->ts->fp[LF0]=bell_fopen(filename,"r");
     cst_free(filename);
     if (ntengine->ts->fp[LF0] == NULL)
     {
-        cst_errmsg("nitech_engine: can't open hts/trees-lf0.inf file\n");
+        cst_errmsg("nitech_engine: can't open hts"DIR_SEP"trees-lf0.inf file\n");
         retval = FALSE;
     }
-    filename = bell_build_filename(fn_voice,"hts/trees-mcep.inf");
+    filename = bell_build_filename(fn_voice,"hts"DIR_SEP"trees-mcep.inf");
     ntengine->ts->fp[MCP]=bell_fopen(filename,"r");
     cst_free(filename);
     if (ntengine->ts->fp[MCP] == NULL)
     {
-        cst_errmsg("nitech_engine: can't open hts/trees-mcep.inf file\n");
+        cst_errmsg("nitech_engine: can't open hts"DIR_SEP"trees-mcep.inf file\n");
         retval = FALSE;
     }
-    filename = bell_build_filename(fn_voice,"hts/duration.pdf");
+    filename = bell_build_filename(fn_voice,"hts"DIR_SEP"duration.pdf");
     ntengine->ms->fp[DUR]=bell_fopen(filename,"rb");
     cst_free(filename);
     if (ntengine->ms->fp[DUR] == NULL)
     {
-        cst_errmsg("nitech_engine: can't open hts/duration.pdf file\n");
+        cst_errmsg("nitech_engine: can't open hts"DIR_SEP"duration.pdf file\n");
         retval = FALSE;
     }
-    filename = bell_build_filename(fn_voice,"hts/lf0.pdf");
+    filename = bell_build_filename(fn_voice,"hts"DIR_SEP"lf0.pdf");
     ntengine->ms->fp[LF0]=bell_fopen(filename,"rb");
     cst_free(filename);
     if (ntengine->ms->fp[LF0] == NULL)
     {
-        cst_errmsg("nitech_engine: can't open hts/lf0.pdf file\n");
+        cst_errmsg("nitech_engine: can't open hts"DIR_SEP"lf0.pdf file\n");
         retval = FALSE;
     }
-    filename = bell_build_filename(fn_voice,"hts/mcep.pdf");
+    filename = bell_build_filename(fn_voice,"hts"DIR_SEP"mcep.pdf");
     ntengine->ms->fp[MCP]=bell_fopen(filename,"rb");
     cst_free(filename);
     if (ntengine->ms->fp[MCP] == NULL)

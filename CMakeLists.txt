@@ -136,10 +136,16 @@ ADD_LIBRARY(
     ${SRC_LIBBELLBIRD}
 )
 
+if ( ENABLE_ALSA )
 TARGET_LINK_LIBRARIES (
     libbellbird
     ${ALSA_LIBRARY}
 )
+else ( ENABLE_ALSA )
+TARGET_LINK_LIBRARIES (
+    libbellbird
+)
+endif ( ENABLE_ALSA )
 
 ADD_LIBRARY(
     libbellbird_usenglish 
