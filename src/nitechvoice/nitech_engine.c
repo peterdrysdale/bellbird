@@ -62,7 +62,7 @@
 #include "bell_file.h"
 
 // Choose between Unix and Windows directory separator character
-#ifdef BELL_REV_DIR_SEP
+#ifdef BELL_WINDOWS
 
 #define DIR_SEP "\\"
 

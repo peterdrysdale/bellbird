@@ -51,6 +51,12 @@
 #include "cst_wave.h"
 #include "bell_file.h"
 
+#ifdef BELL_WINDOWS
+// Need these windows headers to set stdout to binary mode in Windows
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 /* File format definition */
 #define RIFF_FORMAT_PCM    0x0001
 
@@ -181,7 +187,13 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
 
     if (cst_streq("-",filename))
     {
+
       fd=stdout;
+#ifdef BELL_WINDOWS
+//  Set Windows stdout to binary output mode
+      _setmode(fileno(stdout), _O_BINARY);
+#endif
+
 #ifdef WORDS_BIGENDIAN
       int16_t *xdata = cst_alloc(int16_t,CST_WAVE_NUM_CHANNELS(w)*CST_WAVE_NUM_SAMPLES(w));
       memmove(xdata,CST_WAVE_SAMPLES(w),sizeof(int16_t)*CST_WAVE_NUM_CHANNELS(w)*
