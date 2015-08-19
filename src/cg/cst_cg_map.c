@@ -598,10 +598,7 @@ cst_cg_db *cst_cg_load_db(cst_voice *vox,cst_file fd)
     db->mlsa_beta = cst_read_float(fd);
 
     db->multimodel = cst_read_int(fd);
-    if (cst_read_int(fd) == 0)
-    {
-        cst_errmsg("Warning: only mixed_excitation voice are supported");
-    }
+    db->mixed_excitation = cst_read_int(fd);
 
     db->ME_num = cst_read_int(fd);
     db->ME_order = cst_read_int(fd);

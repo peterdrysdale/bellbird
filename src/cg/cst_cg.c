@@ -427,11 +427,13 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
     param_track = new_track();
 
     extra_feats = 1;  /* voicing */
-//  mixed excitation
-    extra_feats += 5;
-    str_track = new_track();
-    cst_track_resize(str_track,UTT_FEAT_INT(utt,"param_track_num_frames"),5);
-    
+    if (cg_db->mixed_excitation)
+    {
+        extra_feats += 5;
+        str_track = new_track();
+        cst_track_resize(str_track,UTT_FEAT_INT(utt,"param_track_num_frames"),5);
+    }
+
     cst_track_resize(param_track,
                      UTT_FEAT_INT(utt,"param_track_num_frames"),
                      (cg_db->num_channels[0])-
@@ -477,14 +479,17 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
                 }
 
 //              mixed excitation
-                o = j;
-                for (j=0; j<5; j++)
+                if (cg_db->mixed_excitation)
                 {
-                    if (pm == 0) str_track->frames[i][j] = 0.0;
-                    str_track->frames[i][j] +=
-                        CG_MODEL_VECTOR(cg_db,model_vectors[pm],f,
-                                        (o+(2*j))) /
-                        (float)cg_db->num_param_models;
+                    o = j;
+                    for (j=0; j<5; j++)
+                    {
+                        if (pm == 0) str_track->frames[i][j] = 0.0;
+                        str_track->frames[i][j] +=
+                            CG_MODEL_VECTOR(cg_db,model_vectors[pm],f,
+                                            (o+(2*j))) /
+                            (float)cg_db->num_param_models;
+                    }
                 }
 
                 /* last coefficient is average voicing for cluster */
@@ -514,12 +519,14 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
                 param_track->frames[i][j] =
                     CG_MODEL_VECTOR(cg_db,model_vectors[0],f,(j));
 
-//          mixed excitation
-            o = j;
-            for (j=0; j<5; j++)
+            if (cg_db->mixed_excitation)
             {
-                str_track->frames[i][j] =
-                    CG_MODEL_VECTOR(cg_db,model_vectors[0],f,(o+(2*j)));
+                o = j;
+                for (j=0; j<5; j++)
+                {
+                    str_track->frames[i][j] =
+                        CG_MODEL_VECTOR(cg_db,model_vectors[0],f,(o+(2*j)));
+                }
             }
         }
 
@@ -532,7 +539,8 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
     cg_smooth_F0(utt,cg_db,param_track);
 
     UTT_SET_FEAT(utt,"param_track",track_val(param_track));
-    UTT_SET_FEAT(utt,"str_track",track_val(str_track));
+    if (cg_db->mixed_excitation)
+        UTT_SET_FEAT(utt,"str_track",track_val(str_track));
 
     return utt;
 }
@@ -547,7 +555,8 @@ static cst_utterance *cg_resynth(cst_utterance *utt)
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));
-    str_track = val_track(UTT_FEAT_VAL(utt,"str_track"));
+    if (cg_db->mixed_excitation)
+        str_track = val_track(UTT_FEAT_VAL(utt,"str_track"));
 
     smoothed_track = cg_mlpg(param_track, cg_db);
     w = mlsa_resynthesis(smoothed_track,str_track,cg_db);
