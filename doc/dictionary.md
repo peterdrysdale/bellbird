@@ -67,9 +67,7 @@ table `cmu_lex_phone_table` in the file `lang/cmulex/cmu_lex_entries.c`.
 Observing the way words are already encoded by looking at examples in the existing decoded
 dictionary are invaluable for generating a new pronounciation.
 
-Using `text2phones` to find how the letter to sound rules work may also help. Note the output
-format of `text2phones` differs slightly from that in the dictionary in that unstressed vowels
-are not suffixed with '0' as they are in the decoded dictionary.
+Using `text2phones` to find how the letter to sound rules work may also help.
 
 Always recheck a pronounciation when it is compiled in as the pronounciation may occasionally surprise.
 

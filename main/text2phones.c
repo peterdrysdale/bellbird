@@ -113,10 +113,18 @@ int main(int argc, char **argv)
     {
 	name = item_feat_string(s,"name");
 	printf("%s",name);
-	/* If its a vowel and is stessed output stress value */
-	if ((cst_streq("+",ffeature_string(s,PH_VC))) &&
-	    (cst_streq("1",ffeature_string(s,"R:"SYLSTRUCTURE".P.stress"))))
-	    printf("1");
+//   If its a vowel, output stress value
+	if (cst_streq("+",ffeature_string(s,PH_VC)))
+        {
+	    if (cst_streq("1",ffeature_string(s,"R:"SYLSTRUCTURE".P.stress")))
+            {
+	        printf("1");
+            }
+            else
+            {
+                printf("0");
+            }
+        }
 	printf(" ");
     }
 
