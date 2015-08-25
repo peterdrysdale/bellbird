@@ -74,6 +74,7 @@ void val_delete_wave(void *v);
 void val_delete_track(void *v);
 void val_delete_features(void *v);
 void val_delete_cg_db(void *v);
+void val_delete_lexicon(void *v);
 
 // Table of names and delete functions (where required) for vals
 const cst_val_def cst_val_defs[] = {
@@ -91,7 +92,7 @@ const cst_val_def cst_val_defs[] = {
     { "item", NULL },                      /* 19 item */
     { "cart", NULL },                      /* 21 cart */
     { "phoneset", NULL },                  /* 23 phoneset */
-    { "lexicon", NULL },                   /* 25 lexicon */
+    { "lexicon", val_delete_lexicon },     /* 25 lexicon */
     { "userdata", NULL },                  /* 27 userdata */
     { "itemfunc", NULL },                  /* 29 itemfunc */
     { "features", val_delete_features },   /* 31 features */

@@ -49,7 +49,7 @@
 #include "cst_tokenstream.h"
 #include "bell_file.h"
 
-CST_VAL_REGISTER_TYPE_NODEL(lexicon,cst_lexicon)
+CST_VAL_REGISTER_TYPE(lexicon,cst_lexicon)
 
 #define WP_SIZE 64
 
@@ -58,68 +58,72 @@ static int lex_lookup_bsearch(const cst_lexicon *l,const char *word);
 static int find_full_match(const cst_lexicon *l,
 			   int i,const char *word);
 
-static cst_val *cst_lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
-{   /* if replace then replace entry in addenda of lex with entry */
-    /* else append entry to addenda of lex                        */
+void delete_lexicon(cst_lexicon *lexicon)
+{
+//  Delete addenda if it was loaded at runtime
+    if (lexicon->lex_addenda)
+        delete_val(lexicon->lex_addenda);
+}
+
+static cst_val *lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
+{
+//  Parse and validate a line from pronouncing dictionary addenda
+//  Format is the same as Bellbird's uncompressed pronouncing dictionary
     cst_tokenstream *e;
     cst_val *phones = NULL;
     cst_val *ventry;
-    const cst_string *w, *p;
+    const cst_string *p;
     cst_string *word;
     cst_string *pos;
+    int entrylen;
     int i;
 
-    e = ts_open_string(entry,
-                       cst_ts_default_whitespacesymbols,
-                       "","","");
+    entrylen=cst_strlen(entry);
+    if (entrylen<5)
+        return NULL; // Ignore entries which are clearly too short
 
-    w = ts_get(e);
-    if (w[0] == '"') /* it was a quoted entry */
-    {                   /* so reparse it */
-        ts_close(e);
-        e = ts_open_string(entry,
-                           cst_ts_default_whitespacesymbols,
-                           "","","");
-        w = ts_get_quoted_token(e,'"','\\');
-    }
+//  Extract part of speech information
+    pos = cst_alloc(cst_string,2);
+    pos[0] = entry[0];
+    pos[1] = '\0';
 
-    word = cst_strdup(w);
-    p = ts_get(e);
-    if (!cst_streq(":",p)) /* there is a real pos */
+//  Extract word
+    word = cst_strdup(entry+1);
+    for(i=1; i<entrylen; i++)
     {
-        pos = cst_strdup(p);
-        p = ts_get(e);
-        if (!cst_streq(":",p)) /* there is a real pos */
+        if (entry[i] == ':')
         {
-            bell_fprintf(stdout,"add_addenda: lex %s: expected \":\" in %s\n",
-                        lex->name,
-                        word);
-            cst_free(word); cst_free(pos); ts_close(e);
-            return NULL;
+            word[i-1] = '\0';
+            break;
         }
     }
-    else
-        pos = cst_strdup("nil");
+    if ( i<2 || i>entrylen-2 )
+    {
+        cst_free(pos);
+        cst_free(word);
+        cst_errmsg("Ignoring malformed addenda line:%s\n",entry);
+        return NULL;
+    }
+
+//  Extract phone information
+    e = ts_open_string(entry+i+1," ","","","");
 
     while (!ts_eof(e))
     {
         p = ts_get(e);
-        /* Check its a legal phone */
+        /* Check for valid phone */
         for (i=0; lex->phone_table[i]; i++)
-       {
+        {
             if (cst_streq(p,lex->phone_table[i]))
                 break;
         }
-        if (cst_streq("#",p)) /* comment to end of line */
-            break;
-        else if (cst_streq("",p)) /* trailing ws at eoln causes this */
+        if (cst_streq("",p)) /* trailing ws at eoln causes this */
             break;
         else if (lex->phone_table[i])
-            /* Only add it if its a valid phone */
-            phones = cons_val(string_val(p),phones);
+            phones = cons_val(string_val(p),phones); // Add valid phone
         else
         {
-            bell_fprintf(stdout,"add_addenda: lex: %s word %s phone %s not in lexicon phoneset\n",
+            cst_errmsg("lex_make_entry: lex: %s word %s phone %s not in lexicon phoneset\n",
                         lex->name,
                         word,
                         p);
@@ -128,7 +132,8 @@ static cst_val *cst_lex_make_entry(const cst_lexicon *lex, const cst_string *ent
 
     ventry = cons_val(string_val(word),cons_val(string_val(pos),
                                                 val_reverse(phones)));
-    cst_free(word); cst_free(pos); ts_close(e);
+    cst_free(word);cst_free(pos); ts_close(e);
+
 #if 0
     printf("entry: ");
     val_print(stdout,ventry);
@@ -139,17 +144,17 @@ static cst_val *cst_lex_make_entry(const cst_lexicon *lex, const cst_string *ent
 }
 
 cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
-{   /* Load an addend from given file, check its phones wrt lex */
+{
+//  Loaded a pronouncing dictionary addenda at runtime
     cst_tokenstream *lf;
     const cst_string *line;
     cst_val *e = NULL;
     cst_val *na = NULL;
-    int i;
 
     lf = ts_open(lexfile,"\n","","","");
     if (lf == NULL)
     {
-	cst_errmsg("lex_add_addenda: cannot open lexicon file\n");
+	cst_errmsg("lex_load_addenda: cannot open addenda file\n");
         return NULL;;
     }
 
@@ -158,19 +163,9 @@ cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
         line = ts_get(lf);
         if (line[0] == '#')
             continue;  /* a comment */
-        for (i=0; line[i]; i++)
-        {
-            if (line[i] != ' ')
-                break;
-        }
-        if (line[i])
-        {
-            e = cst_lex_make_entry(lex,line);
-            if (e)
-                na = cons_val(e,na);
-        }
-        else
-            continue;  /* a blank line */
+        e = lex_make_entry(lex,line);
+        if (e)
+            na = cons_val(e,na);
     }
 
     ts_close(lf);
@@ -179,7 +174,7 @@ cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
 
 int in_lex(const cst_lexicon *l, const char *word, const char *pos)
 {
-    /* return TRUE is its in the lexicon */
+    /* return TRUE if its in the lexicon */
     int r = FALSE;
     char *wp;
     size_t wordlen;

@@ -19,6 +19,15 @@ is called as:
 
     text2phones wordtobepronounced
 
+##Temporary Bellbird runtime pronounciation changes
+
+The `--add_dict` option allows temporary runtime changes to Bellbird's
+pronounciation.
+The addenda file uses the same format as the decoded Bellbird dictionary.
+Follow the decoding Bellbird dictionary instructions to see the format.
+Since addenda parsing is less efficient it is intended that only a small
+number of words are added by the user via an addenda file.
+
 ##Decoding the Bellbird dictionary
 
 The bellbird_extras github repository (`https://github.com/peterdrysdale/bellbird_extras`) 
@@ -88,4 +97,4 @@ the CMU pronouncing dictionary which in festival appears to cover in excess of 1
 be noted that these sets are likely to strongly overlap since common words are more likely to be found by each effort.
 Currently between one and two thousand words have been added or changed in Bellbird relative to Flite.
 
-    
+

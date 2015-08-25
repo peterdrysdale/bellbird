@@ -76,4 +76,6 @@ int in_lex(const cst_lexicon *l, const char *word, const char *pos);
 
 CST_VAL_USER_TYPE_DCLS(lexicon,cst_lexicon)
 
+void delete_lexicon(cst_lexicon *lexicon);
+
 #endif

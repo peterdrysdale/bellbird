@@ -121,15 +121,15 @@ static void bellbird_usage()
           "  --help         Output usage string\n"
           "  -o outfile     Explicitly set output wav audio filename\n"
           "  -f infile      Explicitly set input filename\n"
-          "  --seti F=V     Set int feature\n"
-          "  --setf F=V     Set float feature\n"
-          "  --sets F=V     Set string feature\n"
-          "  --startpos n   Read input file from byte n (int), skipping n-1 bytes\n"
           "  --voice VOICEFILE      Use voice clustergen voice at VOICEFILE \n"
           "  --nitechvoice VOICEDIR Use voice nitech voice at VOICEDIR \n"
           "  --htsvoice VOICEFILE   Use voice hts voice at VOICEFILE \n"
+          "  --add_dict FILENAME Add dictionary addenda from FILENAME\n"
+          "  --startpos n   Read input file from byte n (int), skipping n-1 bytes\n"
+          "  --seti F=V     Set int feature\n"
+          "  --setf F=V     Set float feature\n"
+          "  --sets F=V     Set string feature\n"
           " Clustergen specific options:"
-          "  --add_lex FILENAME add lex addenda from FILENAME\n"
           "  -pw         Print words\n"
           "  -ps         Print segments\n"
           "  -pr RelName  Print relation RelName\n"
@@ -294,7 +294,7 @@ int main(int argc, char **argv)
            /* Already loaded above */
            i++;
         }
-	else if ( cst_streq(argv[i],"--add_lex") && (i+1 < argc) )
+	else if ( cst_streq(argv[i],"--add_dict") && (i+1 < argc) )
 	{
             lex_addenda_file = argv[++i];
 	}
@@ -440,6 +440,8 @@ int main(int argc, char **argv)
     feat_copy_into(extra_feats,voice->features);
     delete_features(extra_feats);
 
+    if (lex_addenda_file) flite_voice_add_lex_addenda(voice,lex_addenda_file);
+
     if (voice_type==NITECHMODE || voice_type==HTSMODE)
     {
        bell_file_to_speech(&engine, &ntengine, texttoread, voice, outtype, voice_type);
@@ -447,8 +449,6 @@ int main(int argc, char **argv)
     else if (voice_type==CLUSTERGENMODE)
     {
        durs = 0.0;
-
-       if (lex_addenda_file) flite_voice_add_lex_addenda(voice,lex_addenda_file);
 
        if (explicit_phones)
        {
