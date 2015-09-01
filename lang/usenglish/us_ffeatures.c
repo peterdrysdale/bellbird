@@ -187,12 +187,13 @@ static const cst_val *content_words_out(const cst_item *p)
     int i=0;
     p=item_as(p,WORD);
     s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".R:"PHRASE".P.dn"),WORD);
-    for (;s && !item_equal(p,s);p=item_next(p))
+
+    /* fix by uratec */
+    for (;s && !item_equal(p,s);s=item_prev(s))
     {
-        if (!strcmp(ffeature_string(p,GPOS),"content"))
+        if (!strcmp(ffeature_string(s,GPOS),"content"))
         {i++;}
     }
-    if (!strcmp(ffeature_string(s,GPOS), "content")){i++;}
     return val_string_n(i);
 }
 
