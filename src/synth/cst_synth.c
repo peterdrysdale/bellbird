@@ -66,8 +66,6 @@ CST_VAL_REGISTER_FUNCPTR(breakfunc,cst_breakfunc)
 #define DPRINTF(l,x)
 #endif
 
-static cst_utterance *tokentosegs(cst_utterance *u);
-
 typedef struct cst_synth_module_struct {
     const char *hookname;
     cst_uttfunc defhook;
@@ -75,7 +73,6 @@ typedef struct cst_synth_module_struct {
 
 static const cst_synth_module synth_method_text[];
 static const cst_synth_module synth_method_tokens[];
-static const cst_synth_module synth_method_phones[];
 
 cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v)
 {
@@ -133,11 +130,6 @@ cst_utterance *utt_synth(cst_utterance *u)
 cst_utterance *utt_synth_tokens(cst_utterance *u)
 {
     return apply_synth_method(u, synth_method_tokens);
-}
-
-cst_utterance *utt_synth_phones(cst_utterance *u)
-{
-    return apply_synth_method(u, synth_method_phones);
 }
 
 static cst_utterance *default_tokenization(cst_utterance *u)
@@ -473,70 +465,6 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
     return u;
 }
 
-static cst_utterance *tokentosegs(cst_utterance *u)
-{
-    cst_item *t;
-    cst_relation *seg, *syl, *sylstructure, *word;
-    cst_item *sylitem, *sylstructureitem, *worditem, *sssyl;
-    cst_phoneset *ps;
-
-    ps = val_phoneset(UTT_FEAT_VAL(u, "phoneset"));
-    /* Just copy tokens into the Segment relation */
-    seg = utt_relation_create(u, SEGMENT);
-    syl = utt_relation_create(u, SYLLABLE);
-    word = utt_relation_create(u, WORD);
-    sylstructure = utt_relation_create(u, SYLSTRUCTURE);
-    sssyl = sylitem = worditem = sylstructureitem = 0;
-    for (t = relation_head(utt_relation(u, TOKEN)); t; t = item_next(t))
-    {
-	cst_item *segitem = relation_append(seg, NULL);
-	char const *pname = item_feat_string(t, "name");
-	char *name = cst_strdup(pname);
-
-	if (worditem == 0)
-	{
-	    worditem = relation_append(word,NULL);
-	    item_set_string(worditem, "name", "phonestring");
-	    sylstructureitem = relation_append(sylstructure,worditem);
-	}
-	if (sylitem == 0)
-	{
-	    sylitem = relation_append(syl,NULL);
-	    sssyl = item_add_daughter(sylstructureitem,sylitem);
-	}
-	
-	if (name[cst_strlen(name)-1] == '1')
-	{
-	    item_set_string(sssyl,"stress","1");
-	    name[cst_strlen(name)-1] = '\0';
-	}
-	else if (name[cst_strlen(name)-1] == '0')
-	{
-	    item_set_string(sssyl,"stress","0");
-	    name[cst_strlen(name)-1] = '\0';
-	}
-
-	if (cst_streq(name,"-"))
-	{
-	    sylitem = 0;  /* syllable break */
-	}
-	else if (phone_id(ps, name) == -1) 
-	{
-	    cst_errmsg("Phone `%s' not in phoneset\n", pname);
-	    cst_error();
-	}
-	else
-	{
-	    item_add_daughter(sssyl,segitem);
-	    item_set_string(segitem, "name", name);
-	}
-
-	cst_free(name);
-    }
-
-    return u;
-}
-
 int default_utt_break(cst_tokenstream *ts,
 		      const char *token,
 		      cst_relation *tokens)
@@ -596,12 +524,3 @@ static const cst_synth_module synth_method_tokens[] = {
     { NULL, NULL }
 };
 
-static const cst_synth_module synth_method_phones[] = {
-    { "tokenizer_func", default_tokenization },
-    { "textanalysis_func", tokentosegs },
-    { "pos_tagger_func", default_pos_tagger },
-    { "intonation_func", NULL },
-    { "wave_synth_func", NULL },
-    { "post_synth_hook_func", NULL },
-    { NULL, NULL }
-};

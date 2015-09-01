@@ -135,7 +135,6 @@ static void bellbird_usage()
           "  -pr RelName  Print relation RelName\n"
           "  -ssml          Read input text/file in ssml mode\n"
           "  -t TEXT        Explicitly set input textstring\n"
-          "  -p PHONES      Explicitly set input textstring and synthesize as phones\n"
           " HTS specific options:                                         [  def][ min--max]\n"
           "  -b  f           postfiltering coefficient                    [  0.0][-0.8--0.8]\n"
           "  -r  f           speech speed rate                            [  1.0][ 0.0--    ]\n"
@@ -228,7 +227,7 @@ int main(int argc, char **argv)
     float durs;
     int debug_durs = 0;
     int voice_type=CLUSTERGENMODE; /* default is clustergen voice */
-    int explicit_filename, explicit_text, explicit_phones;
+    int explicit_filename, explicit_text;
     int ssml_mode = FALSE;         /* default to non-SSML reading */
     cst_features *extra_feats = NULL;
     const char *lex_addenda_file = NULL;
@@ -238,7 +237,7 @@ int main(int argc, char **argv)
     HTS_Engine engine;
     nitech_engine ntengine;
 
-    explicit_text = explicit_filename = explicit_phones = FALSE;
+    explicit_text = explicit_filename = FALSE;
     extra_feats = new_features();
 
     for (i = 0; i < argc; i++)
@@ -348,11 +347,6 @@ int main(int argc, char **argv)
 	{
 	    ef_set(extra_feats,argv[++i],"string");
 	}
-	else if ( cst_streq(argv[i],"-p") && (i+1 < argc) )
-	{
-	    texttoread = argv[++i];
-	    explicit_phones = TRUE;
-	}
  	else if ( cst_streq(argv[i],"-t") && (i+1 < argc) )
 	{
 	    texttoread = argv[++i];
@@ -450,11 +444,7 @@ int main(int argc, char **argv)
     {
        durs = 0.0;
 
-       if (explicit_phones)
-       {
-	   durs = flite_phones_to_speech(texttoread,voice,outtype);
-       }
-       else if ((strchr(texttoread,' ') && !explicit_filename) || explicit_text)
+       if ((strchr(texttoread,' ') && !explicit_filename) || explicit_text)
        {
            if (ssml_mode)
                durs = flite_ssml_text_to_speech(texttoread,voice,outtype);

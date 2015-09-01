@@ -62,7 +62,6 @@ int default_utt_break(cst_tokenstream *ts,
 /* You must call utt_init before any of the others. */
 cst_utterance *utt_init(cst_utterance *u, cst_voice *vox);
 cst_utterance *utt_synth(cst_utterance *u);
-cst_utterance *utt_synth_phones(cst_utterance *u);
 cst_utterance *utt_synth_tokens(cst_utterance *u);
 cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v);
 

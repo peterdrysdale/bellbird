@@ -66,15 +66,13 @@ extern cst_lang flite_lang_list[20];
 /* General top level functions */
 float flite_text_to_speech(const char *text, cst_voice *voice,
 			   const char *outtype);
-float flite_phones_to_speech(const char *text, cst_voice *voice,
-			     const char *outtype);
 float flite_ssml_file_to_speech(const char *filename, cst_voice *voice,
                                 const char *outtype);
 float flite_ssml_text_to_speech(const char *text, cst_voice *voice,
                                 const char *outtype);
 int flite_voice_add_lex_addenda(cst_voice *v, const cst_string *lexfile);
 
-/* Lower lever user functions */
+/* Lower level user functions */
 float flite_ts_to_speech(cst_tokenstream *ts, cst_voice *voice,
                          const char *outtype);
 cst_utterance *flite_do_synth(cst_utterance *u, cst_voice *voice,

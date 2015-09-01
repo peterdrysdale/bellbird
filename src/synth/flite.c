@@ -221,22 +221,6 @@ float flite_text_to_speech(const char *text,
     return dur;
 }
 
-float flite_phones_to_speech(const char *text,
-			     cst_voice *voice,
-			     const char *outtype)
-{
-    cst_utterance *u;
-    float dur;
-
-    u = new_utterance();
-    utt_set_input_text(u,text);
-    u = flite_do_synth(u, voice, utt_synth_phones);
-    dur = flite_process_output(u,outtype,FALSE);
-    delete_utterance(u);
-
-    return dur;
-}
-
 float flite_process_output(cst_utterance *u, const char *outtype,
                            int append)
 {
