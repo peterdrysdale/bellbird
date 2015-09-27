@@ -57,8 +57,6 @@ typedef struct lexicon_struct {
 
     int (*syl_boundary)(const cst_item *i,const cst_val *p);
     
-    cst_val *(*lts_function)(const struct lexicon_struct *l, const char *word, const char *pos);
-
     /* ngram frequency table used for packed entries */
     const char * const *phone_hufftable;
     const char * const *entry_hufftable;
@@ -70,6 +68,11 @@ typedef struct lexicon_struct {
 } cst_lexicon;
 
 cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile);
+
+const cst_val *get_entry_lex_addenda(const char *word,
+                                        const cst_val *lex_addenda);
+
+cst_val *get_phones_lex_addenda(const cst_val *entry);
 
 cst_val *lex_lookup(const cst_lexicon *l, const char *word, const char *pos);
 int in_lex(const cst_lexicon *l, const char *word, const char *pos);

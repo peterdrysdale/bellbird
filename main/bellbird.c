@@ -233,6 +233,7 @@ int main(int argc, char **argv)
     const char *lex_addenda_file = NULL;
     float tempfloat;
     int tempint;
+    cst_lexicon *lex;
 
     HTS_Engine engine;
     nitech_engine ntengine;
@@ -434,7 +435,11 @@ int main(int argc, char **argv)
     feat_copy_into(extra_feats,voice->features);
     delete_features(extra_feats);
 
-    if (lex_addenda_file) flite_voice_add_lex_addenda(voice,lex_addenda_file);
+    if (lex_addenda_file)
+    {
+        lex = val_lexicon(feat_val(voice->features,"lexicon"));
+        lex->lex_addenda = cst_lex_load_addenda(lex,lex_addenda_file);
+    }
 
     if (voice_type==NITECHMODE || voice_type==HTSMODE)
     {

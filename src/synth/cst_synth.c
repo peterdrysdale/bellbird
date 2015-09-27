@@ -409,9 +409,10 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
         }
 	else
 	{
-            wp = val_assoc_string(item_feat_string(word, "name"),lex_addenda);
+            wp = get_entry_lex_addenda(item_feat_string(word, "name"),
+                                       lex_addenda);
             if (wp)
-                phones = (cst_val *)val_cdr(val_cdr(wp));
+                phones = get_phones_lex_addenda(wp);
             else
             {
                 dp = 1;

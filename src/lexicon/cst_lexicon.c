@@ -134,18 +134,12 @@ static cst_val *lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
                                                 val_reverse(phones)));
     cst_free(word);cst_free(pos); ts_close(e);
 
-#if 0
-    printf("entry: ");
-    val_print(stdout,ventry);
-    printf("\n");
-#endif
-
     return ventry;
 }
 
 cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
 {
-//  Loaded a pronouncing dictionary addenda at runtime
+//  Load a pronouncing dictionary addenda at runtime
     cst_tokenstream *lf;
     const cst_string *line;
     cst_val *e = NULL;
@@ -169,16 +163,36 @@ cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
     }
 
     ts_close(lf);
-    return val_reverse(na);
+    return na;
+}
+
+const cst_val *get_entry_lex_addenda(const char *word,const cst_val *lex_addenda)
+{
+//  Return lex_addenda entry corresponding to word if it exists
+    return val_assoc_string(word,lex_addenda);
+
+}
+
+cst_val *get_phones_lex_addenda(const cst_val *entry)
+{
+//  Extract phones from a lex_addenda entry
+    return (cst_val *)val_cdr(val_cdr(entry));
 }
 
 int in_lex(const cst_lexicon *l, const char *word, const char *pos)
 {
-    /* return TRUE if its in the lexicon */
+//  Return TRUE if in addenda or lexicon
     int r = FALSE;
     char *wp;
     size_t wordlen;
 
+//  Check if in addenda first and early exit if it is
+    if ((l->lex_addenda) && (get_entry_lex_addenda(word,l->lex_addenda)))
+    {
+        return TRUE;
+    }
+
+//  Otherwise look in builtin lexicon
     wordlen = cst_strlen(word);
     wp = cst_alloc(char,wordlen+2);
     bell_snprintf(wp,wordlen+2,"%c%s",(pos ? pos[0] : '0'),word);
@@ -213,10 +227,6 @@ cst_val *lex_lookup(const cst_lexicon *l, const char *word, const char *pos)
                                  phones);
 
         phones = val_reverse(phones);
-    }
-    else if (l->lts_function)
-    {
-        phones = (l->lts_function)(l,word,"");
     }
     else if (l->lts_rule_set)
     {

@@ -70,7 +70,6 @@ float flite_ssml_file_to_speech(const char *filename, cst_voice *voice,
                                 const char *outtype);
 float flite_ssml_text_to_speech(const char *text, cst_voice *voice,
                                 const char *outtype);
-int flite_voice_add_lex_addenda(cst_voice *v, const cst_string *lexfile);
 
 /* Lower level user functions */
 float flite_ts_to_speech(cst_tokenstream *ts, cst_voice *voice,
