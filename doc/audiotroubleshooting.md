@@ -13,6 +13,7 @@ have this installed with the default ALSA package).
 The user should create a file `.asoundrc` in their home directory 
 with the following contents.
 
+```
 pcm.!default {
 	type plug
 	slave.pcm "dmixer"
@@ -38,6 +39,7 @@ ctl.dmixer {
 	type hw
 	card 0
 }
+```
 
 Note the card number maybe different (0, 1, 2 ..). Select the rate based
 on the sound card (typically 48000 or 44100).
