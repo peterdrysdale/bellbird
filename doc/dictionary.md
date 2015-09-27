@@ -14,10 +14,7 @@ with Bellbird.
 
 ##Determining Bellbird's pronounciation
 
-The tool `text2phones` allows the user to determine how Bellbird will pronounce a word. It
-is called as:
-
-    text2phones wordtobepronounced
+The option `--printphones` allows the user to determine how Bellbird will pronounce a word.
 
 ##Temporary Bellbird runtime pronounciation changes
 
@@ -67,7 +64,7 @@ table `cmu_lex_phone_table` in the file `lang/cmulex/cmu_lex_entries.c`.
 Observing the way words are already encoded by looking at examples in the existing decoded
 dictionary are invaluable for generating a new pronounciation.
 
-Using `text2phones` to find how the letter to sound rules work may also help.
+Using the `--printphones` option to find how the letter to sound rules work may also help.
 
 Always recheck a pronounciation when it is compiled in as the pronounciation may occasionally surprise.
 
@@ -82,7 +79,7 @@ In the Bellbird authors experience the ideal way to improve Bellbird's pronounci
 Bellbird and when you find words which can be improved, improve them from your own speaking experience.
 Speak to a diversity of friends or colleagues to obtain opinions on pronounciation. Occasionally one
 mispronounced word will provide an idea for a number of others that you can check. The authors find words
-through their own use of Bellbird or by periodic hammering `bellbird` and `text2phones` with words off the top
+through their own use of Bellbird or by periodic hammering `bellbird` with words off the top
 of their heads. Books in the public domain are a valuable source of words. Looking at the existing Flite and
 Bellbird dictionaries is also invaluable. Seeing some words in a group in these existing dictionaries
 allows one to easily remember other new words in the group which may then be tested.

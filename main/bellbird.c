@@ -92,7 +92,9 @@
 #include "cst_string.h"
 #include "cst_utt_utils.h"
 #include "flite.h"
+#include "bell_file.h"
 #include "bell_driver.h"
+#include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 #include "../lang/cmulex/cmu_lex.h"
 
@@ -126,13 +128,12 @@ static void bellbird_usage()
           "  --htsvoice VOICEFILE   Use voice hts voice at VOICEFILE \n"
           "  --add_dict FILENAME Add dictionary addenda from FILENAME\n"
           "  --startpos n   Read input file from byte n (int), skipping n-1 bytes\n"
+          "  --printphones  Print phones while generating speech"
+          "  --printtext    Print text while generating speech"
           "  --seti F=V     Set int feature\n"
           "  --setf F=V     Set float feature\n"
           "  --sets F=V     Set string feature\n"
           " Clustergen specific options:"
-          "  -pw         Print words\n"
-          "  -ps         Print segments\n"
-          "  -pr RelName  Print relation RelName\n"
           "  -ssml          Read input text/file in ssml mode\n"
           "  -t TEXT        Explicitly set input textstring\n"
           " HTS specific options:                                         [  def][ min--max]\n"
@@ -152,24 +153,47 @@ static void bellbird_usage()
     exit(0);
 }
 
-static cst_utterance *print_info(cst_utterance *u)
+static cst_utterance *bell_print_text(cst_utterance *u)
 {
-    cst_item *item;
-    const char *relname;
+//  print text (tokens without punctuation) from utterance
+    cst_item *token;
 
-    relname = UTT_FEAT_STRING(u,"print_info_relation");
-    for (item=relation_head(utt_relation(u,relname)); 
-	 item; 
-	 item=item_next(item))
+    for (token=relation_head(utt_relation(u,TOKEN));
+	 token;
+	 token=item_next(token))
     {
-	printf("%s ",item_feat_string(item,"name"));
-#if 0
-        if (cst_streq("+",ffeature_string(item,PH_VC)))
-            printf("%s",ffeature_string(item,"R:"SYLSTRUCTURE".P.stress"));
-        printf(" ");
-#endif
+	bell_fprintf(stdout,"%s ",item_feat_string(token,"name"));
     }
-    printf("\n");
+    bell_fprintf(stdout,"\n");
+
+    return u;
+}
+
+static cst_utterance *bell_print_phones(cst_utterance *u)
+{
+//  print phones with stress from utterance
+    cst_item *phone;
+
+    for (phone=relation_head(utt_relation(u,SEGMENT));
+         phone;
+         phone=item_next(phone))
+    {
+        bell_fprintf(stdout,"%s",item_feat_string(phone,"name"));
+	if (cst_streq("+",ffeature_string(phone,PH_VC)))
+        {
+            if (cst_streq("1",ffeature_string(phone,"R:"SYLSTRUCTURE".P.stress")))
+            {
+                bell_fprintf(stdout,"1");
+            }
+            else
+            {
+                bell_fprintf(stdout,"0");
+            }
+        }
+        bell_fprintf(stdout," ");
+
+    }
+    bell_fprintf(stdout,"\n");
 
     return u;
 }
@@ -314,28 +338,20 @@ int main(int argc, char **argv)
                 printf("Failed to set '--startpos' command option\n");
             }
         }
-	else if (cst_streq(argv[i],"-pw"))
+        else if (cst_streq(argv[i],"--printphones"))
+        {
+            feat_set(extra_feats,"post_synth_hook_func",
+                     uttfunc_val(&bell_print_phones));
+        }
+	else if (cst_streq(argv[i],"--printtext"))
 	{
-	    feat_set_string(extra_feats,"print_info_relation",WORD);
 	    feat_set(extra_feats,"post_synth_hook_func",
-		     uttfunc_val(&print_info));
-	}
-	else if (cst_streq(argv[i],"-ps"))
-	{
-	    feat_set_string(extra_feats,"print_info_relation",SEGMENT);
-	    feat_set(extra_feats,"post_synth_hook_func",
-		     uttfunc_val(&print_info));
+		     uttfunc_val(&bell_print_text));
 	}
         else if (cst_streq(argv[i],"-ssml"))
         {
             ssml_mode = TRUE;
         }
-	else if ( cst_streq(argv[i],"-pr") && (i+1 < argc) )
-	{
-	    feat_set_string(extra_feats,"print_info_relation",argv[++i]);
-	    feat_set(extra_feats,"post_synth_hook_func",
-		     uttfunc_val(&print_info));
-	}
 	else if ( cst_streq(argv[i],"--seti") && (i+1 < argc) )
 	{
 	    ef_set(extra_feats,argv[++i],"int");

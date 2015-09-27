@@ -182,12 +182,3 @@ TARGET_LINK_LIBRARIES (
     m
 )
 
-ADD_EXECUTABLE ( text2phones main/text2phones.c )
-
-TARGET_LINK_LIBRARIES (
-    text2phones
-    libbellbird_cmulex
-    libbellbird_usenglish
-    libbellbird
-    m
-)
