@@ -78,6 +78,14 @@ void delete_utterance(cst_utterance *u)
     }
 }
 
+static int utt_relation_delete(cst_utterance *u,const char *name)
+{
+    /* Relation vals don't delete their contents */
+    if (feat_present(u->relations, name))
+	delete_relation(val_relation(feat_val(u->relations,name)));
+    return feat_remove(u->relations,name);
+}
+
 cst_relation *utt_relation_create(cst_utterance *u,const char *name)
 {
     cst_relation *r;
@@ -86,14 +94,6 @@ cst_relation *utt_relation_create(cst_utterance *u,const char *name)
     r = new_relation(name,u);
     feat_set(u->relations,name,relation_val(r));
     return r;
-}
-
-int utt_relation_delete(cst_utterance *u,const char *name)
-{
-    /* Relation vals don't delete their contents */
-    if (feat_present(u->relations, name))
-	delete_relation(val_relation(feat_val(u->relations,name)));
-    return feat_remove(u->relations,name);
 }
 
 cst_relation *utt_relation(const cst_utterance *u,const char *name)
