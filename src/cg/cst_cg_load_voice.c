@@ -90,8 +90,14 @@ cst_voice *cst_cg_load_voice(const char *filename,
             end_of_features = 1;
         else
         {
-            xname = feat_own_string(vox->features,fname);
-            feat_set_string(vox->features,xname, fval);
+// Only set features bellbird actually uses at this time
+            if (cst_streq(fname,"language") ||
+                cst_streq(fname,"num_dur_models") ||
+                cst_streq(fname,"num_param_models") )
+            {
+                xname = feat_own_string(vox->features,fname);
+                feat_set_string(vox->features,xname, fval);
+            }
         }
         cst_free(fname);
         cst_free(fval);
