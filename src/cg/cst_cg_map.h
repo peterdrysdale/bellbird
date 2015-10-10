@@ -54,7 +54,8 @@
 
 int cst_cg_read_header(cst_file fd);
 
-cst_cg_db* cst_cg_load_db(cst_voice *vox, cst_file fd);
+cst_cg_db* cst_cg_load_db(cst_file fd, int num_param_models,
+                          int num_dur_models);
 void cst_cg_free_db(cst_cg_db*);
 
 void cst_read_voice_feature(cst_file fd,char** fname, char** fval);

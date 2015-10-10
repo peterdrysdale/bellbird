@@ -63,6 +63,9 @@ cst_voice *cst_cg_load_voice(const char *filename,
     char* fname;
     char* fval;
     cst_file vd;
+    int num_param_models = 3;
+    int num_dur_models = 1;
+    int tempint;
 
     if ((vd = bell_fopen(filename,"rb")) == NULL)
     {
@@ -91,12 +94,20 @@ cst_voice *cst_cg_load_voice(const char *filename,
         else
         {
 // Only set features bellbird actually uses at this time
-            if (cst_streq(fname,"language") ||
-                cst_streq(fname,"num_dur_models") ||
-                cst_streq(fname,"num_param_models") )
+            if (cst_streq(fname,"language"))
             {
                 xname = feat_own_string(vox->features,fname);
                 feat_set_string(vox->features,xname, fval);
+            }
+            else if (cst_streq(fname,"num_param_models"))
+            {
+                bell_validate_atoi(fval,&tempint);
+                num_param_models=tempint;
+            }
+            else if (cst_streq(fname,"num_dur_models"))
+            {
+                bell_validate_atoi(fval,&tempint);
+                num_dur_models=tempint;
             }
         }
         cst_free(fname);
@@ -104,7 +115,7 @@ cst_voice *cst_cg_load_voice(const char *filename,
     }
 
     /* Load up cg_db from external file */
-    cg_db = cst_cg_load_db(vox,vd);
+    cg_db = cst_cg_load_db(vd,num_param_models,num_dur_models);
 
     if (cg_db == NULL)
     {

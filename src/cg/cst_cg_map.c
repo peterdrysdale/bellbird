@@ -513,7 +513,7 @@ int cst_cg_read_header(cst_file fd)
     return 0;
 }
 
-cst_cg_db *cst_cg_load_db(cst_voice *vox,cst_file fd)
+cst_cg_db *cst_cg_load_db(cst_file fd,int num_param_models,int num_dur_models)
 {
     cst_cg_db* db = cst_alloc(cst_cg_db,1);
     int i;
@@ -528,7 +528,7 @@ cst_cg_db *cst_cg_load_db(cst_voice *vox,cst_file fd)
 
     db->f0_trees = (const cst_cart**) cst_read_tree_array(fd);
 
-    db->num_param_models = get_param_int(vox->features,"num_param_models",3);
+    db->num_param_models = num_param_models;
     db->param_trees = cst_alloc(const cst_cart **,db->num_param_models);
     for (i=0; i<db->num_param_models; i++)
         db->param_trees[i] = (const cst_cart **) cst_read_tree_array(fd);
@@ -574,7 +574,7 @@ cst_cg_db *cst_cg_load_db(cst_voice *vox,cst_file fd)
 
     db->frame_advance = cst_read_float(fd);
 
-    db->num_dur_models = get_param_int(vox->features,"num_dur_models",1);
+    db->num_dur_models = num_dur_models;
     db->dur_stats = cst_alloc(const dur_stat **,db->num_dur_models);
     db->dur_cart = cst_alloc(const cst_cart *,db->num_dur_models);
 
