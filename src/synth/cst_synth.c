@@ -71,8 +71,8 @@ typedef struct cst_synth_module_struct {
     cst_uttfunc defhook;
 } cst_synth_module;
 
-static const cst_synth_module synth_method_text[];
 static const cst_synth_module synth_method_tokens[];
+static const cst_synth_module synth_module_tokenizer;
 
 cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v)
 {
@@ -124,7 +124,11 @@ cst_utterance *utt_init(cst_utterance *u, cst_voice *vox)
 
 cst_utterance *utt_synth(cst_utterance *u)
 {
-    return apply_synth_method(u, synth_method_text);
+// utt_synth is a tokenizer module followed by the usual utt_synth_tokens
+// synthesis method
+    if ((u=apply_synth_module(u,&synth_module_tokenizer)) == NULL)
+       return NULL;
+    return apply_synth_method(u, synth_method_tokens);
 }
 
 cst_utterance *utt_synth_tokens(cst_utterance *u)
@@ -498,19 +502,8 @@ int default_utt_break(cst_tokenstream *ts,
 	return FALSE;
 }
 
-static const cst_synth_module synth_method_text[] = {
-    { "tokenizer_func", default_tokenization },
-    { "textanalysis_func", default_textanalysis },
-    { "pos_tagger_func", default_pos_tagger },
-    { "phrasing_func", NULL },
-    { "lexical_insertion_func", default_lexical_insertion },
-    { "pause_insertion_func", default_pause_insertion },
-    { "intonation_func", cart_intonation },
-    { "postlex_func", NULL },
-    { "wave_synth_func", NULL },
-    { "post_synth_hook_func", NULL },
-    { NULL, NULL }
-};
+static const cst_synth_module synth_module_tokenizer =
+    { "tokenizer_func", default_tokenization };
 
 static const cst_synth_module synth_method_tokens[] = {
     { "textanalysis_func", default_textanalysis },
@@ -524,4 +517,3 @@ static const cst_synth_module synth_method_tokens[] = {
     { "post_synth_hook_func", NULL },
     { NULL, NULL }
 };
-
