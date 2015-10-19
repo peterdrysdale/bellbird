@@ -116,8 +116,7 @@ cst_item* path_to_item(const cst_item *item,const char *featpath);
 
 /* Feature function, for features that are derived algorithmically from others. */
 typedef const cst_val *(*cst_ffunction)(const cst_item *i);
-CST_VAL_USER_FUNCPTR_DCLS(ffunc,cst_ffunction)
-void ff_register(cst_features *ffeatures, const char *name,
+void ff_register(cst_ffunction *ffeatures, const char *name,
 			   cst_ffunction f);
 
 /* Generalized item hook function, like cst_uttfunc. */

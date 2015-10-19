@@ -55,18 +55,17 @@ VAL_REG(utterance,7)
 VAL_REG(wave,9)
 VAL_REG(track,11)
 VAL_REG(uttfunc,13)
-VAL_REG(ffunc,15)
-VAL_REG(relation,17)
-VAL_REG(item,19)
-VAL_REG(cart,21)
-VAL_REG(phoneset,23)
-VAL_REG(lexicon,25)
-VAL_REG(userdata,27)
+VAL_REG(relation,15)
+VAL_REG(item,17)
+VAL_REG(cart,19)
+VAL_REG(phoneset,21)
+VAL_REG(lexicon,23)
+VAL_REG(userdata,25)
 CST_VAL_REGISTER_TYPE_NODEL(userdata,cst_userdata)   // This generic type has not been defined elsewhere
-VAL_REG(itemfunc,29)
-VAL_REG(features,31)
-VAL_REG(breakfunc,33)
-VAL_REG(cg_db,35)
+VAL_REG(itemfunc,27)
+VAL_REG(features,29)
+VAL_REG(breakfunc,31)
+VAL_REG(cg_db,33)
 
 // The val takes ownership and must provide delete for these types
 void val_delete_utterance(void *v);
@@ -87,15 +86,14 @@ const cst_val_def cst_val_defs[] = {
     { "wave", val_delete_wave },           /*  9 wave */
     { "track", val_delete_track },         /* 11 track */
     { "uttfunc", NULL },                   /* 13 uttfunc */
-    { "ffunc", NULL },                     /* 15 ffunc */
-    { "relation", NULL },                  /* 17 relation */
-    { "item", NULL },                      /* 19 item */
-    { "cart", NULL },                      /* 21 cart */
-    { "phoneset", NULL },                  /* 23 phoneset */
-    { "lexicon", val_delete_lexicon },     /* 25 lexicon */
-    { "userdata", NULL },                  /* 27 userdata */
-    { "itemfunc", NULL },                  /* 29 itemfunc */
-    { "features", val_delete_features },   /* 31 features */
-    { "breakfunc", NULL },                 /* 33 breakfunc */
-    { "cg_db", val_delete_cg_db },         /* 35 cg_db */
+    { "relation", NULL },                  /* 15 relation */
+    { "item", NULL },                      /* 17 item */
+    { "cart", NULL },                      /* 19 cart */
+    { "phoneset", NULL },                  /* 21 phoneset */
+    { "lexicon", val_delete_lexicon },     /* 23 lexicon */
+    { "userdata", NULL },                  /* 25 userdata */
+    { "itemfunc", NULL },                  /* 27 itemfunc */
+    { "features", val_delete_features },   /* 29 features */
+    { "breakfunc", NULL },                 /* 31 breakfunc */
+    { "cg_db", val_delete_cg_db },         /* 33 cg_db */
 };

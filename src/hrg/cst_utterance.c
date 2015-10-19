@@ -57,7 +57,6 @@ cst_utterance *new_utterance()
     u = cst_alloc(struct cst_utterance_struct,1);
 
     u->features = new_features();
-    u->ffunctions = new_features();
     u->relations = new_features();
 
     return u;
@@ -69,7 +68,6 @@ void delete_utterance(cst_utterance *u)
     if (u)
     {
 	delete_features(u->features);
-	delete_features(u->ffunctions);
 	/* Relation vals don't delete their contents */
 	for (fp=u->relations->head; fp; fp=fp->next)
 	    delete_relation(val_relation(fp->val)); 

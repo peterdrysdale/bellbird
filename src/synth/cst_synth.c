@@ -115,7 +115,7 @@ static cst_utterance *apply_synth_method(cst_utterance *u,
 cst_utterance *utt_init(cst_utterance *u, cst_voice *vox)
 {
     feat_copy_into(vox->features,u->features);
-    feat_copy_into(vox->ffunctions,u->ffunctions);
+    u->ffunctions = vox->ffunctions;
     if (vox->utt_init)
 	vox->utt_init(u, vox);
 

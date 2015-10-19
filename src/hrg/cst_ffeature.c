@@ -52,8 +52,6 @@
 
 #define TOKENSTRINGBUF 199 /* current max. length of tokenstring is approx. 142 chars */
 
-CST_VAL_REGISTER_FUNCPTR(ffunc,cst_ffunction)
-
 DEF_STATIC_CONST_VAL_STRING(ffeature_default_val,"0");
 
 static const void *internal_ff(const cst_item *item,
@@ -89,8 +87,7 @@ static const void *internal_ff(const cst_item *item,
     cst_utterance *utt;
     const cst_item *pitem;
     void *void_v;
-    const cst_val *ff;
-    cst_ffunction ffunc;
+    cst_ffunction ff;
     char tokenstring[TOKENSTRINGBUF+1];
     char *tokens[TOKENSTRINGBUF+1];
     int i,j;
@@ -150,8 +147,10 @@ static const void *internal_ff(const cst_item *item,
 
     if (type == 0)
     {
-	if (pitem && (utt = item_utt(pitem)))
-	    ff = feat_val(utt->ffunctions,tk);
+	if (pitem && (utt = item_utt(pitem)) && tk[0]!='\0' && tk[1]=='\0')
+// the final two subconditions in the if statement excludes tokens which
+// are know not to be ffunctions
+	        ff = utt->ffunctions[(int)tk[0]];
 	else
 	    ff = NULL;
 	void_v = NULL;
@@ -159,22 +158,10 @@ static const void *internal_ff(const cst_item *item,
 	    void_v = (void *)item_feat(pitem,tk);
 	else if (pitem)
 	{
-	    ffunc = val_ffunc(ff);
-	    void_v = (void *)(*ffunc)(pitem);
+	    void_v = (void *)(*ff)(pitem);
 	}
 	if (void_v == NULL)
         {
-#if 0
-            if (pitem)
-                printf("awb_debug didn't find %s in %s\n",tk,
-                       get_param_string(pitem->contents->features,"name","noname"));
-            else
-            {
-                if (cst_streq(GPOS,tk))
-                    printf("awb_debug2\n");
-                printf("awb_debug didn't find %s %s\n",tk,featpath);
-            }
-#endif
 	    void_v = (void *)&ffeature_default_val;
         }
     }
@@ -184,11 +171,15 @@ static const void *internal_ff(const cst_item *item,
     return void_v;
 }
 
-void ff_register(cst_features *ffunctions, const char *name, cst_ffunction f)
+void ff_register(cst_ffunction *ffunctions, const char *name, cst_ffunction f)
 {
-    /* Register features functions */
+//  Register features functions in indexed lookup table.
+//  'name' should be a single byte string symbol which will be used as an
+//  unique index. This should be recorded in bell_ff_sym.h
 
-    if (feat_present(ffunctions, name))
+    if (name[1]!='\0' && name[1] != '\0')
+        cst_errmsg("warning: ffunction identifier %s too long - truncating", name);
+    if (ffunctions[(int)name[0]] != NULL)
 	cst_errmsg("warning: ffunction %s redefined\n", name);
-    feat_set(ffunctions, name, ffunc_val(f));
+    ffunctions[(int)name[0]]=f;
 }

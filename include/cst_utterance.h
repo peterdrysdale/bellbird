@@ -53,7 +53,7 @@
 
 struct cst_utterance_struct {
     cst_features *features;
-    cst_features *ffunctions;
+    cst_ffunction *ffunctions; // Pointer to voice's features functions array
     cst_features *relations;
 };
 

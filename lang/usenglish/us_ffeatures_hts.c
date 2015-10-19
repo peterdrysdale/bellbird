@@ -326,7 +326,7 @@ static const cst_val *lisp_total_phrases(const cst_item *phrase)
     return val_string_n(c);
 }
 
-void us_ff_register_hts(cst_features *ffunctions)
+void us_ff_register_hts(cst_ffunction *ffunctions)
 {
     us_ff_register(ffunctions);
 

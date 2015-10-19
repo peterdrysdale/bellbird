@@ -4,6 +4,8 @@
 // These are compact forms of featfunc symbols
 // Using these definitions improves performance of internal_ff
 // The values themselves are irrelevant it is only required they are unique
+// and a single byte
+// The value \x00 is unavailable as it is the string terminator
 
 #define PH_VC "\x01"
 #define PH_VLNG "\x02"

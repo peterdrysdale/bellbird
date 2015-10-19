@@ -203,7 +203,7 @@ static const cst_val *lisp_cg_content_words_in_phrase(const cst_item *p)
 }
 
 
-void us_ff_register(cst_features *ffunctions)
+void us_ff_register(cst_ffunction *ffunctions)
 {
 
     /* The language independent ones */

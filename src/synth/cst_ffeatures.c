@@ -784,7 +784,7 @@ static const cst_val *segment_duration(const cst_item *seg)
 }
 
 
-void basic_ff_register(cst_features *ffunctions)
+void basic_ff_register(cst_ffunction *ffunctions)
 {
     ff_register(ffunctions, PH_VC,ph_vc);
     ff_register(ffunctions, PH_VLNG,ph_vlng);

@@ -48,6 +48,6 @@
 #include "cst_val.h"
 #include "cst_item.h"
 
-void basic_ff_register(cst_features *ffunctions);
+void basic_ff_register(cst_ffunction *ffunctions);
 
 #endif /* _CST_FFEATURES_H */
