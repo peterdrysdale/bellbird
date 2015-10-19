@@ -296,7 +296,8 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
 
     /* If its a file we write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
-    if (!cst_streq(outtype,"play") && 
+    if (!cst_streq(outtype,"play") &&
+        !cst_streq(outtype,"bufferedplay") &&
         !cst_streq(outtype,"none"))
     {
         w = new_wave();

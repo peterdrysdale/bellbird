@@ -114,6 +114,7 @@ float flite_ts_to_speech(cst_tokenstream *ts,
     /* If its a file to write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
     if (!cst_streq(outtype,"play") && 
+        !cst_streq(outtype,"bufferedplay") &&
         !cst_streq(outtype,"none"))
     {
 	w = new_wave();
@@ -212,6 +213,12 @@ float flite_process_output(cst_utterance *u, const char *outtype,
     {
 	play_wave(w);
     }
+#ifdef CST_AUDIO_ALSA
+    else if (cst_streq(outtype,"bufferedplay"))
+    {
+        buffer_wave(w,get_param_int(u->features,"au_buffer_fd",-1));
+    }
+#endif // CST_AUDIO_ALSA
     else if (!cst_streq(outtype,"none"))
     {
         if (append)

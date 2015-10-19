@@ -92,6 +92,7 @@
 #include "cst_string.h"
 #include "cst_utt_utils.h"
 #include "flite.h"
+#include "bell_audio.h"
 #include "bell_file.h"
 #include "bell_driver.h"
 #include "bell_ff_sym.h"
@@ -119,37 +120,39 @@ static void bellbird_usage()
     printf("usage: bellbird [options ] [-f infile] [ -o outfile]\n"
           "  Converts text in infile to a synthesized speech in wav format in outfile.\n"
           "  Other options must appear before these options\n"
-          "  --version      Output bellbird version number\n"
-          "  --help         Output usage string\n"
-          "  -o outfile     Explicitly set output wav audio filename\n"
-          "  -f infile      Explicitly set input filename\n"
+          "  --version              Output bellbird version number\n"
+          "  --help                 Output usage string\n"
+          "  -o outfile             Explicitly set output wav audio filename\n"
+          "  -f infile              Explicitly set input filename\n"
           "  --voice VOICEFILE      Use voice clustergen voice at VOICEFILE \n"
           "  --nitechvoice VOICEDIR Use voice nitech voice at VOICEDIR \n"
           "  --htsvoice VOICEFILE   Use voice hts voice at VOICEFILE \n"
-          "  --add_dict FILENAME Add dictionary addenda from FILENAME\n"
+          "  --add_dict FILENAME    Add dictionary addenda from FILENAME\n"
           "  --startpos n   Read input file from byte n (int), skipping n-1 bytes\n"
-          "  --printphones  Print phones while generating speech"
-          "  --printtext    Print text while generating speech"
+          "  --printphones  Print phones while generating speech\n"
+          "  --printtext    Print text while generating speech\n"
           "  --seti F=V     Set int feature\n"
           "  --setf F=V     Set float feature\n"
           "  --sets F=V     Set string feature\n"
-          " Clustergen specific options:"
+          " Clustergen specific options:\n"
           "  -ssml          Read input text/file in ssml mode\n"
           "  -t TEXT        Explicitly set input textstring\n"
-          " HTS specific options:                                         [  def][ min--max]\n"
-          "  -b  f           postfiltering coefficient                    [  0.0][-0.8--0.8]\n"
-          "  -r  f           speech speed rate                            [  1.0][ 0.0--    ]\n"
-          "  -fm f           additional half-tone                         [  0.0][    --    ]\n"
-          "  -u  f           voiced/unvoiced threshold                    [  0.5][ 0.0--1.0]\n"
-          "  -jm f           weight of GV for spectrum                    [  1.0][ 0.0--2.0]\n"
-          "  -jf f           weight of GV for Log F0                      [  1.0][ 0.0--2.0]\n"
+          " HTS specific options:                                   [  def][ min--max]\n"
+          "  -b  f           postfiltering coefficient              [  0.0][-0.8--0.8]\n"
+          "  -r  f           speech speed rate                      [  1.0][ 0.0--   ]\n"
+          "  -fm f           additional half-tone                   [  0.0][    --   ]\n"
+          "  -u  f           voiced/unvoiced threshold              [  0.5][ 0.0--1.0]\n"
+          "  -jm f           weight of GV for spectrum              [  1.0][ 0.0--2.0]\n"
+          "  -jf f           weight of GV for Log F0                [  1.0][ 0.0--2.0]\n"
           "\n"
           " infile:\n"
           "   text file  dash(-) reads from stdin\n"
           " outfile:\n"
-          "   wav file   dash(-) sends to stdout\n"
-          "              none  discards for benchmarking\n"
-          "              play  sends to audio device\n");
+          "   wav file   dash(-)       sends to stdout\n"
+          "              none          discards for benchmarking\n"
+          "              play          sends to audio device\n"
+          "              bufferedplay  sends to audio device via a buffer to reduce\n"
+          "                            pauses between utterances\n");
     exit(0);
 }
 
@@ -258,16 +261,33 @@ int main(int argc, char **argv)
     float tempfloat;
     int tempint;
     cst_lexicon *lex;
+#ifdef CST_AUDIO_ALSA
+    int fd = -1;     // file descriptor for pipe to audio scheduler if used
+#endif //CST_AUDIO_ALSA
 
     HTS_Engine engine;
     nitech_engine ntengine;
 
     explicit_text = explicit_filename = FALSE;
-    extra_feats = new_features();
+
+#ifdef CST_AUDIO_ALSA
+//  fork an audio scheduler if needed before any calloc() for efficiency reasons
+    for (i=0; i< argc; i++)
+    {
+        if (cst_streq(argv[i],"-o") && cst_streq(argv[i+1],"bufferedplay"))
+        {
+            fd = audio_scheduler(); //start audio scheduler
+            extra_feats = new_features();
+            feat_set_int(extra_feats,"au_buffer_fd",fd);
+        }
+    }
+#endif //CST_AUDIO_ALSA
+
+    if (NULL == extra_feats) extra_feats = new_features();
 
     for (i = 0; i < argc; i++)
     {
-	if (cst_streq(argv[i],"--version"))
+        if (cst_streq(argv[i],"--version"))
 	{
 	    bellbird_version();
 	    return 1;
@@ -295,7 +315,7 @@ int main(int argc, char **argv)
 
     flite_add_lang("eng",usenglish_init,cmu_lex_init); /* removed set_lang_list */
     voice = bell_voice_load(fn_voice,voice_type,&engine,&ntengine);
-    if (voice == NULL) exit(1);
+    if (NULL == voice) exit(1);
 
     for (i=1; i < argc; i++)
     {
@@ -445,7 +465,7 @@ int main(int argc, char **argv)
         } /* end of hts specific options */
     }
 
-    if (texttoread == NULL) texttoread = "-";  /* default to stdin  */
+    if (NULL == texttoread) texttoread = "-";  /* default to stdin  */
 
    /* Add extra command line features to already loaded voice and clean up */
     feat_copy_into(extra_feats,voice->features);
@@ -484,6 +504,12 @@ int main(int argc, char **argv)
 
     } /* end of voice_type==CLUSTERGENMODE */
 
+#ifdef CST_AUDIO_ALSA
+//  Close the audio scheduler if it has been started
+    fd = get_param_int(voice->features,"au_buffer_fd",-1);
+    if (fd != -1)
+        audio_scheduler_close(fd);
+#endif // CST_AUDIO_ALSA
     bell_voice_unload(voice,voice_type,&engine,&ntengine);
     voice=NULL;
     return 0;
