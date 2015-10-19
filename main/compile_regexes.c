@@ -74,7 +74,11 @@ static void regex_to_C(const char *name, const cst_regex *rgx)
     }
     else
     {
+#ifndef BELL_WINDOWS
         printf("%s_rxprog + %td, ", name, rgx->regmust - rgx->program);
+#else
+        printf("%s_rxprog + %Id, ", name, rgx->regmust - rgx->program);
+#endif
     }
 
     printf("%d, ",rgx->regmlen);
