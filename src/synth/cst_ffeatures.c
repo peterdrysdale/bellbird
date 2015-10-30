@@ -568,8 +568,8 @@ static const cst_val *ssyl_in(const cst_item *syl)
     fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
 
     /* fix by uratec */
-    if(item_equal(ss,fs))
-      return val_string_n(0);
+    if (item_equal(ss,fs))
+        return val_string_n(0);
 
     for (c=0, p=item_prev(ss); 
 	 p && (!item_equal(p,fs)) && (c < CST_CONST_INT_MAX);
@@ -593,8 +593,8 @@ static const cst_val *ssyl_out(const cst_item *syl)
     fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
 
     /* fix by uratec */
-    if(item_equal(ss,fs))
-      return val_string_n(0);
+    if (item_equal(ss,fs))
+        return val_string_n(0);
 
     for (c=0, p=item_next(ss); 
 	 p && (c < CST_CONST_INT_MAX); 
@@ -726,9 +726,8 @@ static const cst_val *asyl_in(const cst_item *syl)
     fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
 
     /* fix by uratec */
-    if(item_equal(ss,fs))
-      return val_string_n(0);
-
+    if (item_equal(ss,fs))
+        return val_string_n(0);
     for (c=0, p=item_prev(ss);
 	 p && (c < CST_CONST_INT_MAX); 
 	 p=item_prev(p))
@@ -753,7 +752,10 @@ static const cst_val *asyl_out(const cst_item *syl)
 
     fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
 
-    for (c=0, p=ss; 
+    /* fix by uratec */
+    if (item_equal(ss,fs))
+        return val_string_n(0);
+    for (c=0, p=item_next(ss);
 	 p && (c < CST_CONST_INT_MAX); 
 	 p=item_next(p))
     {
