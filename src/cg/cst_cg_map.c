@@ -597,7 +597,7 @@ cst_cg_db *cst_cg_load_db(cst_file fd,int num_param_models,int num_dur_models)
     db->mlsa_alpha = cst_read_float(fd);
     db->mlsa_beta = cst_read_float(fd);
 
-    db->multimodel = cst_read_int(fd);
+    cst_read_int(fd); // dummy read since multimodel parameter is misleading
     db->mixed_excitation = cst_read_int(fd);
 
     db->ME_num = cst_read_int(fd);

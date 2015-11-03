@@ -114,7 +114,6 @@ typedef struct cst_cg_db_struct {
     float mlsa_alpha;
     float mlsa_beta;
 
-    int multimodel;
     int mixed_excitation;
 
     /* filters for Mixed Excitation */

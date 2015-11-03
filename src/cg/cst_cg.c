@@ -456,7 +456,7 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
         param_track->frames[i][0] = f0_val;
         /* what about stddev ? */
 
-        if (cg_db->multimodel)
+        if (cg_db->num_param_models > 1)
         {   /* MULTI model */
             /* Predict spectral coeffs */
             voicing = 0.0;
@@ -528,12 +528,11 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
                         CG_MODEL_VECTOR(cg_db,model_vectors[0],f,(o+(2*j)));
                 }
             }
+            /* last coefficient is average voicing for cluster */
+            item_set_float(mcep,"voicing",
+                           CG_MODEL_VECTOR(cg_db,model_vectors[0],f,
+                                           cg_db->num_channels[0]-2));
         }
-
-        /* last coefficient is average voicing for cluster */
-        item_set_float(mcep,"voicing",
-                       CG_MODEL_VECTOR(cg_db,model_vectors[0],f,
-                                       cg_db->num_channels[0]-2));
     }
 
     cg_smooth_F0(utt,cg_db,param_track);
