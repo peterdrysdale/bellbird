@@ -125,7 +125,6 @@ static void bellbird_usage()
           "  -o outfile             Explicitly set output wav audio filename\n"
           "  -f infile              Explicitly set input filename\n"
           "  --voice VOICEFILE      Use voice clustergen voice at VOICEFILE \n"
-          "  --nitechvoice VOICEDIR Use voice nitech voice at VOICEDIR \n"
           "  --htsvoice VOICEFILE   Use voice hts voice at VOICEFILE \n"
           "  --add_dict FILENAME    Add dictionary addenda from FILENAME\n"
           "  --startpos n   Read input file from byte n (int), skipping n-1 bytes\n"
@@ -266,7 +265,6 @@ int main(int argc, char **argv)
 #endif //CST_AUDIO_ALSA
 
     HTS_Engine engine;
-    nitech_engine ntengine;
 
     explicit_text = explicit_filename = FALSE;
 
@@ -301,11 +299,6 @@ int main(int argc, char **argv)
            voice_type=HTSMODE;
            fn_voice = argv[++i];
         }
-        else if (cst_streq(argv[i],"--nitechvoice") && (i+1 < argc))
-        {
-           voice_type=NITECHMODE;
-           fn_voice = argv[++i];
-        }
         else if (cst_streq(argv[i],"-h") || cst_streq(argv[i],"--help") ||
                 cst_streq(argv[i],"-?"))
         {
@@ -314,7 +307,7 @@ int main(int argc, char **argv)
     }
 
     flite_add_lang("eng",usenglish_init,cmu_lex_init); /* removed set_lang_list */
-    voice = bell_voice_load(fn_voice,voice_type,&engine,&ntengine);
+    voice = bell_voice_load(fn_voice,voice_type,&engine);
     if (NULL == voice) exit(1);
 
     for (i=1; i < argc; i++)
@@ -328,11 +321,6 @@ int main(int argc, char **argv)
           /* already loaded above */
 	    i++;
 	}
-	else if ( cst_streq(argv[i],"--nitechvoice") && (i+1 < argc) )
-	{
-           /* Already loaded above */
-           i++;
-        }
         else if ( cst_streq(argv[i],"--htsvoice") && (i+1 < argc) )
         {
            /* Already loaded above */
@@ -477,9 +465,9 @@ int main(int argc, char **argv)
         lex->lex_addenda = cst_lex_load_addenda(lex,lex_addenda_file);
     }
 
-    if (voice_type==NITECHMODE || voice_type==HTSMODE)
+    if (voice_type==HTSMODE)
     {
-       bell_file_to_speech(&engine, &ntengine, texttoread, voice, outtype, voice_type);
+       bell_file_to_speech(&engine, texttoread, voice, outtype, voice_type);
     }
     else if (voice_type==CLUSTERGENMODE)
     {
@@ -497,7 +485,7 @@ int main(int argc, char **argv)
            if (ssml_mode)
                durs = flite_ssml_file_to_speech(texttoread,voice,outtype);
            else
-               durs = bell_file_to_speech(&engine,&ntengine,texttoread,voice,outtype,voice_type);
+               durs = bell_file_to_speech(&engine,texttoread,voice,outtype,voice_type);
        }
 
        if (debug_durs && (durs != 0.0)) printf("Durs was %f at end of run",durs);
@@ -510,7 +498,7 @@ int main(int argc, char **argv)
     if (fd != -1)
         audio_scheduler_close(fd);
 #endif // CST_AUDIO_ALSA
-    bell_voice_unload(voice,voice_type,&engine,&ntengine);
+    bell_voice_unload(voice,voice_type,&engine);
     voice=NULL;
     return 0;
 }

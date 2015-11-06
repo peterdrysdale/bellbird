@@ -1,5 +1,5 @@
 SUBDIRS = audio utils regex hrg stats speech \
-             lexicon synth cg hts nitechvoice commonsynth
+             lexicon synth cg hts commonsynth
 
 
 noinst_LTLIBRARIES = libbellbird_src.la
@@ -14,5 +14,4 @@ libbellbird_src_la_LIBADD = audio/libbellbird_src_audio.la \
                             synth/libbellbird_src_synth.la \
                             cg/libbellbird_src_cg.la \
                             hts/libbellbird_src_hts.la \
-                            nitechvoice/libbellbird_src_nitechvoice.la \
                             commonsynth/libbellbird_src_commonsynth.la

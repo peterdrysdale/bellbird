@@ -10,21 +10,6 @@
 #include "cst_file.h"
 #include "cst_string.h"
 
-char * bell_build_filename(const char * fn_voice, const char * end_segment)
-/* Builds filename from voice directory (fn_voice) and individual filename (end_segment) */
-{
-    int filename_buffer_len = 0;
-    char *filename_buffer;    /* Buffer for voice directory plus filenames */
-
-    filename_buffer_len = cst_strlen(fn_voice) + cst_strlen(end_segment)+1;
-    filename_buffer = cst_alloc(char, filename_buffer_len);
-    strncpy(filename_buffer,fn_voice,filename_buffer_len-1);
-    filename_buffer[filename_buffer_len-1] = '\0';
-    strncat(filename_buffer,end_segment,filename_buffer_len - cst_strlen(filename_buffer) - 1);
-    filename_buffer[filename_buffer_len-1] = '\0';
-    return filename_buffer;
-}
-
 cst_file bell_fopen(const char * filename, const char * mode)
 /* Bare wrapper for standard fopen */
 {

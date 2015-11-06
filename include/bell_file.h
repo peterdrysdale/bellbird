@@ -1,8 +1,6 @@
 #ifndef __BELL_FILE_H__
 #define __BELL_FILE_H__
 
-char * bell_build_filename(const char * fn_voice, const char * end_segment);
-
 cst_file bell_fopen(const char * filename, const char * mode);
 int bell_fgetc(cst_file fh);
 size_t bell_fwrite(const void *buf, size_t size, size_t count, cst_file fh);

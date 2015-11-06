@@ -21,12 +21,7 @@ This will read inputtext and play out to ALSA using the Clustergen voice (voice.
 This will read `STDIN` and output to a `wav` file using a hts voice (`cmu_us_arctic_slt.htsvoice` in
 the current working directory)
 
-    ./bellbird --nitechvoice /home/user/voxdata/nitech_us_awb_arctic_hts -f quickbrown.txt -o -
-
-This will read `quickbrown.txt` and send the resulting wav file to `STDOUT` using the classic awb nitech
-voice if the classic awb is located at `/home/user/voxdata/nitech_us_awb_arctic_hts`.
-
-    ./bellbird --htsvoice cmu_us_arctic_slt.htsvoice -f inputtext -o - | opusenc --bitrate 128 - outputfile.opus
+    ./bellbird --voice voice.flitevox -f inputtext -o - | opusenc --bitrate 128 - outputfile.opus
 
 This will read inputtext and send it to `STDOUT` where it can be grabbed by `opusenc` (if that is your
 preferred and installed encoder).
@@ -56,7 +51,6 @@ It contains code from:
   - flite 2.0 (Dec 2014)
   - hts_engine 1.08 (Dec 2013)
   - flite+hts 1.04 (Dec 2012)
-  - festival 1.96 hts_engine module (now superceded) for using classic nitech voices
 
 Bellbird contains material from significant numbers of contributors
 to a number of different projects. The ACKNOWLEDGEMENTS file attempts
@@ -75,13 +69,10 @@ Build instructions may be found in doc/building.md
 ## Voice loading
 
 Bellbird voices are all dynamically loaded at Bellbird startup.
-Bellbird support three voices types at the current time.
+Bellbird support two voices types at the current time.
 
  1. The argument "--voice" should be set to a full pathname of dumped Clustergen voice.
  2. The argument "--htsvoice" should be set to a full pathname of HTS (version 1.07) voice.
- 3. The argument "--nitechvoice" should be set to the pathname of the base directory of 
-    one of the classic six nitech voices. The classic nitech voice set are an older 
-    type of HTS voice.
 
 Voice files for testing purposes are collected at `https://github.com/peterdrysdale/bellbird_extras`.
 
@@ -107,7 +98,7 @@ packaging for festival. Additional features have been added to Bellbird.
 Bellbird offers the user the following preferred features.
 
  1. Dynamic (only) loading of a range of voice types including clustergen
-    (versions v1.5.6 and v2.0 flitevox), hts and nitech voices.
+    (versions v1.5.6 and v2.0 flitevox) and hts voices.
  2. STDIN and STDOUT, input and output redirection via commandline. This
     is designed to allow flexible preprocessing of input text and allow interfacing
     to a wide range of audio conversion software for generated sound data.
@@ -146,9 +137,8 @@ Bellbird offers the developer, the following features:
  2. regular testing and compliance against the latest compilers (Developers test against
     the latest gcc or clang as they become available in Arch or Debian testing),
  3. Autotools or cmake build environment with incremental builds,
- 4. only one load of nitech voices per execution to improve program performance,
- 5. minor performance improvements,
- 6. rapid full tree rebuilds.
+ 4. minor performance improvements,
+ 5. rapid full tree rebuilds.
 
 In the long tradition of open source, Bellbird "scratched the itch" of one person.
 It is being developed publicly in case others might find it useful and/or other

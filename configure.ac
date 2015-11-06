@@ -108,7 +108,6 @@ AC_CONFIG_FILES([src/regex/Makefile
       src/speech/Makefile
       src/utils/Makefile
       src/hts/Makefile
-      src/nitechvoice/Makefile
       src/cg/Makefile
       src/audio/Makefile
       src/stats/Makefile

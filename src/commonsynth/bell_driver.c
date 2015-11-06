@@ -239,7 +239,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    cst_free(endtone);
 }
 
-float bell_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
+float bell_file_to_speech(HTS_Engine * engine,
                            const char *filename, cst_voice *voice,
                            const char *outtype, const int voice_type)
 {
@@ -257,8 +257,8 @@ float bell_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
         cst_errmsg("Failed to open file \"%s\" for reading\n",filename);
         return -1.0;
     }
-    if (voice_type == NITECHMODE || voice_type == HTSMODE){
-       return bell_hts_ts_to_speech(engine,ntengine,ts,voice,outtype,voice_type);
+    if (voice_type == HTSMODE){
+       return bell_hts_ts_to_speech(engine,ts,voice,outtype);
     }
     else       // must be CLUSTERGENMODE
     {
@@ -266,9 +266,8 @@ float bell_file_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
     }
 }
 
-float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
-                         cst_tokenstream *ts, cst_voice *voice, const char *outtype,
-                         const int voice_type)
+float bell_hts_ts_to_speech(HTS_Engine * engine,
+                         cst_tokenstream *ts, cst_voice *voice, const char *outtype)
 {
     int i;
     cst_utterance *utt;
@@ -302,19 +301,12 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
     {
         w = new_wave();
         cst_wave_resize(w,0,1);
-        if (voice_type==HTSMODE)
+        if (HTS_Engine_get_sampling_frequency(engine) > INT_MAX)
         {
-            if (HTS_Engine_get_sampling_frequency(engine) > INT_MAX)
-            {
-                cst_errmsg("HTS sample rate appears unusually high");
-                cst_error();
-            }
-            CST_WAVE_SET_SAMPLE_RATE(w,(int)HTS_Engine_get_sampling_frequency(engine));
-        } 
-        else if (voice_type==NITECHMODE)
-        {
-            CST_WAVE_SET_SAMPLE_RATE(w,16000);
+            cst_errmsg("HTS sample rate appears unusually high");
+            cst_error();
         }
+        CST_WAVE_SET_SAMPLE_RATE(w,(int)HTS_Engine_get_sampling_frequency(engine));
         cst_wave_save_riff(w,outtype);  /* an empty wave */
         delete_wave(w);
     }
@@ -355,19 +347,9 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
                     label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
                     Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
                 }
-                if (voice_type==HTSMODE)
-                {
-                    HTS_Engine_synthesize_from_strings(engine,
-                                              label_data, label_size);
-                    bell_hts_get_wave(engine,utt);
-                    HTS_Engine_refresh(engine);
-                }
-                else if (voice_type==NITECHMODE)
-                {
-                    ntengine->utt=utt;
-                    nitech_engine_synthesize_from_strings(ntengine,
-                                              label_data, label_size);
-                }
+                HTS_Engine_synthesize_from_strings(engine, label_data, label_size);
+                bell_hts_get_wave(engine,utt);
+                HTS_Engine_refresh(engine);
                 for (i = 0; i < label_size; i++){
                     cst_free(label_data[i]);
                 }
@@ -409,7 +391,7 @@ float bell_hts_ts_to_speech(HTS_Engine * engine, nitech_engine * ntengine,
 
 static cst_voice *register_hts_voice(const cst_lang *lang_list)
 {
-    /* Voice initialization common to hts and nitech voices */
+    /* Voice initialization common to hts voices */
     int i;
     cst_voice *voice=NULL;
     cst_lexicon *lex=NULL;
@@ -421,7 +403,7 @@ static cst_voice *register_hts_voice(const cst_lang *lang_list)
     /* Use the language feature to initialize the correct voice      */
     /* language = get_param_string(voice->features, "language", ""); */
 
-    /* Hack Hack Hack HTS and nitech voices don't have language set so set here */
+    /* Hack Hack Hack HTS voices don't have language set so set here */
     language = "eng";
 
     /* Search language list for lang_init() and lex_init() and set features */
@@ -448,9 +430,9 @@ static cst_voice *register_hts_voice(const cst_lang *lang_list)
 }
 
 cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
-                             HTS_Engine * engine, nitech_engine * ntengine)
+                             HTS_Engine * engine)
 {
-    /* Load clustergen, hts or nitech voice */
+    /* Load clustergen or hts voice */
     cst_voice *voice = NULL;
     if (fn_voice == NULL)
     {
@@ -473,17 +455,6 @@ cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
           voice = register_hts_voice(flite_lang_list);
        }
     }
-    if (voice_type==NITECHMODE)
-    {
-       if (nitech_engine_initialize(ntengine, fn_voice) != TRUE)
-       {
-           ;
-       }
-       else
-       {
-          voice = register_hts_voice(flite_lang_list);
-       }
-    }
     if (voice == NULL)
     {
        cst_errmsg("Failed to load voice\n");
@@ -491,11 +462,9 @@ cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
     return voice;
 }
 
-void bell_voice_unload(cst_voice *voice, const int voice_type, HTS_Engine * engine,
-                                     nitech_engine * ntengine)
+void bell_voice_unload(cst_voice *voice, const int voice_type, HTS_Engine * engine)
 {
-   /* Unload clustergen, hts or nitech voice types */
+   /* Unload clustergen or hts voice types */
     if (voice_type==HTSMODE) HTS_Engine_clear(engine);
-    if (voice_type==NITECHMODE) nitech_engine_clear(ntengine);  
     if (voice != NULL) delete_voice(voice); /* Clean up dynamically loaded voice */
 }

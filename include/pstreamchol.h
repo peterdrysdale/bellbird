@@ -1,8 +1,7 @@
-// Common structures for nitech and cg modules
+// Common structures for cg modules
 
 typedef struct _DWin {
    int num;            // number of static + deltas
-   char **fn;          // filename for delta window coefficient (nitech only)
    int **width;        // width [0..num-1][0(left) 1(right)]
    double **coef;      // coefficient [0..num-1][length[0]..length[1]]
    double **coef_ptrs; // pointers to the memory being allocated so they can be freed
