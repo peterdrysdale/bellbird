@@ -385,23 +385,6 @@ int val_less(const cst_val *v1, const cst_val *v2)
     return val_float(v1) < val_float(v2);
 }
 
-int val_greater(const cst_val *v1,const cst_val *v2)
-{
-    return val_float(v1) > val_float(v2);
-}
-
-int val_member(const cst_val *v1,const cst_val *l)
-{
-    const cst_val *i;
-
-    for (i=l; i; i=val_cdr(i))
-    {
-	if (val_equal(val_car(i),v1))
-	    return TRUE;
-    }
-    return FALSE;
-}
-
 cst_val *val_inc_refcount(const cst_val *b)
 {
     cst_val *wb;

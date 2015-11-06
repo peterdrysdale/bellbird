@@ -40,7 +40,7 @@
 /*               Date:  January 2000                                     */
 /*************************************************************************/
 /*                                                                       */
-/*  CART tree support                                                    */
+/*  Classification and Regression Tree (CART) support                    */
 /*                                                                       */
 /*************************************************************************/
 #include "cst_error.h"
@@ -52,7 +52,10 @@ CST_VAL_REGISTER_TYPE_NODEL(cart,cst_cart)
 /* Make this 1 if you want to debug some cart calls */
 #define CART_DEBUG 0
 
-#define cst_cart_node_n(P,TREE) ((TREE)->rule_table[P])
+#define CST_CART_NODE_VAL(n,tree) (((tree)->rule_table[n]).val)
+#define CST_CART_NODE_OP(n,tree) (((tree)->rule_table[n]).op)
+#define CST_CART_NODE_FEAT(n,tree) (tree->feat_table[((tree)->rule_table[n]).feat])
+
 
 void delete_cart(cst_cart *cart)
 {
@@ -77,29 +80,17 @@ void delete_cart(cst_cart *cart)
     return;
 }
 
-#define cst_cart_node_val(n,tree) (cst_cart_node_n(n,tree).val)
-#define cst_cart_node_op(n,tree) (cst_cart_node_n(n,tree).op)
-#define cst_cart_node_feat(n,tree) (tree->feat_table[cst_cart_node_n(n,tree).feat])
-#define cst_cart_node_yes(n,tree) (n+1)
-#define cst_cart_node_no(n,tree) (cst_cart_node_n(n,tree).no_node)
-
 #if CART_DEBUG
 static void cart_print_node(int n, const cst_cart *tree)
 {
-    printf("%s ",cst_cart_node_feat(n,tree));
-    if (cst_cart_node_op(n,tree) == CST_CART_OP_IS)
+    printf("%s ",CST_CART_NODE_FEAT(n,tree));
+    if (CST_CART_NODE_OP(n,tree) == CST_CART_OP_IS)
 	printf("IS ");
-    else if (cst_cart_node_op(n,tree) == CST_CART_OP_LESS)
+    else if (CST_CART_NODE_OP(n,tree) == CST_CART_OP_LESS)
 	printf("< ");
-    else if (cst_cart_node_op(n,tree) == CST_CART_OP_GREATER)
-	printf("> ");
-    else if (cst_cart_node_op(n,tree) == CST_CART_OP_IN)
-	printf("IN ");
-    else if (cst_cart_node_op(n,tree) == CST_CART_OP_MATCHES)
-	printf("MATCHES ");
     else
-	printf("*%d* ",cst_cart_node_op(n,tree));
-    val_print(stdout,cst_cart_node_val(n,tree));
+	printf("*%d* ",CST_CART_NODE_OP(n,tree));
+    val_print(stdout,CST_CART_NODE_VAL(n,tree));
     printf("\n");
 }
 #endif
@@ -116,12 +107,12 @@ const cst_val *cart_interpret(cst_item *item, const cst_cart *tree)
 
     fcache = new_features();
 
-    while (cst_cart_node_op(node,tree) != CST_CART_OP_LEAF)
-    {
+    while (CST_CART_NODE_OP(node,tree) != CST_CART_OP_NONE)
+    { //while not a leaf node
 #if CART_DEBUG
  	cart_print_node(node,tree);
 #endif
-	tree_feat = cst_cart_node_feat(node,tree);
+	tree_feat = CST_CART_NODE_FEAT(node,tree);
 
 	v = get_param_val(fcache,tree_feat,0);
 	if (v == 0)
@@ -133,47 +124,38 @@ const cst_val *cart_interpret(cst_item *item, const cst_cart *tree)
 #if CART_DEBUG
 	val_print(stdout,v); printf("\n");
 #endif
-	tree_val = cst_cart_node_val(node,tree);
-	if (cst_cart_node_op(node,tree) == CST_CART_OP_IS)
+       tree_val = CST_CART_NODE_VAL(node,tree);
+       if (CST_CART_NODE_OP(node,tree) == CST_CART_OP_IS)
         {
-            /* printf("awb_debug %d %d\n",CST_VAL_TYPE(v),CST_VAL_TYPE(tree_val));*/
 	    r = val_equal(v,tree_val);
         }
-	else if (cst_cart_node_op(node,tree) == CST_CART_OP_LESS)
+        else if (CST_CART_NODE_OP(node,tree) == CST_CART_OP_LESS)
 	    r = val_less(v,tree_val);
-	else if (cst_cart_node_op(node,tree) == CST_CART_OP_GREATER)
-	    r = val_greater(v,tree_val);
-	else if (cst_cart_node_op(node,tree) == CST_CART_OP_IN)
-	    r = val_member(v,tree_val);
-	else if (cst_cart_node_op(node,tree) == CST_CART_OP_MATCHES)
-	    r = cst_regex_match(cst_regex_table[val_int(tree_val)],
-				val_string(v));
 	else
 	{
-	    cst_errmsg("cart_interpret_question: unknown op type %d\n",
-		       cst_cart_node_op(node,tree));
+	    cst_errmsg("cart_interpret: unknown op type %d\n",
+                      CST_CART_NODE_OP(node,tree));
+
 	    cst_error();
 	}
 
 	if (r)
-	{   /* Oh yes it is */
+        {   // Move to yes node
 #if CART_DEBUG
             printf("   YES\n");
 #endif
-	    node = cst_cart_node_yes(node,tree);
+            node++;
 	}
 	else
-	{   /* Oh no it isn't */
+        {   // Move to no node
 #if CART_DEBUG
             printf("   NO\n");
 #endif
-	    node = cst_cart_node_no(node,tree);
+            node = (tree->rule_table[node]).no_node;
 	}
     }
 
     delete_features(fcache);
 
-    return cst_cart_node_val(node,tree);	
-
+    return CST_CART_NODE_VAL(node,tree);
 }
-
