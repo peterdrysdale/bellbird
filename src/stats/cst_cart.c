@@ -130,7 +130,7 @@ const cst_val *cart_interpret(cst_item *item, const cst_cart *tree)
 	    r = val_equal(v,tree_val);
         }
         else if (CST_CART_NODE_OP(node,tree) == CST_CART_OP_LESS)
-	    r = val_less(v,tree_val);
+	    r = (val_float(v) < val_float(tree_val));
 	else
 	{
 	    cst_errmsg("cart_interpret: unknown op type %d\n",

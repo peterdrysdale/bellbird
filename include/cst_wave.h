@@ -46,7 +46,6 @@
 #ifndef _CST_WAVE_H__
 #define _CST_WAVE_H__
 
-#include <stdint.h>
 #include "cst_file.h"
 #include "cst_val.h"
 

@@ -46,11 +46,8 @@
 #ifndef _CST_CART_H__
 #define _CST_CART_H__
 
-#include "cst_file.h"
 #include "cst_val.h"
-#include "cst_features.h"
 #include "cst_item.h"
-#include "cst_relation.h"
 
 #define CST_CART_OP_NONE    255
 #define CST_CART_OP_IS      0

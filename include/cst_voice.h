@@ -49,7 +49,6 @@
 #include "cst_val.h"
 #include "cst_features.h"
 #include "cst_utterance.h"
-#include "cst_relation.h"
 #include "cst_lexicon.h"
 
 struct cst_voice_struct {

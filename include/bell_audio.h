@@ -5,9 +5,6 @@
   #include "config.h"
 #endif
 
-#include <stdio.h>
-
-#include "cst_alloc.h"
 #include "cst_wave.h"
 
 bell_boolean play_wave(cst_wave *w);

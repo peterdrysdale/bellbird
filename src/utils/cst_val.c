@@ -380,11 +380,6 @@ int val_equal(const cst_val *v1, const cst_val *v2)
 	return FALSE;
 }
 
-int val_less(const cst_val *v1, const cst_val *v2)
-{
-    return val_float(v1) < val_float(v2);
-}
-
 cst_val *val_inc_refcount(const cst_val *b)
 {
     cst_val *wb;

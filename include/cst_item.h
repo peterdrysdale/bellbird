@@ -40,7 +40,6 @@
 #ifndef _CST_ITEM_H__
 #define _CST_ITEM_H__
 
-#include "cst_file.h"
 #include "cst_features.h"
 
 /* Everyone needs these so forward define these */

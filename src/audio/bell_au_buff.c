@@ -16,6 +16,7 @@
 #include <unistd.h>    // for fork(),pipe()
 #include <time.h>      // for nanosleep()
 
+#include "cst_alloc.h"
 #include "cst_error.h"
 #include "bell_audio.h"
 #include "cst_string.h"
