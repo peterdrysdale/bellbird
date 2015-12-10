@@ -89,7 +89,6 @@
 /*                                                                   */
 /*-------------------------------------------------------------------*/
 
-#include <math.h>
 #include "cst_alloc.h"
 #include "cst_cg.h"
 #include "cst_error.h"

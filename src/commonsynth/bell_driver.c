@@ -48,7 +48,6 @@
 /* POSSIBILITY OF SUCH DAMAGE.                                       */
 /* ----------------------------------------------------------------- */
 
-#include <math.h>
 #include <limits.h>
 #include "cst_alloc.h"
 #include "cst_cg.h"

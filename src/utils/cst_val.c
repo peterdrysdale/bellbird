@@ -43,7 +43,6 @@
 /*  Typed values                                                          */
 /*                                                                       */
 /*************************************************************************/
-#include <math.h>
 #include "cst_file.h"
 #include "cst_alloc.h"
 #include "cst_error.h"
