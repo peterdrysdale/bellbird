@@ -50,7 +50,6 @@
 const cst_string * const cst_ts_default_whitespacesymbols = " \t\n\r";
 
 #define TS_BUFFER_SIZE 256
-#define TS_EOF -1
 #define TS_CHARCLASS_NONE        0
 #define TS_CHARCLASS_WHITESPACE  2
 #define TS_CHARCLASS_SINGLECHAR  4
@@ -232,7 +231,7 @@ static void get_token_sub_part(cst_tokenstream *ts,
 {
     int p;
 
-    for (p=0; ((ts->current_char != TS_EOF) &&
+    for (p=0; ((ts->current_char != EOF) &&
                (TS_CHARCLASS(ts->current_char,charclass,ts)) &&
 	       (!TS_CHARCLASS(ts->current_char,
 			      TS_CHARCLASS_SINGLECHAR,ts))); p++)
@@ -253,7 +252,7 @@ static void get_token_sub_part_2(cst_tokenstream *ts,
 {
     int p;
 
-    for (p=0; ((ts->current_char != TS_EOF) &&
+    for (p=0; ((ts->current_char != EOF) &&
                (!TS_CHARCLASS(ts->current_char,TS_CHARCLASS_WHITESPACE,ts)) &&
 	       (!TS_CHARCLASS(ts->current_char,
 			      TS_CHARCLASS_SINGLECHAR,ts)));
@@ -268,7 +267,7 @@ static void get_token_sub_part_2(cst_tokenstream *ts,
 
 int ts_eof(cst_tokenstream *ts)
 {
-    if (ts->current_char == TS_EOF)
+    if (ts->current_char == EOF)
 	return TRUE;
     else
 	return FALSE;
@@ -315,12 +314,12 @@ static cst_string ts_getc(cst_tokenstream *ts)
     else if (ts->string_buffer)
     {
 	if (ts->string_buffer[ts->file_pos] == '\0')
-	    ts->current_char = TS_EOF;
+	    ts->current_char = EOF;
 	else
 	    ts->current_char = ts->string_buffer[ts->file_pos];
     }
     
-    if (ts->current_char != TS_EOF)
+    if (ts->current_char != EOF)
 	ts->file_pos++;
     if (ts->current_char == '\n')
 	ts->line_number++;
@@ -388,7 +387,7 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
     if (ts->current_char == quote)
     {   /* go until quote */
 	ts_getc(ts);
-        for (p=0; ((ts->current_char != TS_EOF) &&
+        for (p=0; ((ts->current_char != EOF) &&
                    (ts->current_char != quote));
              p++)
         {
@@ -411,7 +410,7 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
     else /* its not quoted, like to be careful dont you */
     {    /* treat is as standard token                  */
 	/* Get prepunctuation */
-        if (ts->current_char != TS_EOF &&
+        if (ts->current_char != EOF &&
             TS_CHARCLASS(ts->current_char,TS_CHARCLASS_PREPUNCT,ts))
             get_token_sub_part(ts,
                                TS_CHARCLASS_PREPUNCT,
@@ -420,7 +419,7 @@ const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
         else if (ts->prepunctuation)
             ts->prepunctuation[0] = '\0';
 	/* Get the symbol itself */
-        if (ts->current_char != TS_EOF &&
+        if (ts->current_char != EOF &&
             TS_CHARCLASS(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
 	{
 	    if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max,2);
@@ -454,7 +453,7 @@ const cst_string *ts_get(cst_tokenstream *ts)
     ts->token_pos = ts->file_pos - 1;
 	
     /* Get prepunctuation */
-    if (ts->current_char != TS_EOF &&
+    if (ts->current_char != EOF &&
         TS_CHARCLASS(ts->current_char,TS_CHARCLASS_PREPUNCT,ts))
 	get_token_sub_part(ts,
 			   TS_CHARCLASS_PREPUNCT,
@@ -463,7 +462,7 @@ const cst_string *ts_get(cst_tokenstream *ts)
     else if (ts->prepunctuation)
 	ts->prepunctuation[0] = '\0';
     /* Get the symbol itself */
-    if (ts->current_char != TS_EOF &&
+    if (ts->current_char != EOF &&
         TS_CHARCLASS(ts->current_char,TS_CHARCLASS_SINGLECHAR,ts))
     {
 	if (2 >= ts->token_max) extend_buffer(&ts->token,&ts->token_max,2);
