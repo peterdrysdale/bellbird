@@ -24,6 +24,7 @@ option( ENABLE_ALSA "Build with ALSA support" ON )
 option( ENABLE_O2 "Build with -O2 optimization" ON )
 option( ENABLE_WALL "Build with -Wall warnings" ON )
 option( ENABLE_CLANG "Build using clang compiler" OFF)
+option( ENABLE_ANDROID "Build for Android" OFF)
 
 if( ENABLE_ALSA )
     ADD_DEFINITIONS (-DCST_AUDIO_ALSA)
@@ -42,6 +43,10 @@ endif( ENABLE_WALL )
 if( ENABLE_CLANG )
     SET(CMAKE_C_COMPILER             "/usr/bin/clang")
 endif( ENABLE_CLANG )
+
+if( ENABLE_ANDROID )
+    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16")
+endif( ENABLE_ANDROID )
 
 # Look for dependencies
 if( ENABLE_ALSA )
