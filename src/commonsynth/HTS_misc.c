@@ -335,35 +335,38 @@ size_t HTS_fread_little_endian(void *buf, size_t size, size_t n, HTS_File * fp)
 /* bell_get_pattern_token: get pattern token (single/double quote can be used) */
 bell_boolean bell_get_pattern_token(HTS_File * fp, char *buff, size_t bufflen)
 {
-   char c;
+   int cint;
    size_t i;
    bell_boolean squote = FALSE, dquote = FALSE;
 
    if (fp == NULL || HTS_feof(fp))
       return FALSE;
-   c = HTS_fgetc(fp);
+   cint = HTS_fgetc(fp);
 
-   while (c == ' ' || c == '\n') {
-      if (HTS_feof(fp))
-         return FALSE;
-      c = HTS_fgetc(fp);
+   if (cint == EOF)
+      return FALSE;
+
+   while (((char)cint) == ' ' || ((char)cint) == '\n') {
+      cint = HTS_fgetc(fp);
+      if (cint == EOF)
+          return FALSE;
    }
 
-   if (c == '\'') {             /* single quote case */
-      if (HTS_feof(fp))
-         return FALSE;
-      c = HTS_fgetc(fp);
+   if (((char)cint) == '\'') {             /* single quote case */
+      cint = HTS_fgetc(fp);
+      if (cint == EOF)
+          return FALSE;
       squote = TRUE;
    }
 
-   if (c == '\"') {             /*double quote case */
-      if (HTS_feof(fp))
-         return FALSE;
-      c = HTS_fgetc(fp);
+   if (((char)cint) == '\"') {             /*double quote case */
+      cint = HTS_fgetc(fp);
+      if (cint == EOF)
+          return FALSE;
       dquote = TRUE;
    }
 
-   if (c == ',' && bufflen > 1) {    /*special character ',' */
+   if (((char)cint) == ',' && bufflen > 1) {    /*special character ',' */
       buff[0] = ',';
       buff[1] = '\0';
       return TRUE;
@@ -371,16 +374,18 @@ bell_boolean bell_get_pattern_token(HTS_File * fp, char *buff, size_t bufflen)
 
    i = 0;
    while (i < bufflen) {
-      buff[i++] = c;
-      c = HTS_fgetc(fp);
-      if (squote && c == '\'')
+      buff[i++] = (char)cint;
+      cint = HTS_fgetc(fp);
+      if ((squote || dquote) && cint == EOF)
+         return FALSE;
+      if (squote && ((char)cint) == '\'')
          break;
-      if (dquote && c == '\"')
+      if (dquote && ((char)cint) == '\"')
          break;
       if (!squote && !dquote) {
-         if (c == ' ')
+         if (((char)cint) == ' ')
             break;
-         if (c == '\n')
+         if (((char)cint) == '\n')
             break;
          if (HTS_feof(fp))
             break;
@@ -389,7 +394,7 @@ bell_boolean bell_get_pattern_token(HTS_File * fp, char *buff, size_t bufflen)
    if (i == bufflen)
    {
       cst_errmsg("bell_get_pattern_token: Overflow of buffer probably due to malformed voice file\n");
-      cst_error();
+      return FALSE;
    }
 
    buff[i] = '\0';
@@ -399,32 +404,32 @@ bell_boolean bell_get_pattern_token(HTS_File * fp, char *buff, size_t bufflen)
 /* bell_get_token_from_fp: get token from file pointer (separators are space, tab, and line break) */
 bell_boolean bell_get_token_from_fp(HTS_File * fp, char *buff, size_t bufflen)
 {
-   char c;
+   int cint;
    size_t i;
 
    if (fp == NULL || HTS_feof(fp))
       return FALSE;
-   c = HTS_fgetc(fp);
-   while (c == ' ' || c == '\n' || c == '\t') {
-      if (HTS_feof(fp))
-         return FALSE;
-      c = HTS_fgetc(fp);
-      if (c == EOF)
-         return FALSE;
+   cint = HTS_fgetc(fp);
+
+   if (cint == EOF)
+      return FALSE;
+
+   while (((char)cint) == ' ' || ((char)cint) == '\n' || ((char)cint) == '\t') {
+      cint = HTS_fgetc(fp);
+      if (cint == EOF)
+          return FALSE;
    }
 
-   for (i = 0; c != ' ' && c != '\n' && c != '\t' && (i < bufflen);) {
-      buff[i++] = c;
-      if (HTS_feof(fp))
-         break;
-      c = HTS_fgetc(fp);
-      if (c == EOF)
+   for (i = 0; ((char)cint) != ' ' && ((char)cint) != '\n' && ((char)cint) != '\t' && (i < bufflen);) {
+      buff[i++] = ((char)cint);
+      cint = HTS_fgetc(fp);
+      if (cint == EOF)
          break;
    }
    if (i == bufflen)
    {
       cst_errmsg("bell_get_token_from_fp: Overflow of buffer probably due to malformed voice file\n");
-      cst_error();
+      return FALSE;
    }
 
    buff[i] = '\0';
@@ -434,32 +439,32 @@ bell_boolean bell_get_token_from_fp(HTS_File * fp, char *buff, size_t bufflen)
 /* bell_get_token_from_fp_with_separator: get token from file pointer with specified separator */
 bell_boolean bell_get_token_from_fp_with_separator(HTS_File * fp, char *buff, size_t bufflen, char separator)
 {
-   char c;
+   int cint;
    size_t i;
 
    if (fp == NULL || HTS_feof(fp))
       return FALSE;
-   c = HTS_fgetc(fp);
-   while (c == separator) {
-      if (HTS_feof(fp))
-         return FALSE;
-      c = HTS_fgetc(fp);
-      if (c == EOF)
-         return FALSE;
+   cint = HTS_fgetc(fp);
+
+   if (cint == EOF)
+      return FALSE;
+
+   while (((char)cint) == separator) {
+      cint = HTS_fgetc(fp);
+      if (cint == EOF)
+          return FALSE;
    }
 
-   for (i = 0; c != separator && (i < bufflen);) {
-      buff[i++] = c;
-      if (HTS_feof(fp))
-         break;
-      c = HTS_fgetc(fp);
-      if (c == EOF)
+   for (i = 0; ((char)cint) != separator && (i < bufflen);) {
+      buff[i++] = ((char)cint);
+      cint = HTS_fgetc(fp);
+      if (cint == EOF)
          break;
    }
    if (i == bufflen)
    {
       cst_errmsg("bell_get_token_from_fp_with_separator: Overflow of buffer probably due to malformed voice file\n");
-      cst_error();
+      return FALSE;
    }
 
    buff[i] = '\0';
