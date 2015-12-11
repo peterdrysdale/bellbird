@@ -166,6 +166,8 @@ int buffer_wave(cst_wave *w, int fd)
 {
 //  Command audio_scheduler to expect a cst_wave and serialize wave
 //  over the pipe to audio scheduler
+    if (!w || w->num_samples == 0) return FALSE;
+
     if (write(fd,"W",2)!=2)  // Command audio_scheduler to expect a cst_wave
     {
         cst_errmsg("buffer_wave:failed to command scheduler to accept audio\n");
