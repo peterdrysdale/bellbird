@@ -128,7 +128,7 @@ int cst_val_consp(const cst_val *v);
 int val_equal(const cst_val *a, const cst_val *b);
 const cst_val *val_assoc_string(const char *v1,const cst_val *al);
 
-void val_print(cst_file fd,const cst_val *v);
+void val_print(const cst_val *v);
 cst_val *val_readlist_string(const char *str);
 
 cst_val *val_reverse(cst_val *v);

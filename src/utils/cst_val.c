@@ -43,6 +43,7 @@
 /*  Typed values                                                          */
 /*                                                                       */
 /*************************************************************************/
+#include <math.h>
 #include "cst_file.h"
 #include "cst_alloc.h"
 #include "cst_error.h"
@@ -283,38 +284,38 @@ const cst_val *set_car(cst_val *v1, const cst_val *v2)
     return v1;
 }
 
-void val_print(cst_file fd,const cst_val *v)
+void val_print(const cst_val *v)
 {
     const cst_val *p;
 
     if (v == NULL)
-	bell_fprintf(fd,"[null]");
+	bell_fprintf(stderr,"[null]");
     else if (CST_VAL_TYPE(v) == CST_VAL_TYPE_INT)
-	bell_fprintf(fd,"%d",val_int(v));
+	bell_fprintf(stderr,"%d",val_int(v));
     else if (CST_VAL_TYPE(v) == CST_VAL_TYPE_FLOAT)
-	bell_fprintf(fd,"%f",val_float(v));
+	bell_fprintf(stderr,"%f",val_float(v));
     else if (CST_VAL_TYPE(v) == CST_VAL_TYPE_STRING)
-	bell_fprintf(fd,"%s",val_string(v));
+	bell_fprintf(stderr,"%s",val_string(v));
     else if (cst_val_consp(v))
     {
-	bell_fprintf(fd,"(");
+	bell_fprintf(stderr,"(");
 	for (p=v; p; )
 	{
-	    val_print(fd,val_car(p));
+	    val_print(val_car(p));
 	    p=val_cdr(p);
 	    if (p)
-		bell_fprintf(fd," ");
+		bell_fprintf(stderr," ");
             if (p && !cst_val_consp(p))  /* dotted pairs for non-list */
             {                            
-                bell_fprintf(fd,". ");
-                val_print(fd,p);
+                bell_fprintf(stderr,". ");
+                val_print(p);
                 break;
             }
 	}
-	bell_fprintf(fd,")");
+	bell_fprintf(stderr,")");
     }
     else 
-	bell_fprintf(fd,"[Val %s 0x%p]",
+	bell_fprintf(stderr,"[Val %s 0x%p]",
 		cst_val_defs[CST_VAL_TYPE(v)/2].name,CST_VAL_VOID(v));
 }
 

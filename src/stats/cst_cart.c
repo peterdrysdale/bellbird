@@ -56,7 +56,6 @@ CST_VAL_REGISTER_TYPE_NODEL(cart,cst_cart)
 #define CST_CART_NODE_OP(n,tree) (((tree)->rule_table[n]).op)
 #define CST_CART_NODE_FEAT(n,tree) (tree->feat_table[((tree)->rule_table[n]).feat])
 
-
 void delete_cart(cst_cart *cart)
 {
     /* have to compensate for previous over-zealous consting */
@@ -83,15 +82,15 @@ void delete_cart(cst_cart *cart)
 #if CART_DEBUG
 static void cart_print_node(int n, const cst_cart *tree)
 {
-    printf("%s ",CST_CART_NODE_FEAT(n,tree));
+    cst_errmsg("%s ",CST_CART_NODE_FEAT(n,tree));
     if (CST_CART_NODE_OP(n,tree) == CST_CART_OP_IS)
-	printf("IS ");
+	cst_errmsg("IS ");
     else if (CST_CART_NODE_OP(n,tree) == CST_CART_OP_LESS)
-	printf("< ");
+	cst_errmsg("< ");
     else
-	printf("*%d* ",CST_CART_NODE_OP(n,tree));
-    val_print(stdout,CST_CART_NODE_VAL(n,tree));
-    printf("\n");
+	cst_errmsg("*%d* ",CST_CART_NODE_OP(n,tree));
+    val_print(CST_CART_NODE_VAL(n,tree));
+    cst_errmsg("  ");
 }
 #endif
 
@@ -122,36 +121,35 @@ const cst_val *cart_interpret(cst_item *item, const cst_cart *tree)
 	}
 
 #if CART_DEBUG
-	val_print(stdout,v); printf("\n");
+	val_print(v);
 #endif
-       tree_val = CST_CART_NODE_VAL(node,tree);
-       if (CST_CART_NODE_OP(node,tree) == CST_CART_OP_IS)
+	tree_val = CST_CART_NODE_VAL(node,tree);
+	if (CST_CART_NODE_OP(node,tree) == CST_CART_OP_IS)
         {
 	    r = val_equal(v,tree_val);
         }
-        else if (CST_CART_NODE_OP(node,tree) == CST_CART_OP_LESS)
+	else if (CST_CART_NODE_OP(node,tree) == CST_CART_OP_LESS)
 	    r = (val_float(v) < val_float(tree_val));
 	else
 	{
 	    cst_errmsg("cart_interpret: unknown op type %d\n",
-                      CST_CART_NODE_OP(node,tree));
-
+		       CST_CART_NODE_OP(node,tree));
 	    cst_error();
 	}
 
 	if (r)
-        {   // Move to yes node
+	{   // Move to yes node
 #if CART_DEBUG
-            printf("   YES\n");
+            cst_errmsg("   YES\n");
 #endif
-            node++;
+	    node++;
 	}
 	else
-        {   // Move to no node
+	{   // Move to no node
 #if CART_DEBUG
-            printf("   NO\n");
+            cst_errmsg("   NO\n");
 #endif
-            node = (tree->rule_table[node]).no_node;
+	    node = (tree->rule_table[node]).no_node;
 	}
     }
 

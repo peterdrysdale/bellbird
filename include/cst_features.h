@@ -96,6 +96,6 @@ CST_VAL_USER_TYPE_DCLS(features,cst_features)
 
 int feat_copy_into(const cst_features *from,cst_features *to);
 /* For debugging */
-int cst_feat_print(cst_file fd,const cst_features *f);
+int bell_feat_print(const cst_features *f);
 
 #endif

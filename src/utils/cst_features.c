@@ -261,15 +261,15 @@ const char *feat_own_string(cst_features *f,const char *n)
     return val_string(val_car(f->owned_strings));
 }
 
-int cst_feat_print(cst_file fd,const cst_features *f)
+int bell_feat_print(const cst_features *f)
 {
     cst_featvalpair *p;
     
     for (p=f->head; p; p=p->next)
     {
-	bell_fprintf(fd, "%s ",p->name);
-	val_print(fd,p->val);
-	bell_fprintf(fd,"\n");
+	bell_fprintf(stderr, "%s ",p->name);
+	val_print(p->val);
+	bell_fprintf(stderr,"\n");
     }
 
     return 0;

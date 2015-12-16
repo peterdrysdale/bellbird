@@ -133,7 +133,7 @@ static cst_utterance *ssml_apply_tag(const char *tag,
 
 #if SSML_DEBUG
     printf("SSML TAG %s\n",tag);
-    cst_feat_print(stdout,attributes);
+    bell_feat_print(attributes);
     printf("...\n");
 #endif
 
@@ -167,7 +167,7 @@ static cst_utterance *ssml_apply_tag(const char *tag,
             ((t = relation_tail(r)) != NULL))
         {
             item_set_string(t,"break","1");
-            /* cst_feat_print(stdout,attributes); */
+            /* bell_feat_print(attributes); */
             if (cst_streq("size",get_param_string(attributes,"_name0","")))
             {
                 break_size=feat_float(attributes,"_val0");
