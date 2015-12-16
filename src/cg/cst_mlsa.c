@@ -76,13 +76,12 @@ typedef struct _VocoderSetup {
    int fprd;        // frame period
    int iprd;        // interpolation period
    int seed;        // random number seed holder
-   int pd;          // Pade order
    unsigned long next;
    Boolean gauss;
    double p1;
    double pc;
    double pj;
-   double pade[11]; // Pade approximants coefficients
+   double pade[6]; // Pade approximants coefficients
    double *c, *cc, *cinc, *d1;
    double rate;     // output wave's sample rate
    
@@ -115,7 +114,9 @@ typedef struct _VocoderSetup {
 
 } VocoderSetup;
 
-/* NOTE NOTE NOTE - For performance reasons we "include" static code not header here */
+// NOTE NOTE NOTE - For performance reasons we "include" static code not header here
+// Cg voices use Pade approximate order 5. Set this for included static code.
+#define BELL_PORDER 5
 #include "../commonsynth/mlsacore.c"
 #include "../commonsynth/mlsafunc.c"
 
@@ -126,23 +127,20 @@ static void init_vocoder(double fs, int framel, int m,
     vs->fprd = framel;
     vs->iprd = 1;
     vs->seed = 1;
-#ifdef ANDROID
-    /* This makes it about 25% faster and sounds basically the same */
-    vs->pd   = 4;
-#else
-    vs->pd   = 5;
-#endif
 
     vs->next =1;
     vs->gauss = MTRUE;
 
-    /* Pade' approximants of 4th and 5th order */
-    vs->pade[0]=1.0; vs->pade[1]=0.4999273; vs->pade[2]=0.1067005; vs->pade[3]=0.01170221; vs->pade[4]=0.0005656279;
-    vs->pade[5]=1.0; vs->pade[6]=0.4999391; vs->pade[7]=0.1107098; vs->pade[8]=0.01369984; vs->pade[9]=0.0009564853;
-    vs->pade[10]=0.00003041721;
+    /* Pade' approximants of 5th order */
+    vs->pade[0]=1.0;
+    vs->pade[1]=0.4999391;
+    vs->pade[2]=0.1107098;
+    vs->pade[3]=0.01369984;
+    vs->pade[4]=0.0009564853;
+    vs->pade[5]=0.00003041721;
 
     vs->rate = fs;
-    vs->c = cst_alloc(double,3 * (m + 1) + 3 * (vs->pd + 1) + vs->pd * (m + 4));
+    vs->c = cst_alloc(double,3 * (m + 1) + 3 * (BELL_PORDER + 1) + BELL_PORDER * (m + 4));
    
     vs->p1 = -1;
     vs->sw = 0;
@@ -431,7 +429,7 @@ static void vocoder(double p, double *mc,
         else
             x *= exp(vs->c[0])*gain;
 
-	x = mlsadf(x, vs->c, m, cg_db->mlsa_alpha, vs->pd, vs->d1, vs);
+	x = mlsadf(x, vs->c, m, cg_db->mlsa_alpha, vs->d1, vs);
 
         wav->samples[*pos] = (int16_t) x;
 	*pos += 1;

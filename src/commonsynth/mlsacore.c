@@ -50,48 +50,16 @@
 /* and the compiler likes to inline and improve performance of these    */
 /* functions if we declare them static.                                 */
 
-static double mlsafir(const double x, const double *c, const int m, const double a, const double aa, double *d3, const int d2offset, const int offsetend1, const int offsetend2, const int offsetstart2, const int secelement)
-{
-// Filtering but without shuffling history terms.
-// d2offset is index of start of history terms which
-// are stored in a wrap around buffer.
-// Elements d3[0] and d3[m+3] are 'ghost' edge elements
-// to avoid conditionals in stencil (d3[i+1]-d3[i-1])
-   double y = 0.0;
-   int i;
-   int j = 2; // index for MLSA filter coefficients
-
-   d3[secelement] = aa*x + a*d3[secelement];
-   for (i=d2offset+2; i<=offsetend1; i++,j++) {
-      d3[i] += a*(d3[i+1]-d3[i-1]);
-      y += d3[i]*c[j];
-   }
-   d3[0] = d3[m+2]; // Update 'ghost' edge element for stencil
-   for (i=offsetstart2; i<=offsetend2; i++,j++) {
-      d3[i] += a*(d3[i+1]-d3[i-1]);
-      y += d3[i]*c[j];
-   }
-
-// Copy element which is not shuffled in usual implement. of this function
-   d3[d2offset] = d3[secelement];
-
-// Copy 'ghost' edge elements for stencil in next call of this function
-   d3[0] = d3[m+2];
-   d3[m+3] = d3[1];
-
-   return(y);
-}
-
 static double mlsadf1(double x, const double *c, const double a,
-                       const int pd, double *d1, const double *ppade)
+                       double *d1, const double *ppade)
 {
    double v, out = 0.0, *pt, aa;
    int i;
 
    aa = 1 - a*a;
-   pt = &d1[pd+1];
+   pt = &d1[BELL_PORDER+1];
 
-   for (i=pd; i>=1; i--) {
+   for (i=BELL_PORDER; i>=1; i--) {
       d1[i] = aa*pt[i-1] + a*d1[i];
       pt[i] = d1[i] * c[1];
       v = pt[i] * ppade[i];
@@ -106,47 +74,132 @@ static double mlsadf1(double x, const double *c, const double a,
 }
 
 static double mlsadf2(double x, const double *c, const int m, const double a,
-                       const int pd, double *d2, const double *ppade, int *pd2offset)
+                       double *d2, const double *ppade, int *pd2offset)
 {
-// This function and mlsafir() are modified to avoid memory copy
-// operations.
-// This improves performance at the cost of
-// slightly more memory (a few hundred bytes).
-   double v, out = 0.0, *pt;
-   double aa;
-   int i;
-// default values for start and end of mlsafir loops
-   int offsetend1 = m+2;   // end of first loop
-   int offsetend2 = *pd2offset-2; // end of second loop
-   int offsetstart2 = 1;   // start of second loop
-   int secelement = *pd2offset + 1; // index of second element
-// some special cases for loop lengths
-   if (*pd2offset == 1) {
-      offsetend1 = m+1;
+// This function is partially optimized as it is extremely performance
+// critical to bellbird. Before making changes
+// ensure that changes have been profiled.
+// This function avoids some unnecessary memory copies
+// which improves performance at the cost of slightly more
+// memory (a few hundred bytes).
+// This function has been partially optimized with "by hand" loop
+// unrolling and caching to reduce impact of recursion in the underlying equations.
+// This outperforms gcc and clang's builtin optimizers.
+// This function only works for BELL_PORDER=5.
+
+   double v, out = 0.0;
+   double * const pt = &d2[BELL_PORDER * (m+4)];
+   const double aa = 1 - a*a;
+   double ptcache[BELL_PORDER]; // temp holding pt[] values to reduce recursiveness
+   const int d2offset = *pd2offset;
+   int j,k;
+// default values for start and end of loops through history terms
+// set end of first loop
+   const int offsetend1 = (d2offset == BELL_PORDER) ? BELL_PORDER*(m+1): BELL_PORDER*(m+2);
+// set end of second loop
+   const int offsetend2 = d2offset-2*BELL_PORDER;
+// start of second loop
+   int offsetstart2 = BELL_PORDER;
+// index of second element
+   int secelement = d2offset + BELL_PORDER;
+// a special case for loop lengths
+   if (d2offset == BELL_PORDER*(m+2)) {
+      offsetstart2 = 2*BELL_PORDER;
+      secelement = BELL_PORDER;
    }
-   if (*pd2offset == m+2) {
-      offsetstart2 = 2;
-      secelement = 1;
+
+// Filtering but without shuffling history terms.
+// d2offset is index of start of history terms which are stored in a
+// wrap around buffer.
+// Elements d2[0] and d2[BELL_PORDER*(m+3)] are 'ghost' edge elements
+// to avoid conditionals in stencil (d2[k+BELL_PORDER]-d2[k-BELL_PORDER])
+   ptcache[0] = 0.0;
+   ptcache[1] = 0.0;
+   ptcache[2] = 0.0;
+   ptcache[3] = 0.0;
+   ptcache[4] = 0.0;
+   j = 2; // initialize indexing for MLSA filter coefficients
+
+// Second element is a special case calculate it here
+   d2[secelement]   = aa*pt[0] + a*d2[secelement];
+   d2[secelement+1] = aa*pt[1] + a*d2[secelement+1];
+   d2[secelement+2] = aa*pt[2] + a*d2[secelement+2];
+   d2[secelement+3] = aa*pt[3] + a*d2[secelement+3];
+   d2[secelement+4] = aa*pt[4] + a*d2[secelement+4];
+
+// First part of loop through wrap around buffer
+   for (k=d2offset+2*BELL_PORDER; k<=offsetend1; k+=BELL_PORDER,j++) {
+      d2[k]   += a*(d2[k+BELL_PORDER]  -d2[k-BELL_PORDER]);
+      d2[k+1] += a*(d2[k+BELL_PORDER+1]-d2[k-BELL_PORDER+1]);
+      d2[k+2] += a*(d2[k+BELL_PORDER+2]-d2[k-BELL_PORDER+2]);
+      d2[k+3] += a*(d2[k+BELL_PORDER+3]-d2[k-BELL_PORDER+3]);
+      d2[k+4] += a*(d2[k+BELL_PORDER+4]-d2[k-BELL_PORDER+4]);
+      ptcache[0] += d2[k] * c[j];
+      ptcache[1] += d2[k+1]*c[j];
+      ptcache[2] += d2[k+2]*c[j];
+      ptcache[3] += d2[k+3]*c[j];
+      ptcache[4] += d2[k+4]*c[j];
    }
 
-   aa = 1 - a*a;
-   pt = &d2[pd * (m+4)];
+// Update 'ghost' edge element of stencil d2[0]
+   d2[0] = d2[BELL_PORDER*(m+2)];
+   d2[1] = d2[BELL_PORDER*(m+2)+1];
+   d2[2] = d2[BELL_PORDER*(m+2)+2];
+   d2[3] = d2[BELL_PORDER*(m+2)+3];
+   d2[4] = d2[BELL_PORDER*(m+2)+4];
 
-   for (i=pd; i>=1; i--) {
-       pt[i] = mlsafir (pt[i-1], c, m, a, aa, &d2[(i-1)*(m+4)], *pd2offset, offsetend1, offsetend2, offsetstart2, secelement);
+// Second part of loop through wrap around buffer
+   for (k=offsetstart2; k<=offsetend2; k+=BELL_PORDER,j++) {
+      d2[k]   += a*(d2[k+BELL_PORDER]  -d2[k-BELL_PORDER]);
+      d2[k+1] += a*(d2[k+BELL_PORDER+1]-d2[k-BELL_PORDER+1]);
+      d2[k+2] += a*(d2[k+BELL_PORDER+2]-d2[k-BELL_PORDER+2]);
+      d2[k+3] += a*(d2[k+BELL_PORDER+3]-d2[k-BELL_PORDER+3]);
+      d2[k+4] += a*(d2[k+BELL_PORDER+4]-d2[k-BELL_PORDER+4]);
+      ptcache[0] += d2[k] * c[j];
+      ptcache[1] += d2[k+1]*c[j];
+      ptcache[2] += d2[k+2]*c[j];
+      ptcache[3] += d2[k+3]*c[j];
+      ptcache[4] += d2[k+4]*c[j];
+   }
 
-       v = pt[i] * ppade[i];
+// Copy element which is not shuffled in usual implement. of this function
+   d2[d2offset]   = d2[secelement];
+   d2[d2offset+1] = d2[secelement+1];
+   d2[d2offset+2] = d2[secelement+2];
+   d2[d2offset+3] = d2[secelement+3];
+   d2[d2offset+4] = d2[secelement+4];
 
-       x  += (1&i) ? v : -v;
+// Copy 'ghost' edge elements for stencil in next call of this function
+   d2[0] = d2[BELL_PORDER*(m+2)];
+   d2[1] = d2[BELL_PORDER*(m+2)+1];
+   d2[2] = d2[BELL_PORDER*(m+2)+2];
+   d2[3] = d2[BELL_PORDER*(m+2)+3];
+   d2[4] = d2[BELL_PORDER*(m+2)+4];
+   d2[BELL_PORDER*(m+3)]   = d2[BELL_PORDER];
+   d2[BELL_PORDER*(m+3)+1] = d2[BELL_PORDER+1];
+   d2[BELL_PORDER*(m+3)+2] = d2[BELL_PORDER+2];
+   d2[BELL_PORDER*(m+3)+3] = d2[BELL_PORDER+3];
+   d2[BELL_PORDER*(m+3)+4] = d2[BELL_PORDER+4];
+
+// Update pt values from cache
+   pt[5] = ptcache[4];
+   pt[4] = ptcache[3];
+   pt[3] = ptcache[2];
+   pt[2] = ptcache[1];
+   pt[1] = ptcache[0];
+
+   for (k=BELL_PORDER; k>=1; k--) {
+       v = pt[k] * ppade[k];
+       x  += (1 & k) ? v : -v;
        out += v;
    }
     
    pt[0] = x;
    out  += x;
 
-// update index to start of history terms
-   (*pd2offset)--;
-   if (*pd2offset<1) *pd2offset = m+2;
+// update index pointing to start of history terms
+   (*pd2offset) -= BELL_PORDER;
+   if (*pd2offset<BELL_PORDER) *pd2offset = BELL_PORDER*(m+2);
 
    return(out);
 }

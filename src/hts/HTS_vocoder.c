@@ -61,6 +61,9 @@
 
 HTS_VOCODER_C_START;
 
+// HTS voices use Pade approximate order 5. Set this for included static code.
+#define BELL_PORDER 5
+
 #include <math.h>               /* for sqrt(),log(),exp(),pow(),cos() */
 
 #include "cst_alloc.h"
@@ -77,18 +80,12 @@ HTS_VOCODER_C_START;
 
 #define RANDMAX 32767
 
-#define PADEORDER 5    // Pade order
 #define IRLENG    576  // Interpolation length
 
 #define CHECK_LSP_STABILITY_MIN 0.25
 #define CHECK_LSP_STABILITY_NUM 4
 
-static const double HTS_pade[11] = {
-   1.00000000000,
-   0.49992730000,
-   0.10670050000,
-   0.01170221000,
-   0.00056562790,
+static const double HTS_pade[6] = {
    1.00000000000,
    0.49993910000,
    0.11070980000,
@@ -113,17 +110,15 @@ static void HTS_movem(double *a, double *b, const int nitem)
    }
 }
 
-/* NOTE NOTE NOTE - For performance reasons we "include" static code not header here */
+// NOTE NOTE NOTE - For performance reasons we "include" static code not header here
 #include "../commonsynth/mlsacore.c"
 
 /* HTS_mlsadf: functions for MLSA filter */
 static double HTS_mlsadf(double x, const double *c, const int m, const double a,
-                         const int pd, double *d1, int * pd2offset)
+                         double *d1, int * pd2offset)
 {
-   const double *ppade = &(HTS_pade[(pd-4)*5]);
-
-   x = mlsadf1(x, c, a, pd, d1, ppade);
-   x = mlsadf2(x, c, m, a, pd, &d1[2 * (pd + 1)], ppade, pd2offset);
+   x = mlsadf1(x, c, a, d1, HTS_pade);
+   x = mlsadf2(x, c, m, a, &d1[2 * (BELL_PORDER + 1)], HTS_pade, pd2offset);
 
    return (x);
 }
@@ -757,7 +752,7 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean
    v->spectrum2en_buff = NULL;
    v->spectrum2en_size = 0;
    if (v->stage == 0) {         /* for MCP */
-      v->c = cst_alloc(double,(m * (3 + PADEORDER) + 7 * PADEORDER + 6));
+      v->c = cst_alloc(double,(m * (3 + BELL_PORDER) + 7 * BELL_PORDER + 6));
       v->cc = v->c + m + 1;
       v->cinc = v->cc + m + 1;
       v->d1 = v->cinc + m + 1;
@@ -827,7 +822,7 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
       if (v->stage == 0) {      /* for MCP */
          if (x != 0.0)
             x *= exp(v->c[0]);
-         x = HTS_mlsadf(x, v->c, m, alpha, PADEORDER, v->d1, &(v->d2offset));
+         x = HTS_mlsadf(x, v->c, m, alpha, v->d1, &(v->d2offset));
       } else {                  /* for LSP */
          x *= v->c[0];
          x = HTS_mglsadf(x, v->c, m, alpha, v->stage, v->d1);

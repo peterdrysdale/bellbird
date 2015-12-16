@@ -53,19 +53,17 @@
 #define RANDMAX 32767
 
 static double mlsadf(double x, const double *c, const int m, const double a,
-                      const int pd, double *d1, VocoderSetup *vs)
+                      double *d1, VocoderSetup *vs)
 {
 // the mel log spectrum approximation (MLSA) digital filter
 // x : input
 // c : MLSA filter coefficients
 // m : order of cepstrum
 // a : alpha, the all-pass constant
-// pd: order of Pade approximation
 // d1: working memory - history terms
-   const double *ppade = &(vs->pade[(pd-4)*5]);
     
-   x = mlsadf1 (x, c, a, pd, d1, ppade);
-   x = mlsadf2 (x, c, m, a, pd, &d1[2*(pd+1)], ppade, &(vs->d2offset));
+   x = mlsadf1 (x, c, a, d1, vs->pade);
+   x = mlsadf2 (x, c, m, a, &d1[2*(BELL_PORDER+1)], vs->pade, &(vs->d2offset));
 
    return(x);
 }
