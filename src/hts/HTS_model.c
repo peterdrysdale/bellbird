@@ -47,20 +47,6 @@
 /* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE           */
 /* POSSIBILITY OF SUCH DAMAGE.                                       */
 /* ----------------------------------------------------------------- */
-
-#ifndef HTS_MODEL_C
-#define HTS_MODEL_C
-
-#ifdef __cplusplus
-#define HTS_MODEL_C_START extern "C" {
-#define HTS_MODEL_C_END   }
-#else
-#define HTS_MODEL_C_START
-#define HTS_MODEL_C_END
-#endif                          /* __CPLUSPLUS */
-
-HTS_MODEL_C_START;
-
 #include <stdlib.h>             /* for abs() */
 #include <string.h>             /* for strlen(),strstr(),strrchr(),strcmp() */
 #include <ctype.h>              /* for isdigit() */
@@ -1644,7 +1630,3 @@ void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *str
 
    HTS_Model_add_parameter(&ms->gv[stream_index], 2, string, mean, vari, NULL);
 }
-
-HTS_MODEL_C_END;
-
-#endif                          /* !HTS_MODEL_C */

@@ -47,20 +47,6 @@
 /* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE           */
 /* POSSIBILITY OF SUCH DAMAGE.                                       */
 /* ----------------------------------------------------------------- */
-
-#ifndef HTS_SSTREAM_C
-#define HTS_SSTREAM_C
-
-#ifdef __cplusplus
-#define HTS_SSTREAM_C_START extern "C" {
-#define HTS_SSTREAM_C_END   }
-#else
-#define HTS_SSTREAM_C_START
-#define HTS_SSTREAM_C_END
-#endif                          /* __CPLUSPLUS */
-
-HTS_SSTREAM_C_START;
-
 #include <stdlib.h>
 #include <math.h>
 
@@ -466,7 +452,3 @@ void HTS_SStreamSet_clear(HTS_SStreamSet * sss)
 
    HTS_SStreamSet_initialize(sss);
 }
-
-HTS_SSTREAM_C_END;
-
-#endif                          /* !HTS_SSTREAM_C */

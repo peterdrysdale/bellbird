@@ -47,20 +47,6 @@
 /* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE           */
 /* POSSIBILITY OF SUCH DAMAGE.                                       */
 /* ----------------------------------------------------------------- */
-
-#ifndef HTS_ENGINE_C
-#define HTS_ENGINE_C
-
-#ifdef __cplusplus
-#define HTS_ENGINE_C_START extern "C" {
-#define HTS_ENGINE_C_END   }
-#else
-#define HTS_ENGINE_C_START
-#define HTS_ENGINE_C_END
-#endif                          /* __CPLUSPLUS */
-
-HTS_ENGINE_C_START;
-
 #include <string.h>             /* for strlen(), strstr() */
 
 #include "cst_alloc.h"
@@ -86,8 +72,6 @@ void HTS_Engine_initialize(HTS_Engine * engine)
    engine->condition.phoneme_alignment_flag = FALSE;
 
    /* spectrum */
-   engine->condition.stage = 0;
-   engine->condition.use_log_gain = FALSE;
    engine->condition.alpha = 0.0;
    engine->condition.beta = 0.0;
 
@@ -113,7 +97,6 @@ HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices)
    size_t nstream;
    const char *option, *find;
    float tempfloat;
-   int tempint;
 
    /* reset engine */
    HTS_Engine_clear(engine);
@@ -139,13 +122,15 @@ HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices)
    option = HTS_ModelSet_get_option(&engine->ms, 0);
    find = strstr(option, "GAMMA=");
    if (find != NULL) {
-      if (bell_validate_atoi(&find[strlen("GAMMA=")],&tempint)) {
-         engine->condition.stage = (size_t) tempint;
-      }
+      cst_errmsg("Non-Zero GAMMA not supported\n");
+      HTS_Engine_clear(engine);
+      return FALSE;
    }
    find = strstr(option, "LN_GAIN=1");
    if (find != NULL) {
-      engine->condition.use_log_gain = TRUE;
+      cst_errmsg("Non-Zero LN_GAIN not supported\n");
+      HTS_Engine_clear(engine);
+      return FALSE;
    }
    find = strstr(option, "ALPHA=");
    if (find != NULL) {
@@ -248,7 +233,7 @@ static HTS_Boolean HTS_Engine_generate_parameter_sequence(HTS_Engine * engine)
 /* HTS_Engine_generate_sample_sequence: generate sample sequence (3rd synthesis step) */
 static HTS_Boolean HTS_Engine_generate_sample_sequence(HTS_Engine * engine)
 {
-   return HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.stage, engine->condition.use_log_gain, engine->condition.sampling_frequency, engine->condition.fperiod, engine->condition.alpha, engine->condition.beta, &engine->condition.stop, engine->condition.volume);
+   return HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.sampling_frequency, engine->condition.fperiod, engine->condition.alpha, engine->condition.beta, &engine->condition.stop, engine->condition.volume);
 }
 
 /* HTS_Engine_synthesize: synthesize speech */
@@ -303,7 +288,3 @@ void HTS_Engine_clear(HTS_Engine * engine)
    HTS_ModelSet_clear(&engine->ms);
    HTS_Engine_initialize(engine);
 }
-
-HTS_ENGINE_C_END;
-
-#endif                          /* !HTS_ENGINE_C */

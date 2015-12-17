@@ -48,23 +48,10 @@
 /* POSSIBILITY OF SUCH DAMAGE.                                       */
 /* ----------------------------------------------------------------- */
 
-#ifndef HTS_VOCODER_C
-#define HTS_VOCODER_C
-
-#ifdef __cplusplus
-#define HTS_VOCODER_C_START extern "C" {
-#define HTS_VOCODER_C_END   }
-#else
-#define HTS_VOCODER_C_START
-#define HTS_VOCODER_C_END
-#endif                          /* __CPLUSPLUS */
-
-HTS_VOCODER_C_START;
-
 // HTS voices use Pade approximate order 5. Set this for included static code.
 #define BELL_PORDER 5
 
-#include <math.h>               /* for sqrt(),log(),exp(),pow(),cos() */
+#include <math.h>               /* for sqrt(),log(),exp() */
 
 #include "cst_alloc.h"
 /* hts_engine libraries */
@@ -81,9 +68,6 @@ HTS_VOCODER_C_START;
 #define RANDMAX 32767
 
 #define IRLENG    576  // Interpolation length
-
-#define CHECK_LSP_STABILITY_MIN 0.25
-#define CHECK_LSP_STABILITY_NUM 4
 
 static const double HTS_pade[6] = {
    1.00000000000,
@@ -155,16 +139,12 @@ static double HTS_nrandom(HTS_Vocoder * v)
 /* HTS_mc2b: transform mel-cepstrum to MLSA digital fillter coefficients */
 static void HTS_mc2b(double *mc, double *b, int m, const double a)
 {
-   if (mc != b) {
-      if (a != 0.0) {
-         b[m] = mc[m];
-         for (m--; m >= 0; m--)
-            b[m] = mc[m] - a * b[m + 1];
-      } else
-         HTS_movem(mc, b, m + 1);
-   } else if (a != 0.0)
+   if (a != 0.0) {
+      b[m] = mc[m];
       for (m--; m >= 0; m--)
-         b[m] -= a * b[m + 1];
+         b[m] = mc[m] - a * b[m + 1];
+   } else
+      HTS_movem(mc, b, m + 1);
 }
 
 /* HTS_b2mc: transform MLSA digital filter coefficients to mel-cepstrum */
@@ -180,49 +160,18 @@ static void HTS_b2mc(const double *b, double *mc, int m, const double a)
    }
 }
 
-/* HTS_freqt: frequency transformation */
-static void HTS_freqt(HTS_Vocoder * v, const double *c1, const int m1, double *c2, const size_t m2, const double a)
-{
-   int i;
-   size_t j;
-   const double b = 1 - a * a;
-   double *g;
-
-   if (m2 > v->freqt_size) {
-      if (v->freqt_buff != NULL)
-         cst_free(v->freqt_buff);
-      v->freqt_buff = cst_alloc(double,(m2 + m2 + 2));
-      v->freqt_size = m2;
-   }
-   g = v->freqt_buff + v->freqt_size + 1;
-
-   for (j = 0; j < m2 + 1; j++)
-      g[j] = 0.0;
-
-   for (i = -m1; i <= 0; i++) {
-      g[0] = c1[-i] + a * (v->freqt_buff[0] = g[0]);
-      if (1 <= m2)
-         g[1] = b * v->freqt_buff[0] + a * (v->freqt_buff[1] = g[1]);
-      for (j = 2; j <= m2; j++)
-         g[j] = v->freqt_buff[j - 1] + a * ((v->freqt_buff[j] = g[j]) - g[j - 1]);
-   }
-
-   HTS_movem(g, c2, m2 + 1);
-}
-
 /* HTS_c2ir: The minimum phase impulse response is evaluated from the minimum phase cepstrum */
-static void HTS_c2ir(const double *c, const int nc, double *h, const int leng)
+static void HTS_c2ir(const double *c, const int nc, double *ir)
 {
-   int n, k, upl;
+   int n, k;
    double d;
 
-   h[0] = exp(c[0]);
-   for (n = 1; n < leng; n++) {
+   ir[0] = exp(c[0]);
+   for (n = 1; n < nc; n++) {
       d = 0;
-      upl = (n >= nc) ? nc - 1 : n;
-      for (k = 1; k <= upl; k++)
-         d += k * c[k] * h[n - k];
-      h[n] = d / n;
+      for (k = 1; k <= n; k++)
+         d += k * c[k] * ir[n - k];
+      ir[n] = d / n;
    }
 }
 
@@ -244,304 +193,13 @@ static double HTS_b2en(HTS_Vocoder * v, const double *b, const size_t m, const d
    ir = cep + IRLENG;
 
    HTS_b2mc(b, v->spectrum2en_buff, m, a);
-   HTS_freqt(v, v->spectrum2en_buff, m, cep, IRLENG - 1, -a);
-   HTS_c2ir(cep, IRLENG, ir, IRLENG);
+   freqt(v->spectrum2en_buff, m, cep, IRLENG, -a);
+   HTS_c2ir(cep, IRLENG, ir);
 
    for (i = 0; i < IRLENG; i++)
       en += ir[i] * ir[i];
 
    return (en);
-}
-
-/* HTS_ignorm: inverse gain normalization */
-static void HTS_ignorm(double *c1, double *c2, int m, const double g)
-{
-   double k;
-   if (g != 0.0) {
-      k = pow(c1[0], g);
-      for (; m >= 1; m--)
-         c2[m] = k * c1[m];
-      c2[0] = (k - 1.0) / g;
-   } else {
-      HTS_movem(&c1[1], &c2[1], m);
-      c2[0] = log(c1[0]);
-   }
-}
-
-/* HTS_gnorm: gain normalization */
-static void HTS_gnorm(double *c1, double *c2, int m, const double g)
-{
-   double k;
-   if (g != 0.0) {
-      k = 1.0 + g * c1[0];
-      for (; m >= 1; m--)
-         c2[m] = c1[m] / k;
-      c2[0] = pow(k, 1.0 / g);
-   } else {
-      HTS_movem(&c1[1], &c2[1], m);
-      c2[0] = exp(c1[0]);
-   }
-}
-
-/* HTS_lsp2lpc: transform LSP to LPC */
-static void HTS_lsp2lpc(HTS_Vocoder * v, double *lsp, double *a, const size_t m)
-{
-   size_t i, k, mh1, mh2;
-   int flag_odd;
-   double xx, xf, xff;
-   double *p, *q;
-   double *a0, *a1, *a2, *b0, *b1, *b2;
-
-   flag_odd = 0;
-   if (m % 2 == 0)
-      mh1 = mh2 = m / 2;
-   else {
-      mh1 = (m + 1) / 2;
-      mh2 = (m - 1) / 2;
-      flag_odd = 1;
-   }
-
-   if (m > v->lsp2lpc_size) {
-      if (v->lsp2lpc_buff != NULL)
-         cst_free(v->lsp2lpc_buff);
-      v->lsp2lpc_buff = cst_alloc(double,(5 * m + 6));
-      v->lsp2lpc_size = m;
-   }
-   p = v->lsp2lpc_buff + m;
-   q = p + mh1;
-   a0 = q + mh2;
-   a1 = a0 + (mh1 + 1);
-   a2 = a1 + (mh1 + 1);
-   b0 = a2 + (mh1 + 1);
-   b1 = b0 + (mh2 + 1);
-   b2 = b1 + (mh2 + 1);
-
-   HTS_movem(lsp, v->lsp2lpc_buff, m);
-
-   for (i = 0; i < mh1 + 1; i++)
-      a0[i] = 0.0;
-   for (i = 0; i < mh1 + 1; i++)
-      a1[i] = 0.0;
-   for (i = 0; i < mh1 + 1; i++)
-      a2[i] = 0.0;
-   for (i = 0; i < mh2 + 1; i++)
-      b0[i] = 0.0;
-   for (i = 0; i < mh2 + 1; i++)
-      b1[i] = 0.0;
-   for (i = 0; i < mh2 + 1; i++)
-      b2[i] = 0.0;
-
-   /* lsp filter parameters */
-   for (i = k = 0; i < mh1; i++, k += 2)
-      p[i] = -2.0 * cos(v->lsp2lpc_buff[k]);
-   for (i = k = 0; i < mh2; i++, k += 2)
-      q[i] = -2.0 * cos(v->lsp2lpc_buff[k + 1]);
-
-   /* impulse response of analysis filter */
-   xx = 1.0;
-   xf = xff = 0.0;
-
-   for (k = 0; k <= m; k++) {
-      if (flag_odd) {
-         a0[0] = xx;
-         b0[0] = xx - xff;
-         xff = xf;
-         xf = xx;
-      } else {
-         a0[0] = xx + xf;
-         b0[0] = xx - xf;
-         xf = xx;
-      }
-
-      for (i = 0; i < mh1; i++) {
-         a0[i + 1] = a0[i] + p[i] * a1[i] + a2[i];
-         a2[i] = a1[i];
-         a1[i] = a0[i];
-      }
-
-      for (i = 0; i < mh2; i++) {
-         b0[i + 1] = b0[i] + q[i] * b1[i] + b2[i];
-         b2[i] = b1[i];
-         b1[i] = b0[i];
-      }
-
-      if (k != 0)
-         a[k - 1] = -0.5 * (a0[mh1] + b0[mh2]);
-      xx = 0.0;
-   }
-
-   for (i = m; i > 0; i--)
-      a[i] = -a[i-1];
-   a[0] = 1.0;
-}
-
-/* HTS_gc2gc: generalized cepstral transformation */
-static void HTS_gc2gc(HTS_Vocoder * v, double *c1, const size_t m1, const double g1, double *c2, const size_t m2, const double g2)
-{
-   size_t i, min, k, mk;
-   double ss1, ss2, cc;
-
-   if (m1 > v->gc2gc_size) {
-      if (v->gc2gc_buff != NULL)
-         cst_free(v->gc2gc_buff);
-      v->gc2gc_buff = cst_alloc(double,(m1 + 1));
-      v->gc2gc_size = m1;
-   }
-
-   HTS_movem(c1, v->gc2gc_buff, m1 + 1);
-
-   c2[0] = v->gc2gc_buff[0];
-   for (i = 1; i <= m2; i++) {
-      ss1 = ss2 = 0.0;
-      min = (m1 < i ? m1 : i - 1);
-      for (k = 1; k <= min; k++) {
-         mk = i - k;
-         cc = v->gc2gc_buff[k] * c2[mk];
-         ss2 += k * cc;
-         ss1 += mk * cc;
-      }
-
-      if (i <= m1)
-         c2[i] = v->gc2gc_buff[i] + (g2 * ss2 - g1 * ss1) / i;
-      else
-         c2[i] = (g2 * ss2 - g1 * ss1) / i;
-   }
-}
-
-/* HTS_mgc2mgc: frequency and generalized cepstral transformation */
-static void HTS_mgc2mgc(HTS_Vocoder * v, double *c1, const int m1, const double a1, const double g1, double *c2, const int m2, const double a2, const double g2)
-{
-   double a;
-
-   if (a1 == a2) {
-      HTS_gnorm(c1, c1, m1, g1);
-      HTS_gc2gc(v, c1, m1, g1, c2, m2, g2);
-      HTS_ignorm(c2, c2, m2, g2);
-   } else {
-      a = (a2 - a1) / (1 - a1 * a2);
-      HTS_freqt(v, c1, m1, c2, m2, a);
-      HTS_gnorm(c2, c2, m2, g1);
-      HTS_gc2gc(v, c2, m2, g1, c2, m2, g2);
-      HTS_ignorm(c2, c2, m2, g2);
-   }
-}
-
-/* HTS_lsp2mgc: transform LSP to MGC */
-static void HTS_lsp2mgc(HTS_Vocoder * v, double *lsp, double *mgc, const int m, const double alpha)
-{
-    int i;
-
-    /* lsp2lpc */
-    HTS_lsp2lpc(v, lsp + 1, mgc, m);
-    if (v->use_log_gain)
-        mgc[0] = exp(lsp[0]);
-    else
-        mgc[0] = lsp[0];
-
-    /* mgc2mgc */
-    HTS_ignorm(mgc, mgc, m, v->gamma);
-    mgc[0] = (1.0 - mgc[0]) * ((double) v->stage);
-    for (i = m; i >= 1; i--)
-        mgc[i] *= -((double) v->stage);
-    HTS_mgc2mgc(v, mgc, m, alpha, v->gamma, mgc, m, alpha, v->gamma);
-}
-
-/* HTS_mglsadff: sub functions for MGLSA filter */
-static double HTS_mglsadff(double x, const double *b, const int m, const double a, double *d)
-{
-   int i;
-
-   double y;
-   y = d[0] * b[1];
-   for (i = 1; i < m; i++) {
-      d[i] += a * (d[i + 1] - d[i - 1]);
-      y += d[i] * b[i + 1];
-   }
-   x -= y;
-
-   for (i = m; i > 0; i--)
-      d[i] = d[i - 1];
-   d[0] = a * d[0] + (1 - a * a) * x;
-   return x;
-}
-
-/* HTS_mglsadf: sub functions for MGLSA filter */
-static double HTS_mglsadf(double x, const double *b, const int m, const double a, const int n, double *d)
-{
-   int i;
-
-   for (i = 0; i < n; i++)
-      x = HTS_mglsadff(x, b, m, a, &d[i * (m + 1)]);
-
-   return x;
-}
-
-/* THS_check_lsp_stability: check LSP stability */
-static void HTS_check_lsp_stability(double *lsp, size_t m)
-{
-   size_t i, j;
-   double tmp;
-   double min = (CHECK_LSP_STABILITY_MIN * PI) / (m + 1);
-   HTS_Boolean find;
-
-   for (i = 0; i < CHECK_LSP_STABILITY_NUM; i++) {
-      find = FALSE;
-
-      for (j = 1; j < m; j++) {
-         tmp = lsp[j + 1] - lsp[j];
-         if (tmp < min) {
-            lsp[j] -= 0.5 * (min - tmp);
-            lsp[j + 1] += 0.5 * (min - tmp);
-            find = TRUE;
-         }
-      }
-
-      if (lsp[1] < min) {
-         lsp[1] = min;
-         find = TRUE;
-      }
-      if (lsp[m] > PI - min) {
-         lsp[m] = PI - min;
-         find = TRUE;
-      }
-
-      if (find == FALSE)
-         break;
-   }
-}
-
-/* HTS_lsp2en: calculate frame energy */
-static double HTS_lsp2en(HTS_Vocoder * v, double *lsp, size_t m, double alpha)
-{
-    size_t i;
-    double en = 0.0;
-    double *buff;
-
-    if (v->spectrum2en_size < m) {
-        if (v->spectrum2en_buff != NULL)
-            cst_free(v->spectrum2en_buff);
-        v->spectrum2en_buff = cst_alloc(double,(m + 1 + IRLENG));
-        v->spectrum2en_size = m;
-    }
-    buff = v->spectrum2en_buff + m + 1;
-
-    /* lsp2lpc */
-    HTS_lsp2lpc(v, lsp + 1, v->spectrum2en_buff, m);
-    if (v->use_log_gain)
-        v->spectrum2en_buff[0] = exp(lsp[0]);
-    else
-        v->spectrum2en_buff[0] = lsp[0];
-
-    /* mgc2mgc */
-    HTS_ignorm(v->spectrum2en_buff, v->spectrum2en_buff, m, v->gamma);
-    v->spectrum2en_buff[0] = (1.0 - v->spectrum2en_buff[0]) * ((double) v->stage);
-    for (i = 1; i <= m; i++)
-        v->spectrum2en_buff[i] *= -((double) v->stage);
-   HTS_mgc2mgc(v, v->spectrum2en_buff, m, alpha, v->gamma, buff, IRLENG - 1, 0.0, 1);
-
-    for (i = 0; i < IRLENG; i++)
-        en += buff[i] * buff[i];
-    return en;
 }
 
 /* HTS_Vocoder_initialize_excitation: initialize excitation */
@@ -679,57 +337,11 @@ static void HTS_Vocoder_postfilter_mcp(HTS_Vocoder * v, double *mcp, const size_
    }
 }
 
-/* HTS_Vocoder_postfilter_lsp: postfilter for LSP */
-static void HTS_Vocoder_postfilter_lsp(HTS_Vocoder * v, double *lsp, size_t m, double alpha, double beta)
-{
-   double e1, e2;
-   size_t i;
-   double d1, d2;
-
-   if (beta > 0.0 && m > 1) {
-      if (v->postfilter_size < m) {
-         if (v->postfilter_buff != NULL)
-            cst_free(v->postfilter_buff);
-         v->postfilter_buff = cst_alloc(double,m + 1);
-         v->postfilter_size = m;
-      }
-
-      e1 = HTS_lsp2en(v, lsp, m, alpha);
-
-      /* postfiltering */
-      for (i = 0; i <= m; i++) {
-         if (i > 1 && i < m) {
-            d1 = beta * (lsp[i + 1] - lsp[i]);
-            d2 = beta * (lsp[i] - lsp[i - 1]);
-            v->postfilter_buff[i] = lsp[i - 1] + d2 + (d2 * d2 * ((lsp[i + 1] - lsp[i - 1]) - (d1 + d2))) / ((d2 * d2) + (d1 * d1));
-         } else {
-            v->postfilter_buff[i] = lsp[i];
-         }
-      }
-      HTS_movem(v->postfilter_buff, lsp, m + 1);
-
-      e2 = HTS_lsp2en(v, lsp, m, alpha);
-
-      if (e1 != e2) {
-         if (v->use_log_gain)
-            lsp[0] += 0.5 * log(e1 / e2);
-         else
-            lsp[0] *= sqrt(e1 / e2);
-      }
-   }
-}
-
 /* HTS_Vocoder_initialize: initialize vocoder */
-void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean use_log_gain, size_t rate, size_t fperiod)
+void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t rate, size_t fperiod)
 {
    /* set parameter */
    v->is_first = TRUE;
-   v->stage = stage;
-   if (stage != 0)
-      v->gamma = -1.0 / v->stage;
-   else
-      v->gamma = 0.0;
-   v->use_log_gain = use_log_gain;
    v->fprd = fperiod;
    v->next = 1;
    v->rate = rate;
@@ -741,27 +353,15 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean
    v->excite_buff_index = 0;
    v->sw = 0;
    /* init buffer */
-   v->freqt_buff = NULL;
-   v->freqt_size = 0;
-   v->gc2gc_buff = NULL;
-   v->gc2gc_size = 0;
-   v->lsp2lpc_buff = NULL;
-   v->lsp2lpc_size = 0;
    v->postfilter_buff = NULL;
    v->postfilter_size = 0;
    v->spectrum2en_buff = NULL;
    v->spectrum2en_size = 0;
-   if (v->stage == 0) {         /* for MCP */
-      v->c = cst_alloc(double,(m * (3 + BELL_PORDER) + 7 * BELL_PORDER + 6));
-      v->cc = v->c + m + 1;
-      v->cinc = v->cc + m + 1;
-      v->d1 = v->cinc + m + 1;
-   } else {                     /* for LSP */
-      v->c = cst_alloc(double,((m + 1) * (v->stage + 3)));
-      v->cc = v->c + m + 1;
-      v->cinc = v->cc + m + 1;
-      v->d1 = v->cinc + m + 1;
-   }
+
+   v->c = cst_alloc(double,(m * (3 + BELL_PORDER) + 7 * BELL_PORDER + 6));
+   v->cc = v->c + m + 1;
+   v->cinc = v->cc + m + 1;
+   v->d1 = v->cinc + m + 1;
    v->d2offset = 1;
 }
 
@@ -786,47 +386,21 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
    /* first time */
    if (v->is_first == TRUE) {
       HTS_Vocoder_initialize_excitation(v, p, nlpf);
-      if (v->stage == 0) {      /* for MCP */
-         HTS_mc2b(spectrum, v->c, m, alpha);
-      } else {                  /* for LSP */
-         HTS_movem(spectrum, v->c, m + 1);
-         HTS_lsp2mgc(v, v->c, v->c, m, alpha);
-         HTS_mc2b(v->c, v->c, m, alpha);
-         HTS_gnorm(v->c, v->c, m, v->gamma);
-         for (i = 1; i <= m; i++)
-            v->c[i] *= v->gamma;
-      }
+      HTS_mc2b(spectrum, v->c, m, alpha);
       v->is_first = FALSE;
    }
 
    HTS_Vocoder_start_excitation(v, p);
-   if (v->stage == 0) {         /* for MCP */
-      HTS_Vocoder_postfilter_mcp(v, spectrum, m, alpha, beta);
-      HTS_mc2b(spectrum, v->cc, m, alpha);
-      for (i = 0; i <= m; i++)
-         v->cinc[i] = (v->cc[i] - v->c[i]) / v->fprd;
-   } else {                     /* for LSP */
-      HTS_Vocoder_postfilter_lsp(v, spectrum, m, alpha, beta);
-      HTS_check_lsp_stability(spectrum, m);
-      HTS_lsp2mgc(v, spectrum, v->cc, m, alpha);
-      HTS_mc2b(v->cc, v->cc, m, alpha);
-      HTS_gnorm(v->cc, v->cc, m, v->gamma);
-      for (i = 1; i <= m; i++)
-         v->cc[i] *= v->gamma;
-      for (i = 0; i <= m; i++)
-         v->cinc[i] = (v->cc[i] - v->c[i]) / v->fprd;
-   }
+   HTS_Vocoder_postfilter_mcp(v, spectrum, m, alpha, beta);
+   HTS_mc2b(spectrum, v->cc, m, alpha);
+   for (i = 0; i <= m; i++)
+      v->cinc[i] = (v->cc[i] - v->c[i]) / v->fprd;
 
    for (j = 0; j < v->fprd; j++) {
       x = HTS_Vocoder_get_excitation(v, lpf);
-      if (v->stage == 0) {      /* for MCP */
-         if (x != 0.0)
-            x *= exp(v->c[0]);
-         x = HTS_mlsadf(x, v->c, m, alpha, v->d1, &(v->d2offset));
-      } else {                  /* for LSP */
-         x *= v->c[0];
-         x = HTS_mglsadf(x, v->c, m, alpha, v->stage, v->d1);
-      }
+      if (x != 0.0)
+         x *= exp(v->c[0]);
+      x = HTS_mlsadf(x, v->c, m, alpha, v->d1, &(v->d2offset));
       x *= volume;
 
       /* output */
@@ -846,21 +420,6 @@ void HTS_Vocoder_clear(HTS_Vocoder * v)
 {
    if (v != NULL) {
       /* free buffer */
-      if (v->freqt_buff != NULL) {
-         cst_free(v->freqt_buff);
-         v->freqt_buff = NULL;
-      }
-      v->freqt_size = 0;
-      if (v->gc2gc_buff != NULL) {
-         cst_free(v->gc2gc_buff);
-         v->gc2gc_buff = NULL;
-      }
-      v->gc2gc_size = 0;
-      if (v->lsp2lpc_buff != NULL) {
-         cst_free(v->lsp2lpc_buff);
-         v->lsp2lpc_buff = NULL;
-      }
-      v->lsp2lpc_size = 0;
       if (v->postfilter_buff != NULL) {
          cst_free(v->postfilter_buff);
          v->postfilter_buff = NULL;
@@ -883,7 +442,3 @@ void HTS_Vocoder_clear(HTS_Vocoder * v)
       }
    }
 }
-
-HTS_VOCODER_C_END;
-
-#endif                          /* !HTS_VOCODER_C */

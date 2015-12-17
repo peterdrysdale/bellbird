@@ -80,7 +80,6 @@ typedef struct _VocoderSetup {
    Boolean gauss;
    double p1;
    double pc;
-   double pj;
    double pade[6]; // Pade approximants coefficients
    double *c, *cc, *cinc, *d1;
    double rate;     // output wave's sample rate
@@ -89,9 +88,6 @@ typedef struct _VocoderSetup {
    double r1, r2, s;// intermediate values of Gaussian random number generator
 
    /* for postfiltering */
-   int size;
-   double *d; 
-   double *g;
    double *mc;
    double *cep;
    double *ir;
@@ -148,7 +144,6 @@ static void init_vocoder(double fs, int framel, int m,
     /* for postfiltering */
     vs->mc = NULL;
     vs->o  = 0;
-    vs->d  = NULL;
     vs->irleng= 64;
 
     vs->d2offset = 1;
@@ -170,15 +165,12 @@ static void free_vocoder(VocoderSetup *vs)
 
     cst_free(vs->c);
     cst_free(vs->mc);
-    cst_free(vs->d);
  
     vs->c = NULL;
     vs->mc = NULL;
-    vs->d = NULL;
     vs->cc = NULL;
     vs->cinc = NULL;
     vs->d1 = NULL;
-    vs->g = NULL;
     vs->cep = NULL;
     vs->ir = NULL;
 
@@ -192,7 +184,7 @@ static void free_vocoder(VocoderSetup *vs)
 }
 
 /* b2mc : transform MLSA digital filter coefficients to mel-cepstrum */
-static void b2mc (double *b, double *mc, int m, double a)
+static void b2mc (double *b, double *mc, int m, const double a)
 {
   double d, o;
         
@@ -206,56 +198,18 @@ static void b2mc (double *b, double *mc, int m, double a)
   return;
 }
 
-/* freqt : frequency transformation */
-static void freqt (double *c1, int m1, double *c2, int m2, double a, VocoderSetup *vs)
-{
-   int i, j;
-   double b;
-    
-   if (vs->d==NULL) {
-      vs->size = m2;
-      vs->d    = cst_alloc(double,vs->size + vs->size + 2);
-      vs->g    = vs->d+vs->size+1;
-   }
-
-   if (m2>vs->size) {
-       cst_free(vs->d);
-      vs->size = m2;
-      vs->d    = cst_alloc(double,vs->size + vs->size + 2);
-      vs->g    = vs->d+vs->size+1;
-   }
-    
-   b = 1-a*a;
-   for (i=0; i<m2+1; i++)
-      vs->g[i] = 0.0;
-
-   for (i=-m1; i<=0; i++) {
-      if (0 <= m2)
-         vs->g[0] = c1[-i]+a*(vs->d[0]=vs->g[0]);
-      if (1 <= m2)
-         vs->g[1] = b*vs->d[0]+a*(vs->d[1]=vs->g[1]);
-      for (j=2; j<=m2; j++)
-         vs->g[j] = vs->d[j-1]+a*((vs->d[j]=vs->g[j])-vs->g[j-1]);
-   }
-
-   memmove(c2,vs->g,sizeof(double)*(m2+1));
-   
-   return;
-}
-
 /* c2ir : The minimum phase impulse response is evaluated from the minimum phase cepstrum */
-static void c2ir (double *c, int nc, double *h, int leng)
+static void c2ir (const double * const cep, const int irleng, double *ir)
 {
-   int n, k, upl;
+   int n, k;
    double  d;
 
-   h[0] = exp(c[0]);
-   for (n=1; n<leng; n++) {
+   ir[0] = exp(cep[0]);
+   for (n=1; n<irleng; n++) {
       d = 0;
-      upl = (n>=nc) ? nc-1 : n;
-      for (k=1; k<=upl; k++)
-         d += k*c[k]*h[n-k];
-      h[n] = d/n;
+      for (k = 1; k <= n; k++)
+         d += k * cep[k] * ir[n-k];
+      ir[n] = d / n;
    }
    
    return;
@@ -277,8 +231,8 @@ static double b2en (double *b, int m, double a, VocoderSetup *vs)
    }
 
    b2mc(b, vs->mc, m, a);
-   freqt(vs->mc, m, vs->cep, vs->irleng-1, -a, vs);
-   c2ir(vs->cep, vs->irleng, vs->ir, vs->irleng);
+   freqt(vs->mc, m, vs->cep, vs->irleng, -a);
+   c2ir(vs->cep, vs->irleng, vs->ir);
    en = 0.0;
    
    for (k=0;k<vs->irleng;k++)

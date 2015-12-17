@@ -47,20 +47,6 @@
 /* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE           */
 /* POSSIBILITY OF SUCH DAMAGE.                                       */
 /* ----------------------------------------------------------------- */
-
-#ifndef HTS_GSTREAM_C
-#define HTS_GSTREAM_C
-
-#ifdef __cplusplus
-#define HTS_GSTREAM_C_START extern "C" {
-#define HTS_GSTREAM_C_END   }
-#else
-#define HTS_GSTREAM_C_START
-#define HTS_GSTREAM_C_END
-#endif                          /* __CPLUSPLUS */
-
-HTS_GSTREAM_C_START;
-
 #include "cst_alloc.h"
 #include "cst_error.h"
 /* hts_engine libraries */
@@ -77,7 +63,7 @@ void HTS_GStreamSet_initialize(HTS_GStreamSet * gss)
 }
 
 /* HTS_GStreamSet_create: generate speech */
-HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, size_t stage, HTS_Boolean use_log_gain, size_t sampling_rate, size_t fperiod, double alpha, double beta, HTS_Boolean * stop, double volume)
+HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, size_t sampling_rate, size_t fperiod, double alpha, double beta, HTS_Boolean * stop, double volume)
 {
    size_t i, j, k;
    size_t msd_frame;
@@ -144,7 +130,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
    }
 
    /* synthesize speech waveform */
-   HTS_Vocoder_initialize(&v, gss->gstream[0].vector_length - 1, stage, use_log_gain, sampling_rate, fperiod);
+   HTS_Vocoder_initialize(&v, gss->gstream[0].vector_length - 1, sampling_rate, fperiod);
    if (gss->nstream >= 3)
       nlpf = gss->gstream[2].vector_length;
    for (i = 0; i < gss->total_frame && (*stop) == FALSE; i++) {
@@ -195,7 +181,3 @@ void HTS_GStreamSet_clear(HTS_GStreamSet * gss)
       cst_free(gss->gspeech);
    HTS_GStreamSet_initialize(gss);
 }
-
-HTS_GSTREAM_C_END;
-
-#endif                          /* !HTS_GSTREAM_C */

@@ -51,16 +51,6 @@
 #ifndef HTS_HIDDEN_H
 #define HTS_HIDDEN_H
 
-#ifdef __cplusplus
-#define HTS_HIDDEN_H_START extern "C" {
-#define HTS_HIDDEN_H_END   }
-#else
-#define HTS_HIDDEN_H_START
-#define HTS_HIDDEN_H_END
-#endif                          /* __CPLUSPLUS */
-
-HTS_HIDDEN_H_START;
-
 #include <stdint.h>
 /* hts_engine libraries */
 #include "HTS_engine.h"
@@ -267,7 +257,7 @@ void HTS_PStreamSet_clear(HTS_PStreamSet * pss);
 void HTS_GStreamSet_initialize(HTS_GStreamSet * gss);
 
 /* HTS_GStreamSet_create: generate speech */
-HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, size_t stage, HTS_Boolean use_log_gain, size_t sampling_rate, size_t fperiod, double alpha, double beta, HTS_Boolean * stop, double volume);
+HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, size_t sampling_rate, size_t fperiod, double alpha, double beta, HTS_Boolean * stop, double volume);
 
 /* HTS_GStreamSet_get_total_nsamples: get total number of sample */
 size_t HTS_GStreamSet_get_total_nsamples(HTS_GStreamSet * gss);
@@ -283,9 +273,6 @@ void HTS_GStreamSet_clear(HTS_GStreamSet * gss);
 /* HTS_Vocoder: structure for setting of vocoder */
 typedef struct _HTS_Vocoder {
    HTS_Boolean is_first;
-   size_t stage;                /* Gamma=-1/stage: if stage=0 then Gamma=0 */
-   double gamma;                /* Gamma */
-   HTS_Boolean use_log_gain;    /* log gain flag (for LSP) */
    size_t fprd;                 /* frame shift */
    unsigned long next;          /* temporary variable for random generator */
    double rate;                 /* sampling rate */
@@ -296,8 +283,6 @@ typedef struct _HTS_Vocoder {
    size_t excite_buff_size;     /* used in excitation generation */
    size_t excite_buff_index;    /* used in excitation generation */
    unsigned char sw;            /* switch used in random generator */
-   double *freqt_buff;          /* used in freqt */
-   size_t freqt_size;           /* buffer size for freqt */
    double *spectrum2en_buff;    /* used in spectrum2en */
    size_t spectrum2en_size;     /* buffer size for spectrum2en */
    double r1, r2, s;            /* used in random generator */
@@ -305,21 +290,15 @@ typedef struct _HTS_Vocoder {
    size_t postfilter_size;      /* buffer size for postfiltering */
    double *c, *cc, *cinc, *d1;  /* used in the MLSA/MGLSA filter */
    int    d2offset;             /* start of history terms in wraparound buffer of MLSA filter */
-   double *lsp2lpc_buff;        /* used in lsp2lpc */
-   size_t lsp2lpc_size;         /* buffer size of lsp2lpc */
-   double *gc2gc_buff;          /* used in gc2gc */
-   size_t gc2gc_size;           /* buffer size for gc2gc */
 } HTS_Vocoder;
 
 /* HTS_Vocoder_initialize: initialize vocoder */
-void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t stage, HTS_Boolean use_log_gain, size_t rate, size_t fperiod);
+void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t rate, size_t fperiod);
 
 /* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA/MGLSA filter based waveform synthesis */
 void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, int16_t *wavedata);
 
 /* HTS_Vocoder_clear: clear vocoder */
 void HTS_Vocoder_clear(HTS_Vocoder * v);
-
-HTS_HIDDEN_H_END;
 
 #endif                          /* !HTS_HIDDEN_H */

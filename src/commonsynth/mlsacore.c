@@ -203,3 +203,29 @@ static double mlsadf2(double x, const double *c, const int m, const double a,
 
    return(out);
 }
+
+static void freqt (const double * const mc, const int m, double *cep, const int irleng, const double a)
+{ // frequency transformation
+   int i, j;
+   const double aa = 1 - a * a;
+   double temp;  // pair of temps to hold cep values between loop iterations
+   double temp1;
+
+   for (i = 0; i < irleng; i++)
+      cep[i] = 0.0;
+
+   for (i = -m; i <= 0; i++) {
+      temp = cep[0];
+      cep[0] = mc[-i] + a * temp;
+      temp1 = cep[1];
+      cep[1] = aa * temp + a * temp1;
+      for (j=2; j < irleng ; j++)
+      {
+         temp = temp1;
+         temp1 = cep[j];
+         cep[j] = temp + a * (temp1 - cep[j-1]);
+      }
+   }
+
+   return;
+}

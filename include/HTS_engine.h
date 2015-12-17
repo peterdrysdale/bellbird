@@ -271,8 +271,6 @@ typedef struct _HTS_Condition {
    double speed;                /* speech speed */
 
    /* spectrum */
-   size_t stage;                /* if stage=0 then gamma=0 else gamma=-1/stage */
-   HTS_Boolean use_log_gain;    /* log gain flag (for LSP) */
    double alpha;                /* all-pass constant */
    double beta;                 /* postfiltering coefficient */
 
