@@ -266,7 +266,9 @@ static pid_t audio_dispatch(pid_t audio_play_pid, bell_queue *q)
         if (-1 == audio_play_pid)
         {
             // On fork() error re-queue wave and try again on next iteration
-            q=bell_enqueue(elmt->content,q);
+            // Ignore return value since we already have a valid queue
+            // as we have dequeued from it just above
+            bell_enqueue(elmt->content,q);
             cst_free(elmt);  // Free queue element structure but not cst_wave
                              // since we have requeued the cst_wave
         }
