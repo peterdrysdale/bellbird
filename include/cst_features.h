@@ -95,7 +95,9 @@ const char *feat_own_string(cst_features *f,const char *name);
 CST_VAL_USER_TYPE_DCLS(features,cst_features)
 
 int feat_copy_into(const cst_features *from,cst_features *to);
-/* For debugging */
+
+#if defined(CART_DEBUG) || defined(SSML_DEBUG)
 int bell_feat_print(const cst_features *f);
+#endif // defined(CART_DEBUG) || defined(SSML_DEBUG)
 
 #endif

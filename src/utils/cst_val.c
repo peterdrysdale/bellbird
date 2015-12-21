@@ -284,6 +284,8 @@ const cst_val *set_car(cst_val *v1, const cst_val *v2)
     return v1;
 }
 
+#if defined(CART_DEBUG) || defined(SSML_DEBUG)
+
 void val_print(const cst_val *v)
 {
     const cst_val *p;
@@ -318,6 +320,8 @@ void val_print(const cst_val *v)
 	bell_fprintf(stderr,"[Val %s 0x%p]",
 		cst_val_defs[CST_VAL_TYPE(v)/2].name,CST_VAL_VOID(v));
 }
+
+#endif // defined(CART_DEBUG) || defined(SSML_DEBUG)
 
 cst_val *val_reverse(cst_val *l)
 {   /* destructively reverse the list */

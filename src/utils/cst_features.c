@@ -261,6 +261,8 @@ const char *feat_own_string(cst_features *f,const char *n)
     return val_string(val_car(f->owned_strings));
 }
 
+#if defined(CART_DEBUG) || defined(SSML_DEBUG)
+
 int bell_feat_print(const cst_features *f)
 {
     cst_featvalpair *p;
@@ -274,3 +276,5 @@ int bell_feat_print(const cst_features *f)
 
     return 0;
 }
+
+#endif // defined(CART_DEBUG) || defined(SSML_DEBUG)
