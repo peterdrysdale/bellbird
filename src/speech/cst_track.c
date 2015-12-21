@@ -43,16 +43,24 @@
 /*  Tracks (cepstrum, ffts, F0 etc)                                      */
 /*                                                                       */
 /*************************************************************************/
-#include "cst_string.h"
 #include "cst_alloc.h"
 #include "cst_val.h"
 #include "cst_track.h"
 
 CST_VAL_REGISTER_TYPE(track,cst_track)
 
-cst_track *new_track()
+cst_track *new_track(int num_frames, int num_channels)
 {
+    int i;
+
     cst_track *w = cst_alloc(struct cst_track_struct,1);
+    w->frames = cst_alloc(float*,num_frames);
+    for (i=0; i<num_frames; i++)
+    {
+	w->frames[i] = cst_alloc(float,num_channels);
+    }
+    w->num_frames = num_frames;
+    w->num_channels = num_channels;
     return w;
 }
 
@@ -67,29 +75,4 @@ void delete_track(cst_track *w)
 	cst_free(w);
     }
     return;
-}
-
-void cst_track_resize(cst_track *t,int num_frames, int num_channels)
-{
-    float **n_frames;
-    int i;
-
-    n_frames = cst_alloc(float*,num_frames);
-    for (i=0; i<num_frames; i++)
-    {
-	n_frames[i] = cst_alloc(float,num_channels);
-	if (i<t->num_frames)
-	{
-	    memmove(n_frames[i],
-		    t->frames[i],
-		    sizeof(float)*((num_channels < t->num_channels) ?
-				   num_channels : t->num_channels));
-	    cst_free(t->frames[i]);
-	}
-    }
-    for (   ; i<t->num_frames; i++) cst_free(t->frames[i]);
-    cst_free(t->frames);
-    t->frames = n_frames;
-    t->num_frames = num_frames;
-    t->num_channels = num_channels;
 }

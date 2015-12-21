@@ -424,20 +424,16 @@ static cst_utterance *cg_predict_params(cst_utterance *utt)
     int extra_feats = 0;
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
-    param_track = new_track();
 
     extra_feats = 1;  /* voicing */
     if (cg_db->mixed_excitation)
     {
         extra_feats += 5;
-        str_track = new_track();
-        cst_track_resize(str_track,UTT_FEAT_INT(utt,"param_track_num_frames"),5);
+        str_track = new_track(UTT_FEAT_INT(utt,"param_track_num_frames"),5);
     }
 
-    cst_track_resize(param_track,
-                     UTT_FEAT_INT(utt,"param_track_num_frames"),
-                     (cg_db->num_channels[0])-
-                       (2 * extra_feats));/* no voicing or str */
+    param_track = new_track(UTT_FEAT_INT(utt,"param_track_num_frames"),
+                     (cg_db->num_channels[0])- (2 * extra_feats));/* no voicing or str */
     f=0;
     for (i=0,mcep=UTT_REL_HEAD(utt,MCEP); mcep; i++,mcep=item_next(mcep))
     {

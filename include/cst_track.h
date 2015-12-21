@@ -49,16 +49,13 @@
 #include "cst_val.h"
 
 typedef struct  cst_track_struct {
-    const char *type;
     int num_frames;
     int num_channels;
     float **frames;
 } cst_track;
 
-cst_track *new_track();
+cst_track *new_track(int num_frames, int num_channels);
 void delete_track(cst_track *val);
-
-void cst_track_resize(cst_track *t,int num_frames, int num_channels);
 
 CST_VAL_USER_TYPE_DCLS(track,cst_track)
 

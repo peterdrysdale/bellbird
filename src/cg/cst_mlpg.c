@@ -269,8 +269,7 @@ cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
     nframes = param_track->num_frames;
     dim = (param_track->num_channels/2)-1;
     dim_st = dim/2;
-    out = new_track();
-    cst_track_resize(out,nframes,dim_st+1);
+    out = new_track(nframes,dim_st+1);
 
     /* GMM parameters diagonal covariance */
     InitPStreamChol(&pst, cg_db->dynwin, cg_db->dynwinsize, dim_st-1, nframes);

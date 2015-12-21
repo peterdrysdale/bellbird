@@ -65,8 +65,7 @@ cst_utterance *cst_spamf0(cst_utterance *utt)
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     int param_track_num_frames = UTT_FEAT_INT(utt,"param_track_num_frames");
 
-    spamf0_track=new_track();
-    cst_track_resize(spamf0_track, param_track_num_frames, 1);
+    spamf0_track=new_track(param_track_num_frames, 1);
     acc_tree = cg_db->spamf0_accent_tree;
     phrase_tree = cg_db->spamf0_phrase_tree;
     end = 0.0;
