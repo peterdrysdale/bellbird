@@ -247,12 +247,12 @@ static void pst_free(PStreamChol *pst)
     cst_free(pst->dw.coef); pst->dw.coef = NULL;
     cst_free(pst->dw.coef_ptrs); pst->dw.coef_ptrs = NULL;
 
-    bell_free_dmatrix(pst->mseq,pst->T);
-    bell_free_dmatrix(pst->ivseq,pst->T);
-    bell_free_dmatrix(pst->R,pst->T);
+    bell_free_dmatrix(pst->mseq);
+    bell_free_dmatrix(pst->ivseq);
+    bell_free_dmatrix(pst->R);
     cst_free(pst->r);
     cst_free(pst->g);
-    bell_free_dmatrix(pst->c,pst->T);
+    bell_free_dmatrix(pst->c);
 
     return;
 }

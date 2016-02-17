@@ -80,18 +80,16 @@ double **bell_alloc_dmatrix(size_t row, size_t col)
 {
    size_t i;
    double **p = cst_alloc(double *,row);
+   p[0] = cst_alloc(double,(col*row));
 
-   for (i = 0; i < row; i++)
-      p[i] = cst_alloc(double,col);
+   for (i = 1; i < row; i++)
+      p[i] = p[i-1] + col;
    return p;
 }
 
-void bell_free_dmatrix(double **p, size_t row)
+void bell_free_dmatrix(double **p)
 /* Free the simple double matrix */
 {
-   size_t i;
-
-   for (i = 0; i < row; i++)
-      cst_free(p[i]);
+   cst_free(p[0]);
    cst_free(p);
 }

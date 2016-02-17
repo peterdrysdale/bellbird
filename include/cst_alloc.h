@@ -68,6 +68,6 @@ void cst_free(void *p);
 
 /* double matrix allocation and deallocation */
 double **bell_alloc_dmatrix(size_t row, size_t col);
-void bell_free_dmatrix(double **p, size_t row);
+void bell_free_dmatrix(double **p);
 
 #endif

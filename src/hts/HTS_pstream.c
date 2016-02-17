@@ -487,10 +487,10 @@ void HTS_PStreamSet_clear(HTS_PStreamSet * pss)
          pstream = &pss->pstream[i];
          cst_free(pstream->sm.wum);
          cst_free(pstream->sm.g);
-         bell_free_dmatrix(pstream->sm.wuw, pstream->length);
-         bell_free_dmatrix(pstream->sm.ivar, pstream->length);
-         bell_free_dmatrix(pstream->sm.mean, pstream->length);
-         bell_free_dmatrix(pstream->par, pstream->length);
+         bell_free_dmatrix(pstream->sm.wuw);
+         bell_free_dmatrix(pstream->sm.ivar);
+         bell_free_dmatrix(pstream->sm.mean);
+         bell_free_dmatrix(pstream->par);
          if (pstream->msd_flag)
             cst_free(pstream->msd_flag);
          if (pstream->win_coefficient) {
