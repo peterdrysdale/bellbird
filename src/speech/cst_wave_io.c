@@ -45,6 +45,7 @@
 /*************************************************************************/
 #include <stdint.h>
 #include "cst_alloc.h"
+#include "cst_endian.h"
 #include "cst_error.h"
 #include "cst_file.h"
 #include "cst_string.h"
@@ -133,7 +134,7 @@ static int cst_wave_load_riff_header(bell_wave_header *header,cst_file fd)
         rv = BELL_IO_ERROR;
     }
 #ifdef WORDS_BIGENDIAN
-    d_uint16 = SWAPSHORT(d_uint16)
+    d_uint16 = SWAPSHORT(d_uint16);
 #endif
 
     header->num_channels = d_uint16;

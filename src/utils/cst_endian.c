@@ -44,7 +44,6 @@
 /*                                                                       */
 /*************************************************************************/
 #include <stdlib.h>
-#include "cst_alloc.h"
 #include "cst_endian.h"
 
 void swap_bytes_int16(int16_t *b, int n)
