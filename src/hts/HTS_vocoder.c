@@ -65,8 +65,6 @@
 #define PI  3.14159265358979323846
 #endif                          /* !PI */
 
-#define RANDMAX 32767
-
 #define IRLENG    576  // Interpolation length
 
 static const double HTS_pade[6] = {
@@ -107,25 +105,14 @@ static double HTS_mlsadf(double x, const double *c, const int m, const double a,
    return (x);
 }
 
-/* HTS_rnd: functions for random noise generation */
-static double HTS_rnd(unsigned long *next)
-{
-   double r;
-
-   *next = *next * 1103515245L + 12345;
-   r = (*next / 65536L) % 32768L;
-
-   return (r / RANDMAX);
-}
-
 /* HTS_nrandom: functions for gaussian random noise generation */
 static double HTS_nrandom(HTS_Vocoder * v)
 {
    if (v->sw == 0) {
       v->sw = 1;
       do {
-         v->r1 = 2 * HTS_rnd(&v->next) - 1;
-         v->r2 = 2 * HTS_rnd(&v->next) - 1;
+         v->r1 = 2 * rnd(&v->next) - 1;
+         v->r2 = 2 * rnd(&v->next) - 1;
          v->s = v->r1 * v->r1 + v->r2 * v->r2;
       } while (v->s > 1 || v->s == 0);
       v->s = sqrt(-2 * log(v->s) / v->s);
@@ -134,17 +121,6 @@ static double HTS_nrandom(HTS_Vocoder * v)
       v->sw = 0;
       return (v->r2 * v->s);
    }
-}
-
-/* HTS_mc2b: transform mel-cepstrum to MLSA digital fillter coefficients */
-static void HTS_mc2b(double *mc, double *b, int m, const double a)
-{
-   if (a != 0.0) {
-      b[m] = mc[m];
-      for (m--; m >= 0; m--)
-         b[m] = mc[m] - a * b[m + 1];
-   } else
-      HTS_movem(mc, b, m + 1);
 }
 
 /* HTS_b2mc: transform MLSA digital filter coefficients to mel-cepstrum */
@@ -324,7 +300,7 @@ static void HTS_Vocoder_postfilter_mcp(HTS_Vocoder * v, double *mcp, const size_
          v->postfilter_buff = cst_alloc(double,m + 1);
          v->postfilter_size = m;
       }
-      HTS_mc2b(mcp, v->postfilter_buff, m, alpha);
+      mc2b(mcp, v->postfilter_buff, m, alpha);
       e1 = HTS_b2en(v, v->postfilter_buff, m, alpha);
 
       v->postfilter_buff[1] -= beta * alpha * v->postfilter_buff[2];
@@ -386,13 +362,13 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
    /* first time */
    if (v->is_first == TRUE) {
       HTS_Vocoder_initialize_excitation(v, p, nlpf);
-      HTS_mc2b(spectrum, v->c, m, alpha);
+      mc2b(spectrum, v->c, m, alpha);
       v->is_first = FALSE;
    }
 
    HTS_Vocoder_start_excitation(v, p);
    HTS_Vocoder_postfilter_mcp(v, spectrum, m, alpha, beta);
-   HTS_mc2b(spectrum, v->cc, m, alpha);
+   mc2b(spectrum, v->cc, m, alpha);
    for (i = 0; i <= m; i++)
       v->cinc[i] = (v->cc[i] - v->c[i]) / v->fprd;
 

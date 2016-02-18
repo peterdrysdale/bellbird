@@ -50,6 +50,8 @@
 /* and the compiler likes to inline and improve performance of these    */
 /* functions if we declare them static.                                 */
 
+#define RANDMAX 32767
+
 static double mlsadf1(double x, const double *c, const double a,
                        double *d1, const double *ppade)
 {
@@ -226,6 +228,28 @@ static void freqt (const double * const mc, const int m, double *cep, const int 
          cep[j] = temp + a * (temp1 - cep[j-1]);
       }
    }
+
+   return;
+}
+
+static double rnd(unsigned long *next)
+{
+// the stock standard linear congruential random number generator
+   double r;
+
+   *next = *next * 1103515245L + 12345;
+   r = (*next / 65536L) % 32768L;
+
+   return(r/RANDMAX);
+}
+
+static void mc2b (double *mc, double *b, int m, const double a)
+{
+// transform mel-cepstrum to MLSA digital filter coefficients
+   b[m] = mc[m];
+
+   for (m--; m>=0; m--)
+      b[m] = mc[m] - a * b[m+1];
 
    return;
 }

@@ -50,8 +50,6 @@
 /* and the compiler likes to inline and improve performance of these    */
 /* functions if we declare them static.                                 */
 
-#define RANDMAX 32767
-
 static double mlsadf(double x, const double *c, const int m, const double a,
                       double *d1, VocoderSetup *vs)
 {
@@ -66,17 +64,6 @@ static double mlsadf(double x, const double *c, const int m, const double a,
    x = mlsadf2 (x, c, m, a, &d1[2*(BELL_PORDER+1)], vs->pade, &(vs->d2offset));
 
    return(x);
-}
-
-static double rnd(unsigned long *next)
-{
-// the stock standard linear congruential random number generator
-   double r;
-
-   *next = *next * 1103515245L + 12345;
-   r = (*next / 65536L) % 32768L;
-
-   return(r/RANDMAX); 
 }
 
 static unsigned long srnd( unsigned long seed )
@@ -104,15 +91,4 @@ static double nrandom(VocoderSetup *vs)
       
       return (vs->r2*vs->s);
    }
-}
-
-static void mc2b (double *mc, double *b, int m, const double a)
-{
-// transform mel-cepstrum to MLSA digital filter coefficients
-   b[m] = mc[m];
-
-   for (m--; m>=0; m--)
-      b[m] = mc[m] - a * b[m+1];
-
-   return;
 }
