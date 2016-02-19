@@ -55,11 +55,9 @@ cst_wave *utt_wave(cst_utterance *u);
 const char *utt_input_text(cst_utterance *u);
 int utt_set_input_text(cst_utterance *u,const char *text);
 
-#define UTT_FEAT_STRING(U,F) (feat_string((U)->features,F))
 #define UTT_FEAT_INT(U,F) (feat_int((U)->features,F))
 #define UTT_FEAT_VAL(U,F) (feat_val((U)->features,F))
 
-#define UTT_SET_FEAT_STRING(U,F,V) (feat_set_string((U)->features,F,V))
 #define UTT_SET_FEAT_INT(U,F,V) (feat_set_int((U)->features,F,V))
 #define UTT_SET_FEAT(U,F,V) (feat_set((U)->features,F,V))
 
