@@ -95,16 +95,6 @@ static void HTS_movem(double *a, double *b, const int nitem)
 // NOTE NOTE NOTE - For performance reasons we "include" static code not header here
 #include "../commonsynth/mlsacore.c"
 
-/* HTS_mlsadf: functions for MLSA filter */
-static double HTS_mlsadf(double x, const double *c, const int m, const double a,
-                         double *d1, int * pd2offset)
-{
-   x = mlsadf1(x, c, a, d1, HTS_pade);
-   x = mlsadf2(x, c, m, a, &d1[2 * (BELL_PORDER + 1)], HTS_pade, pd2offset);
-
-   return (x);
-}
-
 /* HTS_nrandom: functions for gaussian random noise generation */
 static double HTS_nrandom(HTS_Vocoder * v)
 {
@@ -120,34 +110,6 @@ static double HTS_nrandom(HTS_Vocoder * v)
    } else {
       v->sw = 0;
       return (v->r2 * v->s);
-   }
-}
-
-/* HTS_b2mc: transform MLSA digital filter coefficients to mel-cepstrum */
-static void HTS_b2mc(const double *b, double *mc, int m, const double a)
-{
-   double d, o;
-
-   d = mc[m] = b[m];
-   for (m--; m >= 0; m--) {
-      o = b[m] + a * d;
-      d = b[m];
-      mc[m] = o;
-   }
-}
-
-/* HTS_c2ir: The minimum phase impulse response is evaluated from the minimum phase cepstrum */
-static void HTS_c2ir(const double *c, const int nc, double *ir)
-{
-   int n, k;
-   double d;
-
-   ir[0] = exp(c[0]);
-   for (n = 1; n < nc; n++) {
-      d = 0;
-      for (k = 1; k <= n; k++)
-         d += k * c[k] * ir[n - k];
-      ir[n] = d / n;
    }
 }
 
@@ -168,9 +130,9 @@ static double HTS_b2en(HTS_Vocoder * v, const double *b, const size_t m, const d
    cep = v->spectrum2en_buff + m + 1;
    ir = cep + IRLENG;
 
-   HTS_b2mc(b, v->spectrum2en_buff, m, a);
+   b2mc(b, v->spectrum2en_buff, m, a);
    freqt(v->spectrum2en_buff, m, cep, IRLENG, -a);
-   HTS_c2ir(cep, IRLENG, ir);
+   c2ir(cep, IRLENG, ir);
 
    for (i = 0; i < IRLENG; i++)
       en += ir[i] * ir[i];
@@ -309,7 +271,7 @@ static void HTS_Vocoder_postfilter_mcp(HTS_Vocoder * v, double *mcp, const size_
 
       e2 = HTS_b2en(v, v->postfilter_buff, m, alpha);
       v->postfilter_buff[0] += log(e1 / e2) / 2;
-      HTS_b2mc(v->postfilter_buff, mcp, m, alpha);
+      b2mc(v->postfilter_buff, mcp, m, alpha);
    }
 }
 
@@ -341,7 +303,7 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t rate, size_t fperi
    v->d2offset = 1;
 }
 
-/* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA/MGLSA filster based waveform synthesis */
+/* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA filter based waveform synthesis */
 void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, int16_t *wavedata)
 {
    double x;
@@ -376,7 +338,7 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
       x = HTS_Vocoder_get_excitation(v, lpf);
       if (x != 0.0)
          x *= exp(v->c[0]);
-      x = HTS_mlsadf(x, v->c, m, alpha, v->d1, &(v->d2offset));
+      x = mlsadf(x, v->c, m, alpha, v->d1, &(v->d2offset), HTS_pade);
       x *= volume;
 
       /* output */

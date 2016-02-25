@@ -206,6 +206,24 @@ static double mlsadf2(double x, const double *c, const int m, const double a,
    return(out);
 }
 
+static double mlsadf(double x, const double *c, const int m, const double a,
+                      double *d1, int * pd2offset, const double *ppade)
+{
+// the mel log spectrum approximation (MLSA) digital filter
+// x : input
+// c : MLSA filter coefficients
+// m : order of cepstrum
+// a : alpha, the all-pass constant
+// d1: working memory - history terms
+// pd2offset: history term indexing parameter
+// ppade: Pade approximant coefficients
+
+   x = mlsadf1 (x, c, a, d1, ppade);
+   x = mlsadf2 (x, c, m, a, &d1[2*(BELL_PORDER+1)], ppade, pd2offset);
+
+   return(x);
+}
+
 static void freqt (const double * const mc, const int m, double *cep, const int irleng, const double a)
 { // frequency transformation
    int i, j;
@@ -250,6 +268,36 @@ static void mc2b (double *mc, double *b, int m, const double a)
 
    for (m--; m>=0; m--)
       b[m] = mc[m] - a * b[m+1];
+
+   return;
+}
+
+static void b2mc(const double *b, double *mc, int m, const double a)
+{
+// transform MLSA digital filter coefficients to mel-cepstrum
+   double d, o;
+
+   d = mc[m] = b[m];
+   for (m--; m >= 0; m--) {
+      o = b[m] + a * d;
+      d = b[m];
+      mc[m] = o;
+   }
+}
+
+static void c2ir (const double * const cep, const int irleng, double *ir)
+{
+// minimum phase impulse response is evaluated from the minimum phase cepstrum
+   int n, k;
+   double  d;
+
+   ir[0] = exp(cep[0]);
+   for (n = 1; n < irleng; n++) {
+      d = 0;
+      for (k = 1; k <= n; k++)
+         d += k * cep[k] * ir[n-k];
+      ir[n] = d / n;
+   }
 
    return;
 }

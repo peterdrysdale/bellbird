@@ -183,38 +183,6 @@ static void free_vocoder(VocoderSetup *vs)
     return;
 }
 
-/* b2mc : transform MLSA digital filter coefficients to mel-cepstrum */
-static void b2mc (double *b, double *mc, int m, const double a)
-{
-  double d, o;
-        
-  d = mc[m] = b[m];
-  for (m--; m>=0; m--) {
-    o = b[m] + a * d;
-    d = b[m];
-    mc[m] = o;
-  }
-  
-  return;
-}
-
-/* c2ir : The minimum phase impulse response is evaluated from the minimum phase cepstrum */
-static void c2ir (const double * const cep, const int irleng, double *ir)
-{
-   int n, k;
-   double  d;
-
-   ir[0] = exp(cep[0]);
-   for (n=1; n<irleng; n++) {
-      d = 0;
-      for (k = 1; k <= n; k++)
-         d += k * cep[k] * ir[n-k];
-      ir[n] = d / n;
-   }
-   
-   return;
-}
-
 static double b2en (double *b, int m, double a, VocoderSetup *vs)
 {
 // calculate frame energy
@@ -383,7 +351,7 @@ static void vocoder(double p, double *mc,
         else
             x *= exp(vs->c[0])*gain;
 
-	x = mlsadf(x, vs->c, m, cg_db->mlsa_alpha, vs->d1, vs);
+	x = mlsadf(x, vs->c, m, cg_db->mlsa_alpha, vs->d1, &(vs->d2offset), vs->pade);
 
         wav->samples[*pos] = (int16_t) x;
 	*pos += 1;
