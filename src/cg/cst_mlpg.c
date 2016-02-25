@@ -157,8 +157,6 @@ static void InitDWin(PStreamChol *pst, const float *dynwin, int fsize)
         }
     }
 
-    pst->dw.max_L = pst->dw.maxw[WRIGHT]; // Set for compatibility with nitech module
-
     return;
 }
 

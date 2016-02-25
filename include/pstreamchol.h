@@ -6,7 +6,6 @@ typedef struct _DWin {
    double **coef;      // coefficient [0..num-1][length[0]..length[1]]
    double **coef_ptrs; // pointers to the memory being allocated so they can be freed
    int maxw[2];        // max width [0(left) 1(right)]
-   int max_L;
 } DWin;
 
 typedef struct _PStreamChol {
