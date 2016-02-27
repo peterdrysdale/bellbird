@@ -41,24 +41,11 @@
 /*  PERFORMANCE OF THIS SOFTWARE.                                    */
 /*                                                                   */
 /*  ---------------------------------------------------------------  */
-/*   This is Zen's MLSA filter as ported by Toda to festvox vc       */
-/*   and back ported into hts/festival so we can do MLSA filtering   */
-/*   If I took more time I could probably make this use the same as  */
-/*   as the other code in this directory -- awb@cs.cmu.edu 03JAN06   */
-/*  ---------------------------------------------------------------  */
-/*   and then ported into Flite (November 2007 awb@cs.cmu.edu)       */
-/*     with some speed uptimizations                                 */
-
-/*********************************************************************/
-/*                                                                   */
 /*  Mel-cepstral vocoder (pulse/noise excitation & MLSA filter)      */
 /*                                    2003/12/26 by Heiga Zen        */
-/*                                                                   */
 /*  Extracted from HTS and slightly modified                         */
-/*   by Tomoki Toda (tomoki@ics.nitech.ac.jp)                        */
-/*  June 2004                                                        */
-/*  Integrate as a Voice Conversion module                           */
-/*                                                                   */
+/*                by Tomoki Toda (tomoki@ics.nitech.ac.jp) June 2004 */
+/*  Ported into Flite with optimizations (Nov. 2007 awb@cs.cmu.edu)  */
 /*-------------------------------------------------------------------*/
 
 #include <math.h>
@@ -137,7 +124,10 @@ static void init_vocoder(double fs, int framel, int m,
 
     vs->rate = fs;
     vs->c = cst_alloc(double,3 * (m + 1) + 3 * (BELL_PORDER + 1) + BELL_PORDER * (m + 4));
-   
+    vs->cc   = vs->c + m + 1;
+    vs->cinc = vs->cc + m + 1;
+    vs->d1   = vs->cinc + m + 1;
+
     vs->p1 = -1;
     vs->sw = 0;
    
@@ -256,9 +246,6 @@ static void vocoder(double p, double *mc,
          
 	vs->p1   = p;
 	vs->pc   = vs->p1;
-	vs->cc   = vs->c + m + 1;
-	vs->cinc = vs->cc + m + 1;
-	vs->d1   = vs->cinc + m + 1;
 
 	mc2b(mc, vs->c, m, cg_db->mlsa_alpha);
 
