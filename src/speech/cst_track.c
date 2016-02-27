@@ -54,10 +54,11 @@ cst_track *new_track(int num_frames, int num_channels)
     int i;
 
     cst_track *w = cst_alloc(struct cst_track_struct,1);
-    w->frames = cst_alloc(float*,num_frames);
-    for (i=0; i<num_frames; i++)
+    w->frames = cst_alloc(float *,num_frames);
+    w->frames[0] = cst_alloc(float,(num_channels*num_frames));
+    for (i = 1; i < num_frames; i++)
     {
-	w->frames[i] = cst_alloc(float,num_channels);
+        w->frames[i] = w->frames[i-1] + num_channels;
     }
     w->num_frames = num_frames;
     w->num_channels = num_channels;
@@ -66,11 +67,9 @@ cst_track *new_track(int num_frames, int num_channels)
 
 void delete_track(cst_track *w)
 {
-    int i;
-
     if (w)
     {
-	for (i=0; i < w->num_frames; i++) cst_free(w->frames[i]);
+	cst_free(w->frames[0]);
 	cst_free(w->frames);
 	cst_free(w);
     }
