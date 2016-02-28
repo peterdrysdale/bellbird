@@ -101,7 +101,33 @@ typedef struct _VocoderSetup {
 // Cg voices use Pade approximate order 5. Set this for included static code.
 #define BELL_PORDER 5
 #include "../commonsynth/mlsacore.c"
-#include "../commonsynth/mlsafunc.c"
+
+static unsigned long srnd( unsigned long seed )
+{
+   return(seed);
+}
+
+static double nrandom(VocoderSetup *vs)
+{
+// Gaussian random number generator throwing numbers in pairs with switch
+   if (vs->sw == 0) {
+      vs->sw = 1;
+      do {
+         vs->r1 = 2.0 * rnd(&vs->next) - 1.0;
+         vs->r2 = 2.0 * rnd(&vs->next) - 1.0;
+         vs->s  = vs->r1 * vs->r1 + vs->r2 * vs->r2;
+      } while (vs->s > 1 || vs->s == 0);
+
+      vs->s = sqrt (-2 * log(vs->s) / vs->s);
+
+      return(vs->r1*vs->s);
+   }
+   else {
+      vs->sw = 0;
+
+      return (vs->r2*vs->s);
+   }
+}
 
 static void init_vocoder(double fs, int framel, int m, 
                          VocoderSetup *vs, cst_cg_db *cg_db)
