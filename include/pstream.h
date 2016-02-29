@@ -19,5 +19,5 @@ typedef struct _PStream {
    double **R;
    double *r;
    double *g;
-   double **c;      // output parameter vector
+   double *c;       // output parameter vector
 } PStream;

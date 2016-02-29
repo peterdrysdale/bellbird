@@ -177,7 +177,7 @@ static void InitPStream(PStream *pst, const float *dynwin, int fsize,
     pst->R = bell_alloc_dmatrix(T,pst->width);    // [T][width]
     pst->r = cst_alloc(double,T);                 // [T]
     pst->g = cst_alloc(double,T);                 // [T]
-    pst->c = bell_alloc_dmatrix(T,pst->order + 1);// [T][dim]
+    pst->c = cst_alloc(double,T);                 // [T]
 
     return;
 }
@@ -231,7 +231,7 @@ static void pst_free(PStream *pst)
     bell_free_dmatrix(pst->R);
     cst_free(pst->r);
     cst_free(pst->g);
-    bell_free_dmatrix(pst->c);
+    cst_free(pst->c);
 
     return;
 }
@@ -262,19 +262,11 @@ void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
     }
 
 // generate parameter sequence using LDL decomposition
+// and store results in param_track->frames
     for (i = 0; i<dim_st; i++)
     {
         calc_R_and_r(&pst, i);
-        solvemateqn(&pst,i);
-    }
-
-// put parameter sequence into param_track
-    for (i=0; i<num_frames; i++)
-    {
-        for (j=0; j<dim_st; j++)
-        {
-            param_track->frames[i][j+1] = pst.c[i][j];
-        }
+        solvemateqn(&pst, param_track->frames, i+1);
     }
 
     pst_free(&pst); // free pst

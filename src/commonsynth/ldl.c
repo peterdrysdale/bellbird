@@ -40,27 +40,30 @@ static void forward_subst(double **R, double *g, double *r,
    }
 }
 
-static void backward_subst(double **R, double *g, double **c,
-                             const int m, const int width, const int T)
+static void backward_subst(double **R, double *g, double *c,
+                           const int width, const int T,
+                           float **frames, const int frame_pos)
 {
    int i, j;
 
    for (i = T-1; i>=0; i--)
    {
-      c[i][m] = g[i] / R[i][0];
+      c[i] = g[i] / R[i][0];
       for (j = 1; j < width && i+j < T; j++)
       {
-         c[i][m] -= R[i][j] * c[i+j][m];
+         c[i] -= R[i][j] * c[i+j];
       }
+      frames[i][frame_pos] = c[i]; // store result
    }
 }
 
-static void solvemateqn(PStream * pst, const int m)
+static void solvemateqn(PStream * pst, float **frames, const int frame_pos)
 {
-// Solve Matrix equation R r = c
+// Solve Matrix equation R c = r
 // Use LDL decomposition since it is faster than
 // Cholesky decomposition due to lack of square roots
+// Store answer in frames[i][frame_pos]
    factorize(pst->R,pst->width,pst->T);
    forward_subst(pst->R,pst->g,pst->r,pst->width,pst->T);
-   backward_subst(pst->R,pst->g,pst->c,m,pst->width,pst->T);
+   backward_subst(pst->R,pst->g,pst->c,pst->width,pst->T,frames,frame_pos);
 }
