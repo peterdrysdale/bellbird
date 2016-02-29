@@ -358,11 +358,7 @@ static void vocoder(double p, double *mc,
             x = fxpulse + fxnoise; /* excitation is pulse plus noise */
         }
 
-        if (cg_db->sample_rate == 8000)
-            /* 8KHz voices are too quiet: this is probably not general */
-            x *= exp(vs->c[0])*2.0;
-        else
-            x *= exp(vs->c[0])*gain;
+        x *= exp(vs->c[0])*gain;
 
 	x = mlsadf(x, vs->c, m, cg_db->mlsa_alpha, vs->d1, &(vs->d2offset), vs->pade);
 
@@ -382,12 +378,11 @@ static void vocoder(double p, double *mc,
     return;
 }
 
-static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
-                                const cst_track *str,
-                                double fs,	/* sampling frequency (Hz) */
-                                double framem,	/* frame size */
-                                cst_cg_db *cg_db)
+cst_wave *mlsa_resynthesis(const cst_track *params,
+                           const cst_track *str,
+                           cst_cg_db *cg_db)
 {
+    /* Resynthesizes a wave from given track */
     long t, pos;
     int framel, i;
     double f0;
@@ -395,10 +390,19 @@ static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
     cst_wave *wave = 0;
     double *mcep;
     int num_mcep;
-    double ffs = 16000;
+    double ffs = cg_db->sample_rate;
+
+    if (params->num_frames > 1)
+    {
+        framel = (int)(0.5 + (cg_db->frame_advance * ffs)); /* 80 for 16KHz */
+    }
+    else
+    {
+        framel = (int)(0.5 + (0.005 * ffs));
+    }
 
     num_mcep = params->num_channels-1;
-    framel = (int)(0.5 + (framem * ffs / 1000.0)); /* 80 for 16KHz */
+
     init_vocoder(ffs, framel, num_mcep, &vs, cg_db);
 
     if (str != NULL)
@@ -407,9 +411,7 @@ static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
     /* synthesize waveforms by MLSA filter */
     wave = new_wave();
     cst_wave_resize(wave,params->num_frames * framel,1);
-    /* It is (weirdly) possible that fs and ffs are different */
-    /* But only for weird speech hack created 8KHz voices */
-    wave->sample_rate = fs; 
+    wave->sample_rate = ffs;
 
     mcep = cst_alloc(double,num_mcep+1);
 
@@ -432,23 +434,4 @@ static cst_wave *synthesis_body(const cst_track *params, /* f0 + mcep */
     free_vocoder(&vs);
 
     return wave;
-}
-
-cst_wave *mlsa_resynthesis(const cst_track *params, 
-                           const cst_track *str, 
-                           cst_cg_db *cg_db)
-{
-    /* Resynthesizes a wave from given track */
-    double shift;
-
-    if (params->num_frames > 1)
-    {
-        shift = 1000.0*cg_db->frame_advance;
-    }
-    else
-    {
-        shift = 5.0;
-    }
-
-    return synthesis_body(params,str,cg_db->sample_rate,shift,cg_db);
 }
