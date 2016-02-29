@@ -55,7 +55,7 @@ static void backward_subst(double **R, double *g, double **c,
    }
 }
 
-static void solvemateqn(PStreamChol * pst, const int m)
+static void solvemateqn(PStream * pst, const int m)
 {
 // Solve Matrix equation R r = c
 // Use LDL decomposition since it is faster than

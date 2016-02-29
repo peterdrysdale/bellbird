@@ -8,7 +8,7 @@ typedef struct _DWin {
    int maxw[2];        // max width [0(left) 1(right)]
 } DWin;
 
-typedef struct _PStreamChol {
+typedef struct _PStream {
    int vSize;
    int order;
    int T;           // number of frames
@@ -20,4 +20,4 @@ typedef struct _PStreamChol {
    double *r;
    double *g;
    double **c;      // output parameter vector
-} PStreamChol;
+} PStream;

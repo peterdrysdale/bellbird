@@ -93,18 +93,15 @@
 #include "cst_cg.h"
 #include "cst_error.h"
 #include "cst_track.h"
-#include "pstreamchol.h"
+#include "pstream.h"
 
 #define	WLEFT 0
 #define	WRIGHT 1
 
 // NOTE NOTE NOTE we are including static functions here not header files
-#include "../commonsynth/cholesky.c"
+#include "../commonsynth/ldl.c"
 
-/////////////////////////////////////
-// ML using Choleski decomposition //
-/////////////////////////////////////
-static void InitDWin(PStreamChol *pst, const float *dynwin, int fsize)
+static void InitDWin(PStream *pst, const float *dynwin, int fsize)
 {
     int i,j;
     int leng;
@@ -160,7 +157,7 @@ static void InitDWin(PStreamChol *pst, const float *dynwin, int fsize)
     return;
 }
 
-static void InitPStreamChol(PStreamChol *pst, const float *dynwin, int fsize,
+static void InitPStream(PStream *pst, const float *dynwin, int fsize,
                             int order, int T)
 {
     // order of cepstrum
@@ -185,10 +182,9 @@ static void InitPStreamChol(PStreamChol *pst, const float *dynwin, int fsize,
     return;
 }
 
-//------ parameter generation fuctions
-// calc_R_and_r: calculate R = W'U^{-1}W and r = W'U^{-1}M
-static void calc_R_and_r(PStreamChol *pst, const int m)
+static void calc_R_and_r(PStream *pst, const int m)
 {
+// calculate R = W'U^{-1}W and r = W'U^{-1}M
     int i, j, k, l, n;
     double   wu;
    
@@ -220,22 +216,7 @@ static void calc_R_and_r(PStreamChol *pst, const int m)
     return;
 }
 
-// generate parameter sequence from pdf sequence using Cholesky decomposition
-static void mlpgChol(PStreamChol *pst)
-{
-   int m;
-
-   // generating parameter in each dimension
-   for (m = 0; m<=pst->order; m++)
-   {
-       calc_R_and_r(pst, m);
-       solvemateqn(pst,m);
-   }
-   
-   return;
-}
-
-static void pst_free(PStreamChol *pst)
+static void pst_free(PStream *pst)
 {
     int i;
 
@@ -259,18 +240,15 @@ void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
 {
 // Generate an (mcep) track using Maximum Likelihood Parameter Generation
 // Overwrite param_track with answer.
-    int dim, dim_st;
+    const int dim = (param_track->num_channels/2)-1;
+    const int dim_st = dim/2;
     int i,j;
-    int nframes;
-    PStreamChol pst;
-
-    nframes = param_track->num_frames;
-    dim = (param_track->num_channels/2)-1;
-    dim_st = dim/2;
+    const int num_frames= param_track->num_frames;
+    PStream pst;
 
     /* GMM parameters diagonal covariance */
-    InitPStreamChol(&pst, cg_db->dynwin, cg_db->dynwinsize, dim_st-1, nframes);
-    for (i=0; i<nframes; i++)
+    InitPStream(&pst, cg_db->dynwin, cg_db->dynwinsize, dim_st-1, num_frames);
+    for (i=0; i<num_frames; i++)
     {
         for (j=0; j<dim; j++)
         {
@@ -283,10 +261,15 @@ void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
         }
     }
 
-    mlpgChol(&pst);
+// generate parameter sequence using LDL decomposition
+    for (i = 0; i<dim_st; i++)
+    {
+        calc_R_and_r(&pst, i);
+        solvemateqn(&pst,i);
+    }
 
-    /* Put the answer back into param_track */
-    for (i=0; i<nframes; i++)
+// put parameter sequence into param_track
+    for (i=0; i<num_frames; i++)
     {
         for (j=0; j<dim_st; j++)
         {
@@ -294,8 +277,7 @@ void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
         }
     }
 
-    // memory free
-    pst_free(&pst);
+    pst_free(&pst); // free pst
 
     return;
 }
