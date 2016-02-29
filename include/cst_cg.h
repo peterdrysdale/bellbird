@@ -130,14 +130,14 @@ CST_VAL_USER_TYPE_DCLS(cg_db,cst_cg_db)
 void delete_cg_db(cst_cg_db *db);
 
 cst_utterance *cg_synth(cst_utterance *utt);
-cst_wave *mlsa_resynthesis(const cst_track *t, 
+cst_wave *mlsa_resynthesis(const cst_track *param_track,
                            const cst_track *str, 
                            cst_cg_db *cg_db);
 
 cst_voice *cst_cg_load_voice(const char *voxdir,
                              const cst_lang lang_table[]);
 
-cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db);
+void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db);
 
 #endif
 

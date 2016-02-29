@@ -545,16 +545,14 @@ static void cg_resynth(cst_utterance *utt)
     cst_wave *w;
     cst_track *param_track;
     cst_track *str_track = NULL;
-    cst_track *smoothed_track;
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));
     if (cg_db->mixed_excitation)
         str_track = val_track(UTT_FEAT_VAL(utt,"str_track"));
 
-    smoothed_track = cg_mlpg(param_track, cg_db);
-    w = mlsa_resynthesis(smoothed_track,str_track,cg_db);
-    delete_track(smoothed_track);
+    cg_mlpg(param_track, cg_db);
+    w = mlsa_resynthesis(param_track,str_track,cg_db);
 
     if (w == NULL)
     {

@@ -255,10 +255,10 @@ static void pst_free(PStreamChol *pst)
     return;
 }
 
-cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
+void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
 {
 // Generate an (mcep) track using Maximum Likelihood Parameter Generation
-    cst_track *out;
+// Overwrite param_track with answer.
     int dim, dim_st;
     int i,j;
     int nframes;
@@ -267,7 +267,6 @@ cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
     nframes = param_track->num_frames;
     dim = (param_track->num_channels/2)-1;
     dim_st = dim/2;
-    out = new_track(nframes,dim_st+1);
 
     /* GMM parameters diagonal covariance */
     InitPStreamChol(&pst, cg_db->dynwin, cg_db->dynwinsize, dim_st-1, nframes);
@@ -286,18 +285,17 @@ cst_track *cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
 
     mlpgChol(&pst);
 
-    /* Put the answer back into the output track */
+    /* Put the answer back into param_track */
     for (i=0; i<nframes; i++)
     {
-        out->frames[i][0] = param_track->frames[i][0]; /* F0 */
         for (j=0; j<dim_st; j++)
         {
-            out->frames[i][j+1] = pst.c[i][j];
+            param_track->frames[i][j+1] = pst.c[i][j];
         }
     }
 
     // memory free
     pst_free(&pst);
 
-    return out;
+    return;
 }

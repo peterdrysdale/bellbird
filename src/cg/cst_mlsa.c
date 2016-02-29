@@ -378,7 +378,7 @@ static void vocoder(double p, double *mc,
     return;
 }
 
-cst_wave *mlsa_resynthesis(const cst_track *params,
+cst_wave *mlsa_resynthesis(const cst_track *param_track,
                            const cst_track *str,
                            cst_cg_db *cg_db)
 {
@@ -392,7 +392,7 @@ cst_wave *mlsa_resynthesis(const cst_track *params,
     int num_mcep;
     double ffs = cg_db->sample_rate;
 
-    if (params->num_frames > 1)
+    if (param_track->num_frames > 1)
     {
         framel = (int)(0.5 + (cg_db->frame_advance * ffs)); /* 80 for 16KHz */
     }
@@ -401,7 +401,7 @@ cst_wave *mlsa_resynthesis(const cst_track *params,
         framel = (int)(0.5 + (0.005 * ffs));
     }
 
-    num_mcep = params->num_channels-1;
+    num_mcep = ((param_track->num_channels/2)-1)/2;
 
     init_vocoder(ffs, framel, num_mcep, &vs, cg_db);
 
@@ -410,17 +410,17 @@ cst_wave *mlsa_resynthesis(const cst_track *params,
 
     /* synthesize waveforms by MLSA filter */
     wave = new_wave();
-    cst_wave_resize(wave,params->num_frames * framel,1);
+    cst_wave_resize(wave,param_track->num_frames * framel,1);
     wave->sample_rate = ffs;
 
     mcep = cst_alloc(double,num_mcep+1);
 
-    for (t = 0, pos = 0; t < params->num_frames; t++)
+    for (t = 0, pos = 0; t < param_track->num_frames; t++)
     {
-        f0 = (double)params->frames[t][0];
-        for (i=1; i<num_mcep+1; i++)
-            mcep[i-1] = params->frames[t][i];
-        mcep[i-1] = 0;
+        f0 = (double)param_track->frames[t][0];
+        for (i=0; i<num_mcep; i++)
+            mcep[i] = param_track->frames[t][i+1];
+        mcep[i] = 0;
 
         if (str)
             vocoder(f0, mcep, str->frames[t], num_mcep, cg_db, &vs, wave, &pos);
