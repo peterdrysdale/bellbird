@@ -103,77 +103,50 @@
 
 static void InitDWin(PStream *pst, const float *dynwin, int fsize)
 {
-    int i,j;
+    int j;
     int leng;
 
     pst->dw.num = 1;      // only static
     if (dynwin) pst->dw.num = 2;  // static + dyn
 
+    leng = fsize / 2;			// L (fsize = 2 * L + 1)
+
     // memory allocation
-    pst->dw.width = cst_alloc(int *,pst->dw.num);
-    for (i = 0; i < pst->dw.num; i++)
-    {
-        pst->dw.width[i] = cst_alloc(int,2);
-    }
-
-    pst->dw.coef = cst_alloc(double *,pst->dw.num);
-    pst->dw.coef_ptrs = cst_alloc(double *,pst->dw.num);
-    // window for static parameter	WLEFT = 0, WRIGHT = 1
-    pst->dw.width[0][WLEFT] = pst->dw.width[0][WRIGHT] = 0;
-    pst->dw.coef_ptrs[0] = cst_alloc(double,1);
-    pst->dw.coef[0] = pst->dw.coef_ptrs[0];
-    pst->dw.coef[0][0] = 1.0;
-
     // set delta coefficients
-    for (i = 1; i < pst->dw.num; i++)
+    if (pst->dw.num ==2)
     {
-        pst->dw.coef_ptrs[i] = cst_alloc(double,fsize);
-        pst->dw.coef[i] = pst->dw.coef_ptrs[i];
+        pst->dw.coef_ptrs = cst_alloc(double,fsize);
+        pst->dw.coef = pst->dw.coef_ptrs;
         for (j=0; j<fsize; j++) /* FIXME make dynwin doubles for memmove */
         {
-            pst->dw.coef[i][j] = (double)dynwin[j];
+            pst->dw.coef[j] = (double)dynwin[j];
         }
         // set pointer
-        leng = fsize / 2;			// L (fsize = 2 * L + 1)
-        pst->dw.coef[i] += leng;		// [L] -> [0]	center
-        pst->dw.width[i][WLEFT] = -leng;	// -L		left
-        pst->dw.width[i][WRIGHT] = leng;	//  L		right
-        if (fsize % 2 == 0) pst->dw.width[i][WRIGHT]--;
+        pst->dw.coef += leng;		// [L] -> [0]	center
     }
-
-    pst->dw.maxw[WLEFT] = pst->dw.maxw[WRIGHT] = 0;
-    for (i = 0; i < pst->dw.num; i++)
+    else
     {
-        if (pst->dw.maxw[WLEFT] > pst->dw.width[i][WLEFT])
-        {
-	    pst->dw.maxw[WLEFT] = pst->dw.width[i][WLEFT];
-        }
-        if (pst->dw.maxw[WRIGHT] < pst->dw.width[i][WRIGHT])
-        {
-	    pst->dw.maxw[WRIGHT] = pst->dw.width[i][WRIGHT];
-        }
+        pst->dw.coef_ptrs = cst_alloc(double,1); // unused dummy allocation
+        pst->dw.coef = pst->dw.coef_ptrs;
     }
+    pst->dw.width[WLEFT] = -leng;	// -L		left
+    pst->dw.width[WRIGHT] = leng;	//  L		right
+    if (fsize % 2 == 0) pst->dw.width[WRIGHT]--;
 
     return;
 }
 
 static void InitPStream(PStream *pst, const float *dynwin, int fsize,
-                            int order, int T)
+                            int T)
 {
-    // order of cepstrum
-    pst->order = order;
-
     // windows for dynamic feature
     InitDWin(pst, dynwin, fsize);
 
-    // dimension of observed vector
-    pst->vSize = (pst->order + 1) * pst->dw.num;  // odim = dim * (1--3)
-
     // memory allocation
     pst->T = T;                                   // number of frames
-    pst->width = pst->dw.maxw[WRIGHT] * 2 + 1;	  // width of R
-    pst->mseq = bell_alloc_dmatrix(T,pst->vSize); // [T][odim]
-    pst->ivseq = bell_alloc_dmatrix(T,pst->vSize);// [T][odim]
+    pst->width = pst->dw.width[WRIGHT] * 2 + 1;	  // width of R
+    pst->mseq = bell_alloc_dmatrix(T,2);          // [T][2]
+    pst->ivseq = bell_alloc_dmatrix(T,2);         // [T][2]
     pst->R = bell_alloc_dmatrix(T,pst->width);    // [T][width]
     pst->r = cst_alloc(double,T);                 // [T]
     pst->g = cst_alloc(double,T);                 // [T]
@@ -182,31 +155,29 @@ static void InitPStream(PStream *pst, const float *dynwin, int fsize,
     return;
 }
 
-static void calc_R_and_r(PStream *pst, const int m)
+static void calc_R_and_r(PStream *pst)
 {
 // calculate R = W'U^{-1}W and r = W'U^{-1}M
-    int i, j, k, l, n;
+    int i, j, k, n;
     double   wu;
-   
+
     for (i = 0; i < pst->T; i++) {
-	pst->r[i] = pst->mseq[i][m];
-	pst->R[i][0] = pst->ivseq[i][m];
+	pst->r[i] = pst->mseq[i][0];
+	pst->R[i][0] = pst->ivseq[i][0];
       
 	for (j = 1; j < pst->width; j++) pst->R[i][j] = 0.0;
-      
-	for (j = 1; j < pst->dw.num; j++) {
-	    for (k = pst->dw.width[j][0]; k <= pst->dw.width[j][1]; k++) {
-		n = i+k;
-		if (n >= 0 && n < pst->T && pst->dw.coef[j][-k] != 0.0) {
-		    l = j*(pst->order+1)+m;
-		    pst->r[i] += pst->dw.coef[j][-k] * pst->mseq[n][l]; 
-		    wu = pst->dw.coef[j][-k] * pst->ivseq[n][l];
-            
-		    for (l = 0; l<pst->width; l++) {
-			n = l-k;
-			if (n<=pst->dw.width[j][1] && i+l<pst->T &&
-			    pst->dw.coef[j][n] != 0.0)
-			    pst->R[i][l] += wu * pst->dw.coef[j][n];
+
+        if (pst->dw.num == 2){
+	    for (j = pst->dw.width[WLEFT]; j <= pst->dw.width[WRIGHT]; j++) {
+		n = i+j;
+		if (n >= 0 && n < pst->T && pst->dw.coef[-j] != 0.0) {
+		    pst->r[i] += pst->dw.coef[-j] * pst->mseq[n][1];
+		    wu = pst->dw.coef[-j] * pst->ivseq[n][1];
+		    for (k = 0; k < pst->width; k++) {
+			n = k-j;
+			if (n<=pst->dw.width[WRIGHT] && (i+k) < pst->T &&
+			    pst->dw.coef[n] != 0.0)
+			    pst->R[i][k] += wu * pst->dw.coef[n];
 		    }
 		}
 	    }
@@ -218,12 +189,7 @@ static void calc_R_and_r(PStream *pst, const int m)
 
 static void pst_free(PStream *pst)
 {
-    int i;
-
-    for (i=0; i<pst->dw.num; i++) cst_free(pst->dw.width[i]);
-    cst_free(pst->dw.width); pst->dw.width = NULL;
-    for (i=0; i<pst->dw.num; i++) cst_free(pst->dw.coef_ptrs[i]);
-    cst_free(pst->dw.coef); pst->dw.coef = NULL;
+    pst->dw.coef = NULL;
     cst_free(pst->dw.coef_ptrs); pst->dw.coef_ptrs = NULL;
 
     bell_free_dmatrix(pst->mseq);
@@ -242,30 +208,36 @@ void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
 // Overwrite param_track with answer.
     const int dim = (param_track->num_channels/2)-1;
     const int dim_st = dim/2;
-    int i,j;
+    int i,k,idx,idx1;
     const int num_frames= param_track->num_frames;
     PStream pst;
 
-    /* GMM parameters diagonal covariance */
-    InitPStream(&pst, cg_db->dynwin, cg_db->dynwinsize, dim_st-1, num_frames);
-    for (i=0; i<num_frames; i++)
-    {
-        for (j=0; j<dim; j++)
-        {
-            // estimating U', U'*M
-            // PDF [U'*M U']
-            pst.ivseq[i][j] = 1.0 /(param_track->frames[i][(j+1)*2+1] *
-                                param_track->frames[i][(j+1)*2+1]);
-            pst.mseq[i][j] = pst.ivseq[i][j] * param_track->frames[i][(j+1)*2];
-                                          //Latter term in product is mean
-        }
-    }
+    InitPStream(&pst, cg_db->dynwin, cg_db->dynwinsize, num_frames);
 
 // generate parameter sequence using LDL decomposition
 // and store results in param_track->frames
-    for (i = 0; i<dim_st; i++)
+    for (i = 0; i < dim_st; i++)
     {
-        calc_R_and_r(&pst, i);
+        /* GMM parameters diagonal covariance */
+        // Calculate only those terms we need for this loop iteration
+        // for memory efficiency
+        idx=(i+1)*2+1;
+        idx1=idx+dim;
+        for (k=0; k < num_frames; k++)
+        {
+            // estimating U', U'*M
+            // PDF [U'*M U']
+            pst.ivseq[k][0] = 1.0 /(param_track->frames[k][idx] *
+                                param_track->frames[k][idx]);
+            pst.mseq[k][0] = pst.ivseq[k][0] * param_track->frames[k][idx-1];
+                                          //Latter term in product is mean
+            pst.ivseq[k][1] = 1.0 /(param_track->frames[k][idx1] *
+                                param_track->frames[k][idx1]);
+            pst.mseq[k][1] = pst.ivseq[k][1] * param_track->frames[k][idx1-1];
+                                          //Latter term in product is mean
+        }
+
+        calc_R_and_r(&pst);
         solvemateqn(&pst, param_track->frames, i+1);
     }
 
