@@ -61,6 +61,8 @@
 #define LZERO (-1.0e+10)        /* ~log(0) */
 #endif                          /* !LZERO */
 
+#define MAX_F0    20000.0
+#define MIN_F0    20.0
 #define IRLENG    576  // Interpolation length
 
 static const double HTS_pade[6] = {

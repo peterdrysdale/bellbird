@@ -66,11 +66,8 @@
 #undef WORDS_BIGENDIAN
 #endif                          /* WORDS_BIGENDIAN && WORDS_LITTLEENDIAN */
 
-#define MAX_F0    20000.0
-#define MIN_F0    20.0
 #define MAX_LF0   9.9034875525361280454891979401956     /* log(20000.0) */
 #define MIN_LF0   2.9957322735539909934352235761425     /* log(20.0) */
-#define HALF_TONE 0.05776226504666210911810267678818    /* log(2.0) / 12.0 */
 
 /* model ----------------------------------------------------------- */
 

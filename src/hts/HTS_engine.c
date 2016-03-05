@@ -55,6 +55,8 @@
 /* hts_engine libraries */
 #include "HTS_hidden.h"
 
+#define HALF_TONE 0.05776226504666210911810267678818    /* log(2.0) / 12.0 */
+
 /* HTS_Engine_initialize: initialize engine */
 void HTS_Engine_initialize(HTS_Engine * engine)
 {
