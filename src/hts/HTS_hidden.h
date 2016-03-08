@@ -285,14 +285,14 @@ typedef struct _HTS_Vocoder {
    double r1, r2, s;            /* used in random generator */
    double *postfilter_buff;     /* used in postfiltering */
    size_t postfilter_size;      /* buffer size for postfiltering */
-   double *c, *cc, *cinc, *d1;  /* used in the MLSA/MGLSA filter */
+   double *c, *cc, *cinc, *d1;  /* used in the MLSA filter */
    int    d2offset;             /* start of history terms in wraparound buffer of MLSA filter */
 } HTS_Vocoder;
 
 /* HTS_Vocoder_initialize: initialize vocoder */
 void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t rate, size_t fperiod);
 
-/* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA/MGLSA filter based waveform synthesis */
+/* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA filter based waveform synthesis */
 void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, int16_t *wavedata);
 
 /* HTS_Vocoder_clear: clear vocoder */
