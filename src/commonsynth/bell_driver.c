@@ -81,7 +81,7 @@ static void bell_hts_get_wave(HTS_Engine * engine,cst_utterance * utt)
     wave = new_wave();
     wave->num_channels=1;
     CST_WAVE_SET_NUM_SAMPLES(wave,HTS_GStreamSet_get_total_nsamples(&engine->gss));
-    CST_WAVE_SAMPLES(wave) = HTS_GStreamSet_get_speech_array(&engine->gss);
+    CST_WAVE_SAMPLES(wave) = HTS_GStreamSet_abandon_speech_array(&engine->gss);
     CST_WAVE_SET_SAMPLE_RATE(wave,HTS_Engine_get_sampling_frequency(engine));
     utt_set_wave(utt,wave);
     return;

@@ -239,6 +239,9 @@ size_t HTS_PStreamSet_get_total_frame(HTS_PStreamSet * pss);
 /* HTS_PStreamSet_get_parameter: get parameter */
 double HTS_PStreamSet_get_parameter(HTS_PStreamSet * pss, size_t stream_index, size_t frame_index, size_t vector_index);
 
+// Transfer ownership of parameter to caller
+double **HTS_PStreamSet_abandon_parameter(HTS_PStreamSet * pss, size_t stream_index);
+
 /* HTS_PStreamSet_get_msd_flag: get generated MSD flag per frame */
 HTS_Boolean HTS_PStreamSet_get_msd_flag(HTS_PStreamSet * pss, size_t stream_index, size_t frame_index);
 
@@ -260,7 +263,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
 size_t HTS_GStreamSet_get_total_nsamples(HTS_GStreamSet * gss);
 
 // Transfer ownership of generated speech array to caller
-int16_t * HTS_GStreamSet_get_speech_array(HTS_GStreamSet * gss);
+int16_t * HTS_GStreamSet_abandon_speech_array(HTS_GStreamSet * gss);
 
 /* HTS_GStreamSet_clear: free generated parameter stream set */
 void HTS_GStreamSet_clear(HTS_GStreamSet * gss);

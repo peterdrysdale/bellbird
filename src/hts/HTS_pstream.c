@@ -458,6 +458,16 @@ double HTS_PStreamSet_get_parameter(HTS_PStreamSet * pss, size_t stream_index, s
    return pss->pstream[stream_index].par[frame_index][vector_index];
 }
 
+double **HTS_PStreamSet_abandon_parameter(HTS_PStreamSet * pss, size_t stream_index)
+// Pass ownership of parameters to caller
+{
+   double ** retval;
+
+   retval = pss->pstream[stream_index].par;
+   pss->pstream[stream_index].par = NULL; // HTS_PStream no longer owns this array
+   return retval;
+}
+
 /* HTS_PStreamSet_get_msd_flag: get generated MSD flag per frame */
 HTS_Boolean HTS_PStreamSet_get_msd_flag(HTS_PStreamSet * pss, size_t stream_index, size_t frame_index)
 {
@@ -484,7 +494,8 @@ void HTS_PStreamSet_clear(HTS_PStreamSet * pss)
          bell_free_dmatrix(pstream->sm.wuw);
          bell_free_dmatrix(pstream->sm.ivar);
          bell_free_dmatrix(pstream->sm.mean);
-         bell_free_dmatrix(pstream->par);
+         if (pstream->par)
+            bell_free_dmatrix(pstream->par);
          if (pstream->msd_flag)
             cst_free(pstream->msd_flag);
          if (pstream->win_coefficient) {

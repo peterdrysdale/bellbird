@@ -85,27 +85,28 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
    gss->gstream = cst_alloc(HTS_GStream,gss->nstream);
    for (i = 0; i < gss->nstream; i++) {
       gss->gstream[i].vector_length = HTS_PStreamSet_get_vector_length(pss, i);
-      gss->gstream[i].par = cst_alloc(double *,gss->total_frame);
-      for (j = 0; j < gss->total_frame; j++)
-         gss->gstream[i].par[j] = cst_alloc(double,gss->gstream[i].vector_length);
+      if (HTS_PStreamSet_is_msd(pss, i)) {
+          gss->gstream[i].par = bell_alloc_dmatrix(gss->total_frame,
+                                                   gss->gstream[i].vector_length);
+      }
    }
    gss->gspeech = cst_alloc(int16_t,gss->total_nsample);
 
    /* copy generated parameter */
    for (i = 0; i < gss->nstream; i++) {
       if (HTS_PStreamSet_is_msd(pss, i)) {      /* for MSD */
-         for (j = 0, msd_frame = 0; j < gss->total_frame; j++)
+         for (j = 0, msd_frame = 0; j < gss->total_frame; j++) {
             if (HTS_PStreamSet_get_msd_flag(pss, i, j)) {
                for (k = 0; k < gss->gstream[i].vector_length; k++)
                   gss->gstream[i].par[j][k] = HTS_PStreamSet_get_parameter(pss, i, msd_frame, k);
                msd_frame++;
-            } else
+            } else {
                for (k = 0; k < gss->gstream[i].vector_length; k++)
                   gss->gstream[i].par[j][k] = HTS_NODATA;
+            }
+         }
       } else {                  /* for non MSD */
-         for (j = 0; j < gss->total_frame; j++)
-            for (k = 0; k < gss->gstream[i].vector_length; k++)
-               gss->gstream[i].par[j][k] = HTS_PStreamSet_get_parameter(pss, i, j, k);
+         gss->gstream[i].par = HTS_PStreamSet_abandon_parameter(pss,i);
       }
    }
 
@@ -150,7 +151,7 @@ size_t HTS_GStreamSet_get_total_nsamples(HTS_GStreamSet * gss)
    return gss->total_nsample;
 }
 
-int16_t * HTS_GStreamSet_get_speech_array(HTS_GStreamSet * gss)
+int16_t * HTS_GStreamSet_abandon_speech_array(HTS_GStreamSet * gss)
 {
 // Transfer ownership of generated speech array to caller
 // Call HTS_GStreamSet_get_total_nsamples() first to know how many samples are received by caller
@@ -165,14 +166,12 @@ int16_t * HTS_GStreamSet_get_speech_array(HTS_GStreamSet * gss)
 /* HTS_GStreamSet_clear: free generated parameter stream set */
 void HTS_GStreamSet_clear(HTS_GStreamSet * gss)
 {
-   size_t i, j;
+   size_t i;
 
    if (gss->gstream) {
       for (i = 0; i < gss->nstream; i++) {
          if (gss->gstream[i].par != NULL) {
-            for (j = 0; j < gss->total_frame; j++)
-               cst_free(gss->gstream[i].par[j]);
-            cst_free(gss->gstream[i].par);
+            bell_free_dmatrix(gss->gstream[i].par);
          }
       }
       cst_free(gss->gstream);
