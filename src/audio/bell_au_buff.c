@@ -291,6 +291,7 @@ int audio_scheduler()
     int status;
     bell_queue *q=NULL;
     char readbuffer[2];
+    size_t readnum;
     int stopreading = FALSE;
     struct timespec sleepdelay;
     struct timeval  selecttime;
@@ -317,12 +318,15 @@ int audio_scheduler()
                 selecttime.tv_usec = 0;
                 if (select(fd[0]+1, &rfds, NULL, NULL, &selecttime) > 0)
                 {  // Only read if data is available from main process
-                    read(fd[0],readbuffer,2);
-                    if (cst_streq("W",readbuffer)) // About to receive a cst_wave
+                    readnum = read(fd[0],readbuffer,2);
+                    if ((readnum == 2) &&
+                        (cst_streq("W",readbuffer))) // About to receive a cst_wave
                     {
                         w=new_wave();
-                        deserialize_wave(w,fd[0]);
-                        q=bell_enqueue(w,q);
+                        if (deserialize_wave(w,fd[0]) != BELL_IO_ERROR)
+                        {
+                           q=bell_enqueue(w,q);
+                        }
                     }
                     if (cst_streq("E",readbuffer)) // No more cst_wave to receive
                     {
