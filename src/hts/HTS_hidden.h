@@ -210,8 +210,8 @@ double HTS_SStreamSet_get_vari(HTS_SStreamSet * sss, size_t stream_index, size_t
 /* HTS_SStreamSet_get_gv_mean: get GV mean parameter */
 double HTS_SStreamSet_get_gv_mean(HTS_SStreamSet * sss, size_t stream_index, size_t vector_index);
 
-/* HTS_SStreamSet_get_gv_mean: get GV variance parameter */
-double HTS_SStreamSet_get_gv_vari(HTS_SStreamSet * sss, size_t stream_index, size_t vector_index);
+// Transfer ownership of GV variance to caller
+double *HTS_SStreamSet_abandon_gv_vari(HTS_SStreamSet * sss, size_t stream_index);
 
 /* HTS_SStreamSet_get_gv_switch: get GV switch */
 HTS_Boolean HTS_SStreamSet_get_gv_switch(HTS_SStreamSet * sss, size_t stream_index, size_t state_index);

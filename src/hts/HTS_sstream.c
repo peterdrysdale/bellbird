@@ -402,10 +402,14 @@ double HTS_SStreamSet_get_gv_mean(HTS_SStreamSet * sss, size_t stream_index, siz
    return sss->sstream[stream_index].gv_mean[vector_index];
 }
 
-/* HTS_SStreamSet_get_gv_mean: get GV variance parameter */
-double HTS_SStreamSet_get_gv_vari(HTS_SStreamSet * sss, size_t stream_index, size_t vector_index)
+double *HTS_SStreamSet_abandon_gv_vari(HTS_SStreamSet * sss, size_t stream_index)
+//  Transfer ownership of GV variance to caller
 {
-   return sss->sstream[stream_index].gv_vari[vector_index];
+   double * retval;
+
+   retval = sss->sstream[stream_index].gv_vari;
+   sss->sstream[stream_index].gv_vari = NULL;
+   return retval;
 }
 
 /* HTS_SStreamSet_get_gv_switch: get GV switch */
