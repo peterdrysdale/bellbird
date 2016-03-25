@@ -1571,62 +1571,36 @@ HTS_Boolean HTS_ModelSet_use_gv(HTS_ModelSet * ms, size_t stream_index)
       return FALSE;
 }
 
-/* HTS_Model_add_parameter: get parameter using interpolation weight */
 static void HTS_Model_add_parameter(HTS_Model * model, size_t state_index, const char *string, double *mean, double *vari, double *msd)
 {
+// Internal get parameter function servicing parameters, durations and GV
    size_t i;
    size_t tree_index, pdf_index;
    size_t len = model->vector_length * model->num_windows;
 
    HTS_Model_get_index(model, state_index, string, &tree_index, &pdf_index);
    for (i = 0; i < len; i++) {
-      mean[i] += model->pdf[tree_index][pdf_index][i];
-      vari[i] += model->pdf[tree_index][pdf_index][i + len];
+      mean[i] = model->pdf[tree_index][pdf_index][i];
+      vari[i] = model->pdf[tree_index][pdf_index][i + len];
    }
    if (msd != NULL && model->is_msd == TRUE)
-      *msd += model->pdf[tree_index][pdf_index][len + len];
+      *msd = model->pdf[tree_index][pdf_index][len + len];
 }
 
 /* HTS_ModelSet_get_duration: get duration */
 void HTS_ModelSet_get_duration(HTS_ModelSet * ms, const char *string, double *mean, double *vari)
 {
-   size_t i;
-   size_t len = ms->num_states;
-
-   for (i = 0; i < len; i++) {
-      mean[i] = 0.0;
-      vari[i] = 0.0;
-   }
-
    HTS_Model_add_parameter(ms->duration, 2, string, mean, vari, NULL);
 }
 
 /* HTS_ModelSet_get_parameter: get parameter */
 void HTS_ModelSet_get_parameter(HTS_ModelSet * ms, size_t stream_index, size_t state_index, const char *string, double *mean, double *vari, double *msd)
 {
-   size_t i;
-   size_t len = ms->stream[stream_index].vector_length * ms->stream[stream_index].num_windows;
-
-   for (i = 0; i < len; i++) {
-      mean[i] = 0.0;
-      vari[i] = 0.0;
-   }
-   if (msd != NULL)
-      *msd = 0.0;
-
    HTS_Model_add_parameter(&ms->stream[stream_index], state_index, string, mean, vari, msd);
 }
 
 /* HTS_ModelSet_get_gv: get GV */
 void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *string, double *mean, double *vari)
 {
-   size_t i;
-   size_t len = ms->stream[stream_index].vector_length;
-
-   for (i = 0; i < len; i++) {
-      mean[i] = 0.0;
-      vari[i] = 0.0;
-   }
-
    HTS_Model_add_parameter(&ms->gv[stream_index], 2, string, mean, vari, NULL);
 }
