@@ -198,7 +198,7 @@ void HTS_Engine_add_half_tone(HTS_Engine * engine, double f)
 /* HTS_Engine_generate_state_sequence: genereate state sequence (1st synthesis step) */
 static HTS_Boolean HTS_Engine_generate_state_sequence(HTS_Engine * engine)
 {
-   size_t i, state_index, model_index;
+   size_t i;
    double f;
 
    if (HTS_SStreamSet_create(&engine->sss, &engine->ms, &engine->label, engine->condition.phoneme_alignment_flag, engine->condition.speed) != TRUE) {
@@ -206,8 +206,6 @@ static HTS_Boolean HTS_Engine_generate_state_sequence(HTS_Engine * engine)
       return FALSE;
    }
    if (engine->condition.additional_half_tone != 0.0) {
-      state_index = 0;
-      model_index = 0;
       for (i = 0; i < HTS_SStreamSet_get_total_state(&engine->sss); i++) {
          f = HTS_SStreamSet_get_mean(&engine->sss, 1, i, 0);
          f += engine->condition.additional_half_tone * HALF_TONE;
@@ -216,11 +214,6 @@ static HTS_Boolean HTS_Engine_generate_state_sequence(HTS_Engine * engine)
          else if (f > MAX_LF0)
             f = MAX_LF0;
          HTS_SStreamSet_set_mean(&engine->sss, 1, i, 0, f);
-         state_index++;
-         if (state_index >= HTS_ModelSet_get_nstate(&engine->ms)) {
-            state_index = 0;
-            model_index++;
-         }
       }
    }
    return TRUE;
