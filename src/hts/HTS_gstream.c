@@ -113,19 +113,16 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
    /* check */
    if (gss->nstream != 2 && gss->nstream != 3) {
       cst_errmsg("HTS_GStreamSet_create: The number of streams should be 2 or 3.\n");
-      cst_error();
       HTS_GStreamSet_clear(gss);
       return FALSE;
    }
    if (HTS_PStreamSet_get_vector_length(pss, 1) != 1) {
       cst_errmsg("HTS_GStreamSet_create: The size of lf0 static vector should be 1.\n");
-      cst_error();
       HTS_GStreamSet_clear(gss);
       return FALSE;
    }
    if (gss->nstream >= 3 && gss->gstream[2].vector_length % 2 == 0) {
       cst_errmsg("HTS_GStreamSet_create: The number of low-pass filter coefficient should be odd numbers.");
-      cst_error();
       HTS_GStreamSet_clear(gss);
       return FALSE;
    }
