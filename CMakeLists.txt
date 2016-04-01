@@ -21,6 +21,7 @@ if( _FILE_OFFSET_BITS )
 endif( _FILE_OFFSET_BITS)
 
 option( ENABLE_ALSA "Build with ALSA support" ON )
+option( ENABLE_ALSA "Build with Win32 audio support" OFF )
 option( ENABLE_O2 "Build with -O2 optimization" ON )
 option( ENABLE_WALL "Build with -Wall warnings" ON )
 option( ENABLE_CLANG "Build using clang compiler" OFF)
@@ -28,9 +29,15 @@ option( ENABLE_ANDROID "Build for Android" OFF)
 
 if( ENABLE_ALSA )
     ADD_DEFINITIONS (-DCST_AUDIO_ALSA)
-else( ENABLE_ALSA )
-    ADD_DEFINITIONS (-DCST_AUDIO_NONE)
 endif( ENABLE_ALSA )
+
+if( ENABLE_WIN32)
+    ADD_DEFINITIONS (-DBELL_AUDIO_WIN32)
+endif( ENABLE_WIN32)
+
+if ( NOT ENABLE_ALSA AND NOT ENABLE_WIN32 )
+    ADD_DEFINITIONS (-DCST_AUDIO_NONE)
+endif (NOT ENABLE_ALSA AND NOT ENABLE_WIN32 )
 
 if( ENABLE_O2 )
     SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
@@ -58,6 +65,7 @@ INCLUDE_DIRECTORIES( include )
 
 SET(SRC_LIBBELLBIRD
     src/audio/au_alsa.c
+    src/audio/au_win32.c
     src/audio/au_none.c
     src/audio/bell_audio.c
     src/audio/bell_au_buff.c
@@ -165,6 +173,16 @@ SET_PROPERTY(
     APPEND PROPERTY COMPILE_DEFINITIONS PACKAGE_STRING=\"${VERSION}\"
 )
 
+if ( ENABLE_WIN32 )
+TARGET_LINK_LIBRARIES (
+    bellbird
+    libbellbird_cmulex
+    libbellbird_usenglish
+    libbellbird
+    m
+    winmm
+)
+else ( ENABLE_WIN32)
 TARGET_LINK_LIBRARIES (
     bellbird
     libbellbird_cmulex
@@ -172,6 +190,7 @@ TARGET_LINK_LIBRARIES (
     libbellbird
     m
 )
+endif ( ENABLE_WIN32 )
 
 ADD_EXECUTABLE ( compile_regexes main/compile_regexes.c )
 
@@ -182,4 +201,3 @@ TARGET_LINK_LIBRARIES (
     libbellbird
     m
 )
-

@@ -59,6 +59,12 @@ typedef struct cst_audiodev_struct {
 #define AUDIO_CLOSE_NATIVE audio_close_alsa
 #define AUDIO_WRITE_NATIVE audio_write_alsa
 
+#elif defined(BELL_AUDIO_WIN32)
+
+#define AUDIO_OPEN_NATIVE audio_open_win32
+#define AUDIO_CLOSE_NATIVE audio_close_win32
+#define AUDIO_WRITE_NATIVE audio_write_win32
+
 #else
 
 #define AUDIO_OPEN_NATIVE audio_open_none
