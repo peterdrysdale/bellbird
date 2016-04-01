@@ -21,7 +21,7 @@ if( _FILE_OFFSET_BITS )
 endif( _FILE_OFFSET_BITS)
 
 option( ENABLE_ALSA "Build with ALSA support" ON )
-option( ENABLE_ALSA "Build with Win32 audio support" OFF )
+option( ENABLE_WIN32 "Build with Win32 audio support" OFF )
 option( ENABLE_O2 "Build with -O2 optimization" ON )
 option( ENABLE_WALL "Build with -Wall warnings" ON )
 option( ENABLE_CLANG "Build using clang compiler" OFF)
