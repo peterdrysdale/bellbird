@@ -56,7 +56,6 @@
 void HTS_GStreamSet_initialize(HTS_GStreamSet * gss)
 {
    gss->nstream = 0;
-   gss->total_frame = 0;
    gss->total_nsample = 0;
    gss->gstream = NULL;
    gss->gspeech = NULL;
@@ -67,6 +66,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
 {
    size_t i, j, k;
    size_t msd_frame;
+   size_t total_frame;
    HTS_Vocoder v;
    size_t nlpf = 0;
    double *lpf = NULL;
@@ -80,13 +80,13 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
 
    /* initialize */
    gss->nstream = HTS_PStreamSet_get_nstream(pss);
-   gss->total_frame = HTS_PStreamSet_get_total_frame(pss);
-   gss->total_nsample = fperiod * gss->total_frame;
+   total_frame = HTS_PStreamSet_get_total_frame(pss);
+   gss->total_nsample = fperiod * total_frame;
    gss->gstream = cst_alloc(HTS_GStream,gss->nstream);
    for (i = 0; i < gss->nstream; i++) {
       gss->gstream[i].vector_length = HTS_PStreamSet_get_vector_length(pss, i);
       if (HTS_PStreamSet_is_msd(pss, i)) {
-          gss->gstream[i].par = bell_alloc_dmatrix(gss->total_frame,
+          gss->gstream[i].par = bell_alloc_dmatrix(total_frame,
                                                    gss->gstream[i].vector_length);
       }
    }
@@ -95,7 +95,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
    /* copy generated parameter */
    for (i = 0; i < gss->nstream; i++) {
       if (HTS_PStreamSet_is_msd(pss, i)) {      /* for MSD */
-         for (j = 0, msd_frame = 0; j < gss->total_frame; j++) {
+         for (j = 0, msd_frame = 0; j < total_frame; j++) {
             if (HTS_PStreamSet_get_msd_flag(pss, i, j)) {
                for (k = 0; k < gss->gstream[i].vector_length; k++)
                   gss->gstream[i].par[j][k] = HTS_PStreamSet_get_parameter(pss, i, msd_frame, k);
@@ -131,7 +131,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
    HTS_Vocoder_initialize(&v, gss->gstream[0].vector_length - 1, sampling_rate, fperiod);
    if (gss->nstream >= 3)
       nlpf = gss->gstream[2].vector_length;
-   for (i = 0, j = 0 ; i < gss->total_frame; i++, j += fperiod) {
+   for (i = 0, j = 0 ; i < total_frame; i++, j += fperiod) {
       if (gss->nstream >= 3)
          lpf = &gss->gstream[2].par[i][0];
       HTS_Vocoder_synthesize(&v, gss->gstream[0].vector_length - 1, gss->gstream[1].par[i][0], &gss->gstream[0].par[i][0], nlpf, lpf, alpha, beta, volume, &gss->gspeech[j]);
