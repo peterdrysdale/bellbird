@@ -64,7 +64,6 @@ void HTS_Engine_initialize(HTS_Engine * engine)
    engine->condition.sampling_frequency = 0;
    engine->condition.fperiod = 0;
    engine->condition.audio_buff_size = 0;
-   engine->condition.stop = FALSE;
    engine->condition.volume = 1.0;
    engine->condition.msd_threshold = NULL;
    engine->condition.gv_weight = NULL;
@@ -228,7 +227,7 @@ static HTS_Boolean HTS_Engine_generate_parameter_sequence(HTS_Engine * engine)
 /* HTS_Engine_generate_sample_sequence: generate sample sequence (3rd synthesis step) */
 static HTS_Boolean HTS_Engine_generate_sample_sequence(HTS_Engine * engine)
 {
-   return HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.sampling_frequency, engine->condition.fperiod, engine->condition.alpha, engine->condition.beta, &engine->condition.stop, engine->condition.volume);
+   return HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.sampling_frequency, engine->condition.fperiod, engine->condition.alpha, engine->condition.beta, engine->condition.volume);
 }
 
 /* HTS_Engine_synthesize: synthesize speech */
@@ -268,8 +267,6 @@ void HTS_Engine_refresh(HTS_Engine * engine)
    HTS_SStreamSet_clear(&engine->sss);
    /* free label list */
    HTS_Label_clear(&engine->label);
-   /* stop flag */
-   engine->condition.stop = FALSE;
 }
 
 /* HTS_Engine_clear: free engine */
