@@ -83,7 +83,6 @@ SET(SRC_LIBBELLBIRD
     src/hrg/cst_utterance.c
     src/hts/HTS_engine.c
     src/hts/HTS_gstream.c
-    src/hts/HTS_label.c
     src/hts/HTS_model.c
     src/hts/HTS_pstream.c
     src/hts/HTS_sstream.c

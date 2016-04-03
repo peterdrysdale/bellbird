@@ -156,22 +156,6 @@ typedef struct _HTS_ModelSet {
    HTS_Model *gv;              /* GV PDFs and trees */
 } HTS_ModelSet;
 
-/* label ----------------------------------------------------------- */
-
-/* HTS_LabelString: individual label string with time information */
-typedef struct _HTS_LabelString {
-   struct _HTS_LabelString *next;       /* pointer to next label string */
-   char *name;                  /* label string */
-   double start;                /* start frame specified in the given label */
-   double end;                  /* end frame specified in the given label */
-} HTS_LabelString;
-
-/* HTS_Label: list of label strings */
-typedef struct _HTS_Label {
-   HTS_LabelString *head;       /* pointer to the head of label string */
-   size_t size;                 /* # of label strings */
-} HTS_Label;
-
 /* sstream --------------------------------------------------------- */
 
 /* HTS_SStream: individual state stream */
@@ -265,7 +249,6 @@ typedef struct _HTS_Condition {
    double *gv_weight;           /* GV weights */
 
    /* duration */
-   HTS_Boolean phoneme_alignment_flag;  /* flag for using phoneme alignment in label */
    double speed;                /* speech speed */
 
    /* spectrum */
@@ -281,7 +264,6 @@ typedef struct _HTS_Condition {
 typedef struct _HTS_Engine {
    HTS_Condition condition;     /* synthesis condition */
    HTS_ModelSet ms;             /* set of duration models, HMMs and GV models */
-   HTS_Label label;             /* label */
    HTS_SStreamSet sss;          /* set of state streams */
    HTS_PStreamSet pss;          /* set of PDF streams */
    HTS_GStreamSet gss;          /* set of generated parameter streams */

@@ -471,37 +471,6 @@ bell_boolean bell_get_token_from_fp_with_separator(HTS_File * fp, char *buff, si
    return TRUE;
 }
 
-/* bell_get_token_from_string: get token from string (separators are space, tab, and line break) */
-bell_boolean bell_get_token_from_string(const char *string, size_t * index, char *buff, size_t bufflen)
-{
-   char c;
-   size_t i;
-
-   c = string[(*index)];
-   if (c == '\0')
-      return FALSE;
-   c = string[(*index)++];
-   if (c == '\0')
-      return FALSE;
-   while (c == ' ' || c == '\n' || c == '\t') {
-      if (c == '\0')
-         return FALSE;
-      c = string[(*index)++];
-   }
-   for (i = 0; c != ' ' && c != '\n' && c != '\t' && c != '\0' && (i < bufflen); i++) {
-      buff[i] = c;
-      c = string[(*index)++];
-   }
-   if (i == bufflen)
-   {
-      cst_errmsg("bell_get_token_from_string: Overflow of buffer probably due to malformed labels\n");
-      cst_error();
-   }
-
-   buff[i] = '\0';
-   return TRUE;
-}
-
 /* bell_get_token_from_string_with_separator: get token from string with specified separator */
 bell_boolean bell_get_token_from_string_with_separator(const char *str, size_t * index, char *buff, size_t bufflen, char separator)
 {

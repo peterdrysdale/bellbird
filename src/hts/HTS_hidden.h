@@ -52,6 +52,7 @@
 #define HTS_HIDDEN_H
 
 #include <stdint.h>
+#include "cst_alloc.h"
 /* hts_engine libraries */
 #include "HTS_engine.h"
 #include "HTS_misc.h"
@@ -131,33 +132,13 @@ void HTS_ModelSet_get_gv(HTS_ModelSet * ms, size_t stream_index, const char *str
 /* HTS_ModelSet_clear: free model set */
 void HTS_ModelSet_clear(HTS_ModelSet * ms);
 
-/* label ----------------------------------------------------------- */
-
-/* HTS_Label_initialize: initialize label */
-void HTS_Label_initialize(HTS_Label * label);
-
-/* HTS_Label_load_from_strings: load label list from string list */
-void HTS_Label_load_from_strings(HTS_Label * label, size_t sampling_rate, size_t fperiod, char **lines, size_t num_lines);
-
-/* HTS_Label_get_size: get number of label string */
-size_t HTS_Label_get_size(HTS_Label * label);
-
-/* HTS_Label_get_string: get label string */
-const char *HTS_Label_get_string(HTS_Label * label, size_t index);
-
-/* HTS_Label_get_end_frame: get end frame */
-double HTS_Label_get_end_frame(HTS_Label * label, size_t index);
-
-/* HTS_Label_clear: free label */
-void HTS_Label_clear(HTS_Label * label);
-
 /* sstream --------------------------------------------------------- */
 
 /* HTS_SStreamSet_initialize: initialize state stream set */
 void HTS_SStreamSet_initialize(HTS_SStreamSet * sss);
 
 /* HTS_SStreamSet_create: parse label and determine state duration */
-HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_Label * label, HTS_Boolean phoneme_alignment_flag, double speed);
+HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, char **label, size_t num_labels, double speed);
 
 /* HTS_SStreamSet_get_nstream: get number of stream */
 size_t HTS_SStreamSet_get_nstream(HTS_SStreamSet * sss);

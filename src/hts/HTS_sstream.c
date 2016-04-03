@@ -163,7 +163,7 @@ void HTS_SStreamSet_initialize(HTS_SStreamSet * sss)
 }
 
 /* HTS_SStreamSet_create: parse label and determine state duration */
-HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_Label * label, HTS_Boolean phoneme_alignment_flag, double speed)
+HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, char** label, size_t num_labels, double speed)
 {
    size_t i, j, k;
    double temp;
@@ -172,14 +172,12 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
    HTS_SStream *sst;
    double *duration_mean, *duration_vari;
    double frame_length;
-   size_t next_time;
-   size_t next_state;
 
    /* initialize state sequence */
    sss->nstate = HTS_ModelSet_get_nstate(ms);
    sss->nstream = HTS_ModelSet_get_nstream(ms);
    sss->total_frame = 0;
-   sss->total_state = HTS_Label_get_size(label) * sss->nstate;
+   sss->total_state = num_labels * sss->nstate;
    sss->duration = cst_alloc(size_t,sss->total_state);
    sss->sstream = cst_alloc(HTS_SStream,sss->nstream);
    for (i = 0; i < sss->nstream; i++) {
@@ -207,50 +205,33 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
    /* determine state duration */
    duration_mean = cst_alloc(double,sss->total_state);
    duration_vari = cst_alloc(double,sss->total_state);
-   for (i = 0; i < HTS_Label_get_size(label); i++)
-      HTS_ModelSet_get_duration(ms, HTS_Label_get_string(label, i), &duration_mean[i * sss->nstate], &duration_vari[i * sss->nstate]);
-   if (phoneme_alignment_flag == TRUE) {
-      /* use duration set by user */
-      next_time = 0;
-      next_state = 0;
-      state = 0;
-      for (i = 0; i < HTS_Label_get_size(label); i++) {
-         temp = HTS_Label_get_end_frame(label, i);
-         if (temp >= 0) {
-            next_time += (size_t) HTS_set_specified_duration(&sss->duration[next_state], &duration_mean[next_state], &duration_vari[next_state], state + sss->nstate - next_state, temp - next_time);
-            next_state = state + sss->nstate;
-         } else if (i + 1 == HTS_Label_get_size(label)) {
-            cst_errmsg("Warning: HTS_SStreamSet_create: The time of final label is not specified.\n");
-            HTS_set_default_duration(&sss->duration[next_state], &duration_mean[next_state], state + sss->nstate - next_state);
-         }
-         state += sss->nstate;
+   for (i = 0; i < num_labels; i++)
+      HTS_ModelSet_get_duration(ms, label[i], &duration_mean[i * sss->nstate], &duration_vari[i * sss->nstate]);
+
+   /* determine frame length */
+   if (speed != 1.0) {
+      temp = 0.0;
+      for (i = 0; i < sss->total_state; i++) {
+         temp += duration_mean[i];
       }
+      frame_length = temp / speed;
+      HTS_set_specified_duration(sss->duration, duration_mean, duration_vari, sss->total_state, frame_length);
    } else {
-      /* determine frame length */
-      if (speed != 1.0) {
-         temp = 0.0;
-         for (i = 0; i < sss->total_state; i++) {
-            temp += duration_mean[i];
-         }
-         frame_length = temp / speed;
-         HTS_set_specified_duration(sss->duration, duration_mean, duration_vari, sss->total_state, frame_length);
-      } else {
-         HTS_set_default_duration(sss->duration, duration_mean, sss->total_state);
-      }
+      HTS_set_default_duration(sss->duration, duration_mean, sss->total_state);
    }
    cst_free(duration_mean);
    cst_free(duration_vari);
 
    /* get parameter */
-   for (i = 0, state = 0; i < HTS_Label_get_size(label); i++) {
+   for (i = 0, state = 0; i < num_labels; i++) {
       for (j = 2; j <= sss->nstate + 1; j++) {
          sss->total_frame += sss->duration[state];
          for (k = 0; k < sss->nstream; k++) {
             sst = &sss->sstream[k];
             if (sst->msd)
-               HTS_ModelSet_get_parameter(ms, k, j, HTS_Label_get_string(label, i), sst->mean[state], sst->vari[state], &sst->msd[state]);
+               HTS_ModelSet_get_parameter(ms, k, j, label[i], sst->mean[state], sst->vari[state], &sst->msd[state]);
             else
-               HTS_ModelSet_get_parameter(ms, k, j, HTS_Label_get_string(label, i), sst->mean[state], sst->vari[state], NULL);
+               HTS_ModelSet_get_parameter(ms, k, j, label[i], sst->mean[state], sst->vari[state], NULL);
          }
          state++;
       }
@@ -283,15 +264,15 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, HTS_L
       if (HTS_ModelSet_use_gv(ms, i)) {
          sst->gv_mean = cst_alloc(double,sst->vector_length);
          sst->gv_vari = cst_alloc(double,sst->vector_length);
-         HTS_ModelSet_get_gv(ms, i, HTS_Label_get_string(label, 0), sst->gv_mean, sst->gv_vari);
+         HTS_ModelSet_get_gv(ms, i, label[0], sst->gv_mean, sst->gv_vari);
       } else {
          sst->gv_mean = NULL;
          sst->gv_vari = NULL;
       }
    }
 
-   for (i = 0; i < HTS_Label_get_size(label); i++)
-      if (HTS_ModelSet_get_gv_flag(ms, HTS_Label_get_string(label, i)) == FALSE)
+   for (i = 0; i < num_labels; i++)
+      if (HTS_ModelSet_get_gv_flag(ms, label[i]) == FALSE)
          for (j = 0; j < sss->nstream; j++)
             if (HTS_ModelSet_use_gv(ms, j) == TRUE)
                for (k = 0; k < sss->nstate; k++)

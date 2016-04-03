@@ -82,7 +82,7 @@ int HTS_fseek(HTS_File * fp, long offset, int origin);
 /* HTS_ftell: wrapper for ftell */
 size_t HTS_ftell(HTS_File * fp);
 
-/* HTS_fread_little_endiana: fread with byteswap */
+/* HTS_fread_little_endian: fread with byteswap */
 size_t HTS_fread_little_endian(void *buf, size_t size, size_t n, HTS_File * fp);
 
 /* bell_get_pattern_token: get pattern token (single/double quote can be used) */
@@ -93,9 +93,6 @@ bell_boolean bell_get_token_from_fp(HTS_File * fp, char *buff, size_t bufflen);
 
 /* bell_get_token_from_fp_with_separator: get token from file pointer with specified separator */
 bell_boolean bell_get_token_from_fp_with_separator(HTS_File * fp, char *buff, size_t bufflen, char separator);
-
-/* bell_get_token_from_string: get token from string (separator are space,tab,line break) */
-bell_boolean bell_get_token_from_string(const char *string, size_t * index, char *buff, size_t bufflen);
 
 /* bell_get_token_from_string_with_separator: get token from string with specified separator */
 bell_boolean bell_get_token_from_string_with_separator(const char *str, size_t * index, char *buff, size_t bufflen, char separator);

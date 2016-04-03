@@ -69,7 +69,6 @@ void HTS_Engine_initialize(HTS_Engine * engine)
 
    /* duration */
    engine->condition.speed = 1.0;
-   engine->condition.phoneme_alignment_flag = FALSE;
 
    /* spectrum */
    engine->condition.alpha = 0.0;
@@ -80,8 +79,6 @@ void HTS_Engine_initialize(HTS_Engine * engine)
 
    /* initialize model set */
    HTS_ModelSet_initialize(&engine->ms);
-   /* initialize label list */
-   HTS_Label_initialize(&engine->label);
    /* initialize state sequence set */
    HTS_SStreamSet_initialize(&engine->sss);
    /* initialize pstream set */
@@ -193,13 +190,15 @@ void HTS_Engine_add_half_tone(HTS_Engine * engine, double f)
    engine->condition.additional_half_tone = f;
 }
 
-/* HTS_Engine_generate_state_sequence: genereate state sequence (1st synthesis step) */
-static HTS_Boolean HTS_Engine_generate_state_sequence(HTS_Engine * engine)
+/* HTS_Engine_synthesize_from_strings: synthesize speech from strings */
+HTS_Boolean HTS_Engine_synthesize_from_strings(HTS_Engine * engine, char **lines, size_t num_lines)
 {
    size_t i;
    double f;
 
-   if (HTS_SStreamSet_create(&engine->sss, &engine->ms, &engine->label, engine->condition.phoneme_alignment_flag, engine->condition.speed) != TRUE) {
+   HTS_Engine_refresh(engine);
+// Generate state sequence
+   if (HTS_SStreamSet_create(&engine->sss, &engine->ms, lines, num_lines, engine->condition.speed) != TRUE) {
       HTS_Engine_refresh(engine);
       return FALSE;
    }
@@ -214,45 +213,19 @@ static HTS_Boolean HTS_Engine_generate_state_sequence(HTS_Engine * engine)
          HTS_SStreamSet_set_mean(&engine->sss, 1, i, 0, f);
       }
    }
-   return TRUE;
-}
-
-/* HTS_Engine_generate_parameter_sequence: generate parameter sequence (2nd synthesis step) */
-static HTS_Boolean HTS_Engine_generate_parameter_sequence(HTS_Engine * engine)
-{
-   return HTS_PStreamSet_create(&engine->pss, &engine->sss, engine->condition.msd_threshold, engine->condition.gv_weight);
-}
-
-/* HTS_Engine_generate_sample_sequence: generate sample sequence (3rd synthesis step) */
-static HTS_Boolean HTS_Engine_generate_sample_sequence(HTS_Engine * engine)
-{
-   return HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.sampling_frequency, engine->condition.fperiod, engine->condition.alpha, engine->condition.beta, engine->condition.volume);
-}
-
-/* HTS_Engine_synthesize: synthesize speech */
-static HTS_Boolean HTS_Engine_synthesize(HTS_Engine * engine)
-{
-   if (HTS_Engine_generate_state_sequence(engine) != TRUE) {
+// Generate parameter sequence
+   if (HTS_PStreamSet_create(&engine->pss, &engine->sss, engine->condition.msd_threshold, engine->condition.gv_weight) != TRUE) {
       HTS_Engine_refresh(engine);
       return FALSE;
    }
-   if (HTS_Engine_generate_parameter_sequence(engine) != TRUE) {
-      HTS_Engine_refresh(engine);
-      return FALSE;
-   }
-   if (HTS_Engine_generate_sample_sequence(engine) != TRUE) {
+// Generate sound sample sequence
+   if (HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.sampling_frequency,
+                             engine->condition.fperiod, engine->condition.alpha,
+                             engine->condition.beta, engine->condition.volume) != TRUE) {
       HTS_Engine_refresh(engine);
       return FALSE;
    }
    return TRUE;
-}
-
-/* HTS_Engine_synthesize_from_strings: synthesize speech from strings */
-HTS_Boolean HTS_Engine_synthesize_from_strings(HTS_Engine * engine, char **lines, size_t num_lines)
-{
-   HTS_Engine_refresh(engine);
-   HTS_Label_load_from_strings(&engine->label, engine->condition.sampling_frequency, engine->condition.fperiod, lines, num_lines);
-   return HTS_Engine_synthesize(engine);
 }
 
 /* HTS_Engine_refresh: free model per one time synthesis */
@@ -264,8 +237,6 @@ void HTS_Engine_refresh(HTS_Engine * engine)
    HTS_PStreamSet_clear(&engine->pss);
    /* free state stream set */
    HTS_SStreamSet_clear(&engine->sss);
-   /* free label list */
-   HTS_Label_clear(&engine->label);
 }
 
 /* HTS_Engine_clear: free engine */
