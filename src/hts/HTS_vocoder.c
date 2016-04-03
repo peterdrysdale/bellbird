@@ -302,7 +302,7 @@ void HTS_Vocoder_initialize(HTS_Vocoder * v, size_t m, size_t rate, size_t fperi
 }
 
 /* HTS_Vocoder_synthesize: pulse/noise excitation and MLSA filter based waveform synthesis */
-void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, double volume, int16_t *wavedata)
+void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spectrum, size_t nlpf, double *lpf, double alpha, double beta, int16_t *wavedata)
 {
    double x;
    size_t i,j;
@@ -337,7 +337,6 @@ void HTS_Vocoder_synthesize(HTS_Vocoder * v, size_t m, double lf0, double *spect
       if (x != 0.0)
          x *= exp(v->c[0]);
       x = mlsadf(x, v->c, m, alpha, v->d1, &(v->d2offset), HTS_pade);
-      x *= volume;
 
       /* output */
       if (wavedata)

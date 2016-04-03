@@ -63,7 +63,6 @@ void HTS_Engine_initialize(HTS_Engine * engine)
    /* global */
    engine->condition.sampling_frequency = 0;
    engine->condition.fperiod = 0;
-   engine->condition.volume = 1.0;
    engine->condition.msd_threshold = NULL;
    engine->condition.gv_weight = NULL;
 
@@ -221,7 +220,7 @@ HTS_Boolean HTS_Engine_synthesize_from_strings(HTS_Engine * engine, char **lines
 // Generate sound sample sequence
    if (HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.sampling_frequency,
                              engine->condition.fperiod, engine->condition.alpha,
-                             engine->condition.beta, engine->condition.volume) != TRUE) {
+                             engine->condition.beta) != TRUE) {
       HTS_Engine_refresh(engine);
       return FALSE;
    }

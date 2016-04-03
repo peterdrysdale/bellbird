@@ -62,7 +62,7 @@ void HTS_GStreamSet_initialize(HTS_GStreamSet * gss)
 }
 
 /* HTS_GStreamSet_create: generate speech */
-HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, size_t sampling_rate, size_t fperiod, double alpha, double beta, double volume)
+HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, size_t sampling_rate, size_t fperiod, double alpha, double beta)
 {
    size_t i, j, k;
    size_t msd_frame;
@@ -134,7 +134,7 @@ HTS_Boolean HTS_GStreamSet_create(HTS_GStreamSet * gss, HTS_PStreamSet * pss, si
    for (i = 0, j = 0 ; i < total_frame; i++, j += fperiod) {
       if (gss->nstream >= 3)
          lpf = &gss->gstream[2].par[i][0];
-      HTS_Vocoder_synthesize(&v, gss->gstream[0].vector_length - 1, gss->gstream[1].par[i][0], &gss->gstream[0].par[i][0], nlpf, lpf, alpha, beta, volume, &gss->gspeech[j]);
+      HTS_Vocoder_synthesize(&v, gss->gstream[0].vector_length - 1, gss->gstream[1].par[i][0], &gss->gstream[0].par[i][0], nlpf, lpf, alpha, beta, &gss->gspeech[j]);
    }
    HTS_Vocoder_clear(&v);
 

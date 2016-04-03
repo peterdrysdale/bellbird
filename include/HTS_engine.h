@@ -243,8 +243,6 @@ typedef struct _HTS_Condition {
    /* global */
    size_t sampling_frequency;   /* sampling frequency */
    size_t fperiod;              /* frame period */
-   HTS_Boolean stop;            /* stop flag */
-   double volume;               /* volume */
    double *msd_threshold;       /* MSD thresholds */
    double *gv_weight;           /* GV weights */
 
