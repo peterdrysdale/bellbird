@@ -63,7 +63,6 @@ void HTS_Engine_initialize(HTS_Engine * engine)
    /* global */
    engine->condition.sampling_frequency = 0;
    engine->condition.fperiod = 0;
-   engine->condition.audio_buff_size = 0;
    engine->condition.volume = 1.0;
    engine->condition.msd_threshold = NULL;
    engine->condition.gv_weight = NULL;

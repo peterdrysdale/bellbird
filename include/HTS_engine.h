@@ -259,7 +259,6 @@ typedef struct _HTS_Condition {
    /* global */
    size_t sampling_frequency;   /* sampling frequency */
    size_t fperiod;              /* frame period */
-   size_t audio_buff_size;      /* audio buffer size (for audio device) */
    HTS_Boolean stop;            /* stop flag */
    double volume;               /* volume */
    double *msd_threshold;       /* MSD thresholds */
