@@ -101,16 +101,6 @@ static int HTS_fgetc(HTS_File * fp)
    return EOF;
 }
 
-/* HTS_fopen_from_cst_file: wrapper for opening from cst_file */
-HTS_File *HTS_fopen_from_cst_file(cst_file cst_fp)
-{
-   HTS_File *fp = cst_alloc(HTS_File,1);
-   fp->type = HTS_FILE;
-   fp->pointer = (void *) cst_fp;
-
-   return fp;
-}
-
 /* HTS_fopen_from_fn: wrapper for fopen */
 HTS_File *HTS_fopen_from_fn(const char *name, const char *opt)
 {

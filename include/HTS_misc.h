@@ -58,9 +58,6 @@ typedef struct _HTS_File {
    void *pointer;
 } HTS_File;
 
-/* HTS_fopen_from_cst_file: wrapper for opening from cst_file */
-HTS_File *HTS_fopen_from_cst_file(cst_file cst_fp);
-
 /* HTS_fopen: wrapper for fopen */
 HTS_File *HTS_fopen_from_fn(const char *name, const char *opt);
 
