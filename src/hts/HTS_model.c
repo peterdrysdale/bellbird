@@ -806,14 +806,11 @@ static void HTS_Model_get_index(HTS_Model * model, size_t state_index, const cha
 /* HTS_ModelSet_initialize: initialize model set */
 void HTS_ModelSet_initialize(HTS_ModelSet * ms)
 {
-   ms->hts_voice_version = NULL;
    ms->sampling_frequency = 0;
    ms->frame_period = 0;
    ms->num_states = 0;
    ms->num_streams = 0;
    ms->stream_type = NULL;
-   ms->fullcontext_format = NULL;
-   ms->fullcontext_version = NULL;
    ms->gv_off_context = NULL;
    ms->option = NULL;
 
@@ -828,14 +825,8 @@ void HTS_ModelSet_clear(HTS_ModelSet * ms)
 {
    size_t i, j;
 
-   if (ms->hts_voice_version != NULL)
-      cst_free(ms->hts_voice_version);
    if (ms->stream_type != NULL)
       cst_free(ms->stream_type);
-   if (ms->fullcontext_format != NULL)
-      cst_free(ms->fullcontext_format);
-   if (ms->fullcontext_version != NULL)
-      cst_free(ms->fullcontext_version);
    if (ms->gv_off_context != NULL) {
       HTS_Question_clear(ms->gv_off_context);
       cst_free(ms->gv_off_context);
@@ -962,7 +953,6 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices)
          if (HTS_strequal(buff1, "[STREAM]") == TRUE) {
             break;
          } else if (HTS_match_head_string(buff1, "HTS_VOICE_VERSION:", &matched_size) == TRUE) {
-            ms->hts_voice_version = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "SAMPLING_FREQUENCY:", &matched_size) == TRUE) {
             if (bell_validate_atoi(&buff1[matched_size], &tempint)) {
                ms->sampling_frequency = (size_t) tempint;
@@ -990,9 +980,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices)
          } else if (HTS_match_head_string(buff1, "STREAM_TYPE:", &matched_size) == TRUE) {
             ms->stream_type = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "FULLCONTEXT_FORMAT:", &matched_size) == TRUE) {
-            ms->fullcontext_format = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "FULLCONTEXT_VERSION:", &matched_size) == TRUE) {
-            ms->fullcontext_version = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "GV_OFF_CONTEXT:", &matched_size) == TRUE) {
             gv_off_context = cst_strdup(&buff1[matched_size]);
          } else if (HTS_match_head_string(buff1, "COMMENT:", &matched_size) == TRUE) {

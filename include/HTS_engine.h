@@ -140,14 +140,11 @@ typedef struct _HTS_Model {
 
 /* HTS_ModelSet: set of duration models, HMMs and GV models. */
 typedef struct _HTS_ModelSet {
-   char *hts_voice_version;     /* version of HTS voice format */
    size_t sampling_frequency;   /* sampling frequency */
    size_t frame_period;         /* frame period */
    size_t num_states;           /* # of HMM states */
    size_t num_streams;          /* # of streams */
    char *stream_type;           /* stream type */
-   char *fullcontext_format;    /* fullcontext label format */
-   char *fullcontext_version;   /* version of fullcontext label */
    HTS_Question *gv_off_context;        /* GV switch */
    char **option;               /* options for each stream */
    HTS_Model *duration;         /* duration PDFs and trees */
