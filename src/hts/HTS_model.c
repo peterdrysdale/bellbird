@@ -257,7 +257,7 @@ static HTS_Question *HTS_Question_find(HTS_Question * question, const char *stri
    return NULL;
 }
 
-/* HTS_Node_initialzie: initialize node */
+/* HTS_Node_initialize: initialize node */
 static void HTS_Node_initialize(HTS_Node * node)
 {
    node->index = 0;
