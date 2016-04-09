@@ -874,17 +874,6 @@ static HTS_Boolean HTS_match_head_string(const char *str, const char *pattern, s
    }
 }
 
-/* HTS_strequal: strcmp wrapper */
-static HTS_Boolean HTS_strequal(const char *s1, const char *s2)
-{
-   if (s1 == NULL && s2 == NULL)
-      return TRUE;
-   else if (s1 == NULL || s2 == NULL)
-      return FALSE;
-   else
-      return strcmp(s1, s2) == 0 ? TRUE : FALSE;
-}
-
 /* HTS_ModelSet_load: load model set */
 HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices)
 {
@@ -939,7 +928,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices)
          break;
       }
       /* load GLOBAL options */
-      if (HTS_strequal(buff1, "[GLOBAL]") != TRUE) {
+      if (cst_streq(buff1, "[GLOBAL]") != TRUE) {
          error = TRUE;
          break;
       }
@@ -948,7 +937,7 @@ HTS_Boolean HTS_ModelSet_load(HTS_ModelSet * ms, char **voices)
             error = TRUE;
             break;
          }
-         if (HTS_strequal(buff1, "[STREAM]") == TRUE) {
+         if (cst_streq(buff1, "[STREAM]") == TRUE) {
             break;
          } else if (HTS_match_head_string(buff1, "HTS_VOICE_VERSION:", &matched_size) == TRUE) {
          } else if (HTS_match_head_string(buff1, "SAMPLING_FREQUENCY:", &matched_size) == TRUE) {
