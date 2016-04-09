@@ -685,7 +685,6 @@ static HTS_Boolean HTS_Model_load_pdf(HTS_Model * model, HTS_File * fp, size_t v
    /* check */
    if (model == NULL || fp == NULL || model->ntree <= 0) {
       cst_errmsg("HTS_Model_load_pdf: File for pdfs is not specified.\n");
-      cst_error();
       return FALSE;
    }
 
@@ -706,7 +705,6 @@ static HTS_Boolean HTS_Model_load_pdf(HTS_Model * model, HTS_File * fp, size_t v
    for (j = 2; j <= model->ntree + 1; j++) {
       if (model->npdf[j] <= 0) {
          cst_errmsg("HTS_Model_load_pdf: # of pdfs at %d-th state should be positive.\n", j);
-	 cst_error();
          result = FALSE;
          break;
       }
