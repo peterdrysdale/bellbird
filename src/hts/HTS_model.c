@@ -615,17 +615,11 @@ static HTS_Boolean HTS_Model_load_tree(HTS_Model * model, HTS_File * fp)
    size_t state;
 
    /* check */
-   if (model == NULL) {
-      cst_errmsg("HTS_Model_load_tree: File for trees is not specified.\n");
-      return FALSE;
-   }
-
    if (fp == NULL) {
       model->ntree = 1;
       return TRUE;
    }
 
-   model->ntree = 0;
    last_question = NULL;
    last_tree = NULL;
    while (!HTS_feof(fp)) {
@@ -683,7 +677,7 @@ static HTS_Boolean HTS_Model_load_pdf(HTS_Model * model, HTS_File * fp, size_t v
    size_t len;
 
    /* check */
-   if (model == NULL || fp == NULL || model->ntree <= 0) {
+   if (model->ntree <= 0) {
       cst_errmsg("HTS_Model_load_pdf: File for pdfs is not specified.\n");
       return FALSE;
    }
