@@ -217,6 +217,10 @@ HTS_Boolean HTS_Engine_synthesize_from_strings(HTS_Engine * engine, char **lines
       HTS_Engine_refresh(engine);
       return FALSE;
    }
+
+// Free state sequence
+   HTS_SStreamSet_clear(&engine->sss);
+
 // Generate sound sample sequence
    if (HTS_GStreamSet_create(&engine->gss, &engine->pss, engine->condition.sampling_frequency,
                              engine->condition.fperiod, engine->condition.alpha,
