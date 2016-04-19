@@ -115,8 +115,10 @@ static void* cst_read_array(cst_file fd)
 
 static void** cst_read_2d_array(cst_file fd)
 {
+    int numbytes;
     int numrows;
     int i;
+    int n;
     void** arrayrows = NULL;
 
     numrows = cst_read_int(fd);
@@ -124,9 +126,29 @@ static void** cst_read_2d_array(cst_file fd)
     if (numrows > 0)
     {
         arrayrows = cst_alloc(void *,numrows);
-
-        for (i=0;i<numrows;i++)
-            arrayrows[i] = cst_read_array(fd);
+        numbytes = cst_read_int(fd);
+        arrayrows[0] = (void *) cst_alloc(char,(numrows*numbytes));
+        n = bell_fread(arrayrows[0],sizeof(char),numbytes,fd);
+        if (n != numbytes)
+        {
+            cst_errmsg("cst_read_2d_array: Unable to read in bytes from file.\n");
+            cst_error();
+        }
+        for (i=1; i<numrows ;i++) {
+            arrayrows[i] = arrayrows[i-1] + numbytes;
+            n = cst_read_int(fd);
+            if (n != numbytes)
+            {
+                cst_errmsg("cst_read_2d_array: Ragged arrays are not supported.\n");
+                cst_error();
+            }
+            n = bell_fread(arrayrows[i],sizeof(char),numbytes,fd);
+            if (n != numbytes)
+            {
+                cst_errmsg("cst_read_2d_array: Unable to read in bytes from file.\n");
+                cst_error();
+            }
+        }
     }
 
     return arrayrows; 

@@ -75,6 +75,7 @@ SET(SRC_LIBBELLBIRD
     src/cg/cst_mlpg.c
     src/cg/cst_mlsa.c
     src/cg/cst_spamf0.c
+    src/cg/bell_track.c
     src/commonsynth/HTS_misc.c
     src/commonsynth/bell_driver.c
     src/hrg/cst_ffeature.c
@@ -91,7 +92,6 @@ SET(SRC_LIBBELLBIRD
     src/lexicon/cst_lts.c
     src/regex/cst_regex.c
     src/regex/regexp.c
-    src/speech/cst_track.c
     src/speech/cst_wave.c
     src/speech/cst_wave_io.c
     src/stats/cst_cart.c

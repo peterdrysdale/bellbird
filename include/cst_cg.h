@@ -53,7 +53,7 @@
 #define _CST_CG_H__
 
 #include "cst_cart.h"
-#include "cst_track.h"
+#include "bell_track.h"
 #include "cst_voice.h"
 #include "cst_wave.h"
 
@@ -130,14 +130,17 @@ CST_VAL_USER_TYPE_DCLS(cg_db,cst_cg_db)
 void delete_cg_db(cst_cg_db *db);
 
 cst_utterance *cg_synth(cst_utterance *utt);
-cst_wave *mlsa_resynthesis(const cst_track *param_track,
-                           const cst_track *str, 
+cst_wave *mlsa_resynthesis(const bell_track *param_track,
+                           const bell_track *str,
                            cst_cg_db *cg_db);
 
 cst_voice *cst_cg_load_voice(const char *voxdir,
                              const cst_lang lang_table[]);
 
-void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db);
+void cg_mlpg(const bell_track *param_track, cst_cg_db *cg_db);
+
+// Unpack model parameters
+#define BELL_MODEL_VECTOR(N,X,Y)  \
+    (cg_db->model_min[Y]+((float)(cg_db->N[X][Y])/65535.0*cg_db->model_range[Y]))
 
 #endif
-

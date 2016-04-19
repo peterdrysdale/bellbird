@@ -63,10 +63,6 @@
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 
-/* Access model parameters, unpacking them as required */
-#define CG_MODEL_VECTOR(M,N,X,Y)                                        \
-    (M->model_min[Y]+((float)(M->N[X][Y])/65535.0*M->model_range[Y]))
-
 CST_VAL_REGISTER_TYPE(cg_db,cst_cg_db)
 
 static void cg_make_hmmstates(cst_utterance *utt);
@@ -102,15 +98,13 @@ void delete_cg_db(cst_cg_db *db)
     {
         delete_cart((cst_cart *)(void *)db->spamf0_accent_tree);
         delete_cart((cst_cart *)(void *)db->spamf0_phrase_tree);
-        for (i=0; i< db->num_frames_spamf0_accent; i++)
-            cst_free((void *)db->spamf0_accent_vectors[i]);
+        cst_free((void *)db->spamf0_accent_vectors[0]);
         cst_free((void *)db->spamf0_accent_vectors);
     }
 
     for (j=0; j<db->num_param_models; j++)
     {
-        for (i=0; i<db->num_frames[j]; i++)
-            cst_free((void *)db->model_vectors[j][i]);
+        cst_free((void *)db->model_vectors[j][0]);
         cst_free((void *)db->model_vectors[j]);
     }
     cst_free(db->num_channels);
@@ -142,8 +136,7 @@ void delete_cg_db(cst_cg_db *db)
 
     cst_free((void *)db->dynwin);
 
-    for (i=0; i<db->ME_num; i++)
-        cst_free((void *)db->me_h[i]);
+    cst_free((void *)db->me_h[0]);
     cst_free((void *)db->me_h);
 
     cst_free((void *)db);
@@ -317,7 +310,7 @@ static float catmull_rom_spline(float p,float p0,float p1,float p2,float p3)
 }
 
 static void cg_F0_interpolate_spline(cst_utterance *utt,
-                                     cst_track *param_track)
+                                     bell_track *param_track)
 {
     float start_f0, mid_f0, end_f0;
     int start_index, end_index, mid_index;
@@ -374,7 +367,7 @@ static void cg_F0_interpolate_spline(cst_utterance *utt,
 }
 
 static void cg_smooth_F0(cst_utterance *utt,cst_cg_db *cg_db,
-                         cst_track *param_track)
+                         bell_track *param_track)
 {
     /* Smooth F0 and mark unvoiced frames as 0.0 */
     cst_item *mcep;
@@ -412,8 +405,8 @@ static void cg_smooth_F0(cst_utterance *utt,cst_cg_db *cg_db,
 static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames)
 {
     cst_cg_db *cg_db;
-    cst_track *param_track;
-    cst_track *str_track = NULL;
+    bell_track *param_track;
+    bell_track *str_track = NULL;
     cst_item *mcep;
     const cst_cart *mcep_tree, *f0_tree;
     int i,j,f,p,o,pm;
@@ -428,12 +421,13 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames)
     if (cg_db->mixed_excitation)
     {
         extra_feats += 5;
-        str_track = new_track(num_frames,5);
+        str_track = new_track(num_frames,5, 0);
     }
 
     param_track = new_track(num_frames,
-                     (cg_db->num_channels[0])- (2 * extra_feats));/* no voicing or str */
-    f=0;
+                       ( (cg_db->num_channels[0] - (2 * extra_feats)) /2)-1,
+                       cg_db->num_param_models);
+
     for (i=0,mcep=UTT_REL_HEAD(utt,MCEP); mcep; i++,mcep=item_next(mcep))
     {
         mname = item_feat_string(mcep,"name");
@@ -459,29 +453,22 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames)
             {
                 mcep_tree = cg_db->param_trees[pm][p];
                 f = val_int(cart_interpret(mcep,mcep_tree));
-                /* If there is one model this will be fine, if there are */
-                /* multiple models this will be the nth model */
-                item_set_int(mcep,"clustergen_param_frame",f);
 
                 /* Old code used to average in param[0] with F0 too (???) */
 
-                for (j=2; j<param_track->num_channels; j++)
-                {
-                    if (pm == 0) param_track->frames[i][j] = 0.0;
-                    param_track->frames[i][j] +=
-                        CG_MODEL_VECTOR(cg_db,model_vectors[pm],f,(j))/
-                        (float)cg_db->num_param_models;
-                }
+                // Defer mcep copying to mlpg functions,
+                // pass indexes to voice data instead
+                param_track->idxmcep[i][pm] = f;
 
 //              mixed excitation
                 if (cg_db->mixed_excitation)
                 {
-                    o = j;
+                    o = (cg_db->num_channels[0])- (2 * extra_feats);
                     for (j=0; j<5; j++)
                     {
                         if (pm == 0) str_track->frames[i][j] = 0.0;
                         str_track->frames[i][j] +=
-                            CG_MODEL_VECTOR(cg_db,model_vectors[pm],f,
+                            BELL_MODEL_VECTOR(model_vectors[pm],f,
                                             (o+(2*j))) /
                             (float)cg_db->num_param_models;
                     }
@@ -490,7 +477,7 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames)
                 /* last coefficient is average voicing for cluster */
                 voicing /= (float)(pm+1);
                 voicing +=
-                    CG_MODEL_VECTOR(cg_db,model_vectors[pm],f,
+                    BELL_MODEL_VECTOR(model_vectors[pm],f,
                                     cg_db->num_channels[pm]-2) /
                     (float)(pm+1);
             }
@@ -504,28 +491,26 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames)
             /* Predict Spectral */
             mcep_tree = cg_db->param_trees[0][p];
             f = val_int(cart_interpret(mcep,mcep_tree));
-            item_set_int(mcep,"clustergen_param_frame",f);
 
             param_track->frames[i][0] =
                 (param_track->frames[i][0]+
-                 CG_MODEL_VECTOR(cg_db,model_vectors[0],f,0))/2.0;
-
-            for (j=2; j<param_track->num_channels; j++)
-                param_track->frames[i][j] =
-                    CG_MODEL_VECTOR(cg_db,model_vectors[0],f,(j));
+                 BELL_MODEL_VECTOR(model_vectors[0],f,0))/2.0;
+            // Defer mcep copying to mlpg functions,
+            // pass indexes to voice data instead
+            param_track->idxmcep[i][0] = f;
 
             if (cg_db->mixed_excitation)
             {
-                o = j;
+                o = (cg_db->num_channels[0])- (2 * extra_feats);
                 for (j=0; j<5; j++)
                 {
                     str_track->frames[i][j] =
-                        CG_MODEL_VECTOR(cg_db,model_vectors[0],f,(o+(2*j)));
+                        BELL_MODEL_VECTOR(model_vectors[0],f,(o+(2*j)));
                 }
             }
             /* last coefficient is average voicing for cluster */
             item_set_float(mcep,"voicing",
-                           CG_MODEL_VECTOR(cg_db,model_vectors[0],f,
+                           BELL_MODEL_VECTOR(model_vectors[0],f,
                                            cg_db->num_channels[0]-2));
         }
     }
@@ -543,8 +528,8 @@ static void cg_resynth(cst_utterance *utt)
 {
     cst_cg_db *cg_db;
     cst_wave *w;
-    cst_track *param_track;
-    cst_track *str_track = NULL;
+    bell_track *param_track;
+    bell_track *str_track = NULL;
 
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));

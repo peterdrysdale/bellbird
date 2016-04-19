@@ -51,7 +51,7 @@
 #include <math.h>
 #include "cst_alloc.h"
 #include "cst_string.h"
-#include "cst_track.h"
+#include "bell_track.h"
 #include "cst_wave.h"
 
 #include "cst_cg.h"
@@ -378,8 +378,8 @@ static void vocoder(double p, double *mc,
     return;
 }
 
-cst_wave *mlsa_resynthesis(const cst_track *param_track,
-                           const cst_track *str,
+cst_wave *mlsa_resynthesis(const bell_track *param_track,
+                           const bell_track *str,
                            cst_cg_db *cg_db)
 {
     /* Resynthesizes a wave from given track */
@@ -401,7 +401,7 @@ cst_wave *mlsa_resynthesis(const cst_track *param_track,
         framel = (int)(0.5 + (0.005 * ffs));
     }
 
-    num_mcep = ((param_track->num_channels/2)-1)/2;
+    num_mcep = param_track->num_channels/2;
 
     init_vocoder(ffs, framel, num_mcep, &vs, cg_db);
 

@@ -92,7 +92,7 @@
 #include "cst_alloc.h"
 #include "cst_cg.h"
 #include "cst_error.h"
-#include "cst_track.h"
+#include "bell_track.h"
 #include "pstream.h"
 
 #define	WLEFT 0
@@ -202,14 +202,18 @@ static void pst_free(PStream *pst)
     return;
 }
 
-void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
+void cg_mlpg(const bell_track *param_track, cst_cg_db *cg_db)
 {
 // Generate an (mcep) track using Maximum Likelihood Parameter Generation
 // Overwrite param_track with answer.
-    const int dim = (param_track->num_channels/2)-1;
+    const int dim = param_track->num_channels;
     const int dim_st = dim/2;
     int i,k,idx,idx1;
+    int f;
+    float fidx, fidxminus1, fidx1, fidx1minus1;
+    int pm;
     const int num_frames= param_track->num_frames;
+    const int num_param_models = cg_db->num_param_models;
     PStream pst;
 
     InitPStream(&pst, cg_db->dynwin, cg_db->dynwinsize, num_frames);
@@ -223,18 +227,53 @@ void cg_mlpg(const cst_track *param_track, cst_cg_db *cg_db)
         // for memory efficiency
         idx=(i+1)*2+1;
         idx1=idx+dim;
-        for (k=0; k < num_frames; k++)
-        {
-            // estimating U', U'*M
-            // PDF [U'*M U']
-            pst.ivseq[k][0] = 1.0 /(param_track->frames[k][idx] *
-                                param_track->frames[k][idx]);
-            pst.mseq[k][0] = pst.ivseq[k][0] * param_track->frames[k][idx-1];
+        if (cg_db->num_param_models > 1)
+        { // Multimodel
+            for (k=0; k < num_frames; k++)
+            {
+                fidx = 0.0;
+                fidxminus1 = 0.0;
+                fidx1 = 0.0;
+                fidx1minus1 = 0.0;
+                for (pm=0; pm < num_param_models; pm++)
+                {
+                    // Extract required mcep coefficients from voice data
+                    f = param_track->idxmcep[k][pm];
+                    fidx += BELL_MODEL_VECTOR(model_vectors[pm],f,idx) / (float) num_param_models;
+                    fidxminus1 += BELL_MODEL_VECTOR(model_vectors[pm],f,(idx-1)) / (float) num_param_models;
+                    fidx1 += BELL_MODEL_VECTOR(model_vectors[pm],f,idx1) / (float) num_param_models;
+                    fidx1minus1 += BELL_MODEL_VECTOR(model_vectors[pm],f,(idx1-1)) / (float) num_param_models;
+                }
+                // estimating U', U'*M
+                // PDF [U'*M U']
+                pst.ivseq[k][0] = 1.0 /(fidx * fidx);
+                pst.mseq[k][0] = pst.ivseq[k][0] * fidxminus1;
                                           //Latter term in product is mean
-            pst.ivseq[k][1] = 1.0 /(param_track->frames[k][idx1] *
-                                param_track->frames[k][idx1]);
-            pst.mseq[k][1] = pst.ivseq[k][1] * param_track->frames[k][idx1-1];
+                pst.ivseq[k][1] = 1.0 /(fidx1 * fidx1);
+                pst.mseq[k][1] = pst.ivseq[k][1] * fidx1minus1;
                                           //Latter term in product is mean
+            }
+        }
+        else
+        { // Single Model
+            for (k=0; k < num_frames; k++)
+            {
+                // Extract required mcep coefficients from voice data
+                f = param_track->idxmcep[k][0];
+                fidx = BELL_MODEL_VECTOR(model_vectors[0],f,idx);
+                fidxminus1 = BELL_MODEL_VECTOR(model_vectors[0],f,(idx-1));
+                fidx1 = BELL_MODEL_VECTOR(model_vectors[0],f,idx1);
+                fidx1minus1 = BELL_MODEL_VECTOR(model_vectors[0],f,(idx1-1));
+
+                // estimating U', U'*M
+                // PDF [U'*M U']
+                pst.ivseq[k][0] = 1.0 /(fidx * fidx);
+                pst.mseq[k][0] = pst.ivseq[k][0] * fidxminus1;
+                                          //Latter term in product is mean
+                pst.ivseq[k][1] = 1.0 /(fidx1 * fidx1);
+                pst.mseq[k][1] = pst.ivseq[k][1] * fidx1minus1;
+                                          //Latter term in product is mean
+            }
         }
 
         calc_R_and_r(&pst);

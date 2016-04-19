@@ -43,7 +43,7 @@
 #include <math.h>
 #include "cst_cg.h"
 #include "cst_spamf0.h"
-#include "cst_track.h"
+#include "bell_track.h"
 #include "cst_utterance.h"
 #include "cst_utt_utils.h"
 #include "bell_relation_sym.h"
