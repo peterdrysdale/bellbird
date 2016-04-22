@@ -65,10 +65,10 @@
 
 CST_VAL_REGISTER_TYPE(cg_db,cst_cg_db)
 
-static void cg_make_hmmstates(cst_utterance *utt);
-static int cg_make_params(cst_utterance *utt);
-static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames);
-static void cg_resynth(cst_utterance *utt);
+static void cg_make_hmmstates(cst_utterance *utt, cst_cg_db *cg_db);
+static int cg_make_params(cst_utterance *utt, cst_cg_db *cg_db);
+static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames, cst_cg_db *cg_db);
+static void cg_resynth(cst_utterance *utt, cst_cg_db *cg_db);
 
 void delete_cg_db(cst_cg_db *db)
 {
@@ -142,21 +142,20 @@ void delete_cg_db(cst_cg_db *db)
     cst_free((void *)db);
 }
 
-/* */
 cst_utterance *cg_synth(cst_utterance *utt)
 {
     int num_frames;
     cst_cg_db *cg_db;
     cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
 
-    cg_make_hmmstates(utt);
-    num_frames=cg_make_params(utt);
-    cg_predict_params(utt,num_frames);
+    cg_make_hmmstates(utt, cg_db);
+    num_frames=cg_make_params(utt, cg_db);
+    cg_predict_params(utt,num_frames, cg_db);
     if (cg_db->spamf0)
     {
 	cst_spamf0(utt,num_frames);
     }
-    cg_resynth(utt);
+    cg_resynth(utt, cg_db);
 
     return utt;
 }
@@ -193,16 +192,14 @@ static float cg_state_duration(cst_item *s, cst_cg_db *cg_db)
     return dur;
 }
 
-static void cg_make_hmmstates(cst_utterance *utt)
+static void cg_make_hmmstates(cst_utterance *utt, cst_cg_db *cg_db)
 {
     /* Build HMM state structure below the segment structure */
-    cst_cg_db *cg_db;
     cst_relation *hmmstate, *segstate;
     cst_item *seg, *s, *ss;
     const char *segname;
     int sp,p;
 
-    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     hmmstate = utt_relation_create(utt,HMMSTATE);
     segstate = utt_relation_create(utt,SEGSTATE);
 
@@ -220,25 +217,22 @@ static void cg_make_hmmstates(cst_utterance *utt)
             s = relation_append(hmmstate,NULL);
             item_add_daughter(ss,s);
             item_set_string(s,"name",cg_db->phone_states[p][sp]);
-            item_set_int(s,"statepos",sp);
         }
     }
 
     return;
 }
 
-static int cg_make_params(cst_utterance *utt)
+static int cg_make_params(cst_utterance *utt, cst_cg_db *cg_db)
 {
     /* puts in the frame items */
     /* historically called "mcep" but can actually be any random vectors */
-    cst_cg_db *cg_db;
     cst_relation *mcep, *mcep_link;
     cst_item *s, *mcep_parent, *mcep_frame;
     int num_frames;
     float start, end;
     float dur_stretch, tok_stretch, rdur;
 
-    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     mcep = utt_relation_create(utt,MCEP);
     mcep_link = utt_relation_create(utt,MCEP_LINK);
     end = 0.0;
@@ -402,9 +396,8 @@ static void cg_smooth_F0(cst_utterance *utt,cst_cg_db *cg_db,
     return;
 }
 
-static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames)
+static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames, cst_cg_db *cg_db)
 {
-    cst_cg_db *cg_db;
     bell_track *param_track;
     bell_track *str_track = NULL;
     cst_item *mcep;
@@ -414,8 +407,6 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames)
     float f0_val;
     float local_gain, voicing;
     int extra_feats = 0;
-
-    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
 
     extra_feats = 1;  /* voicing */
     if (cg_db->mixed_excitation)
@@ -524,14 +515,12 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames)
     return utt;
 }
 
-static void cg_resynth(cst_utterance *utt)
+static void cg_resynth(cst_utterance *utt, cst_cg_db *cg_db)
 {
-    cst_cg_db *cg_db;
     cst_wave *w;
     bell_track *param_track;
     bell_track *str_track = NULL;
 
-    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
     param_track = val_track(UTT_FEAT_VAL(utt,"param_track"));
     if (cg_db->mixed_excitation)
         str_track = val_track(UTT_FEAT_VAL(utt,"str_track"));
