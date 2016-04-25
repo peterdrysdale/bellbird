@@ -136,8 +136,11 @@ void delete_cg_db(cst_cg_db *db)
 
     cst_free((void *)db->dynwin);
 
-    cst_free((void *)db->me_h[0]);
-    cst_free((void *)db->me_h);
+    if (db->me_h)
+    {
+        cst_free((void *)db->me_h[0]);
+        cst_free((void *)db->me_h);
+    }
 
     cst_free((void *)db);
 }
