@@ -43,6 +43,7 @@
 #ifndef _CST_SPAMF0_H__
 #define _CST_SPAMF0_H__
 
-cst_utterance *cst_spamf0(cst_utterance *utt, int num_frames);
+cst_utterance *cst_spamf0(cst_utterance *utt, int num_frames,
+                          cst_cg_db *cg_db, bell_track *param_track);
 
 #endif

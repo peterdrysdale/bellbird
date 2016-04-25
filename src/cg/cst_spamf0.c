@@ -85,15 +85,13 @@ static void cst_synthtilt(const float frame_advance,
     return ;
 }
 
-cst_utterance *cst_spamf0(cst_utterance *utt, int num_frames)
+cst_utterance *cst_spamf0(cst_utterance *utt, int num_frames, cst_cg_db *cg_db, bell_track *param_track)
 {
-    float **f0_out=val_track(UTT_FEAT_VAL(utt,"param_track"))->frames;;
+    float **f0_out=param_track->frames;;
     cst_item *s;
-    cst_cg_db *cg_db;
     const cst_cart *acc_tree, *phrase_tree;
     float end,f0val,syldur,start;
     int i,f;
-    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
 
     acc_tree = cg_db->spamf0_accent_tree;
     phrase_tree = cg_db->spamf0_phrase_tree;
