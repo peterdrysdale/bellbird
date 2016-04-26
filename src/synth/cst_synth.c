@@ -116,8 +116,6 @@ cst_utterance *utt_init(cst_utterance *u, cst_voice *vox)
 {
     feat_copy_into(vox->features,u->features);
     u->ffunctions = vox->ffunctions;
-    if (vox->utt_init)
-	vox->utt_init(u, vox);
 
     return u;
 }

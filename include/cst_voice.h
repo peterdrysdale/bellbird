@@ -56,12 +56,6 @@ struct cst_voice_struct {
 
     cst_features *features;
     cst_ffunction *ffunctions; // Array for indexed access of features functions
-
-    /* This hook is called (from utt_init()) after the input text (if
-       any) has been set and voice features have been copied in, but
-       before synthesis. */
-    cst_utterance *(*utt_init)(cst_utterance *u,
-			       struct cst_voice_struct *v);
 };
 typedef struct cst_voice_struct cst_voice;
 
