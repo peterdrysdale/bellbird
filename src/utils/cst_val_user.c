@@ -53,24 +53,22 @@ const int cst_val_type_##NAME=NUM;                     \
 
 VAL_REG(utterance,7)
 VAL_REG(wave,9)
-VAL_REG(track,11)
-VAL_REG(uttfunc,13)
-VAL_REG(relation,15)
-VAL_REG(item,17)
-VAL_REG(cart,19)
-VAL_REG(phoneset,21)
-VAL_REG(lexicon,23)
-VAL_REG(userdata,25)
+VAL_REG(uttfunc,11)
+VAL_REG(relation,13)
+VAL_REG(item,15)
+VAL_REG(cart,17)
+VAL_REG(phoneset,19)
+VAL_REG(lexicon,21)
+VAL_REG(userdata,23)
 CST_VAL_REGISTER_TYPE_NODEL(userdata,cst_userdata)   // This generic type has not been defined elsewhere
-VAL_REG(itemfunc,27)
-VAL_REG(features,29)
-VAL_REG(breakfunc,31)
-VAL_REG(cg_db,33)
+VAL_REG(itemfunc,25)
+VAL_REG(features,27)
+VAL_REG(breakfunc,29)
+VAL_REG(cg_db,31)
 
 // The val takes ownership and must provide delete for these types
 void val_delete_utterance(void *v);
 void val_delete_wave(void *v);
-void val_delete_track(void *v);
 void val_delete_features(void *v);
 void val_delete_cg_db(void *v);
 void val_delete_lexicon(void *v);
@@ -84,16 +82,15 @@ const cst_val_def cst_val_defs[] = {
 /* These are indexed (type/2) at print and delete time */
     { "utterance", val_delete_utterance }, /*  7 utterance */
     { "wave", val_delete_wave },           /*  9 wave */
-    { "track", val_delete_track },         /* 11 track */
-    { "uttfunc", NULL },                   /* 13 uttfunc */
-    { "relation", NULL },                  /* 15 relation */
-    { "item", NULL },                      /* 17 item */
-    { "cart", NULL },                      /* 19 cart */
-    { "phoneset", NULL },                  /* 21 phoneset */
-    { "lexicon", val_delete_lexicon },     /* 23 lexicon */
-    { "userdata", NULL },                  /* 25 userdata */
-    { "itemfunc", NULL },                  /* 27 itemfunc */
-    { "features", val_delete_features },   /* 29 features */
-    { "breakfunc", NULL },                 /* 31 breakfunc */
-    { "cg_db", val_delete_cg_db },         /* 33 cg_db */
+    { "uttfunc", NULL },                   /* 11 uttfunc */
+    { "relation", NULL },                  /* 13 relation */
+    { "item", NULL },                      /* 15 item */
+    { "cart", NULL },                      /* 17 cart */
+    { "phoneset", NULL },                  /* 19 phoneset */
+    { "lexicon", val_delete_lexicon },     /* 21 lexicon */
+    { "userdata", NULL },                  /* 23 userdata */
+    { "itemfunc", NULL },                  /* 25 itemfunc */
+    { "features", val_delete_features },   /* 27 features */
+    { "breakfunc", NULL },                 /* 29 breakfunc */
+    { "cg_db", val_delete_cg_db },         /* 31 cg_db */
 };

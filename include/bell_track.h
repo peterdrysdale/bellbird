@@ -13,6 +13,4 @@ typedef struct  bell_track_struct {
 bell_track *new_track(int num_frames, int num_channels, int num_idx_vec);
 void delete_track(bell_track *val);
 
-CST_VAL_USER_TYPE_DCLS(track,bell_track)
-
 #endif

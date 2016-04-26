@@ -7,8 +7,6 @@
 #include "cst_val.h"
 #include "bell_track.h"
 
-CST_VAL_REGISTER_TYPE(track,bell_track)
-
 bell_track *new_track(int num_frames, int num_channels, int num_idx_vec)
 {
     int i;
