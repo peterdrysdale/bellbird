@@ -241,7 +241,6 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     cst_relation *tokrel;
     int num_tokens;
     cst_breakfunc breakfunc = default_utt_break;
-    cst_uttfunc utt_user_callback = 0;
     float durs = 0.0;
     cst_item *t;
     cst_voice *current_voice; 
@@ -256,9 +255,6 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
 
     if (feat_present(voice->features,"utt_break"))
 	breakfunc = val_breakfunc(feat_val(voice->features,"utt_break"));
-
-    if (feat_present(voice->features,"utt_user_callback"))
-	utt_user_callback = val_uttfunc(feat_val(voice->features,"utt_user_callback"));
 
     /* If its a file to write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
@@ -320,9 +316,6 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
              breakfunc(ts,token,tokrel)))
         {
             /* An end of utt, so synthesize it */
-            if (utt_user_callback)
-                utt = (utt_user_callback)(utt);
-            
             if (utt)
             {
                 utt = flite_do_synth(utt,current_voice,utt_synth_tokens);
@@ -351,8 +344,6 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             /* Have to stream it if there is streaming */
             if (utt) delete_utterance(utt);
             utt = utt_synth_wave(wave,current_voice);
-            if (utt_user_callback)
-                utt = (utt_user_callback)(utt);
             durs += flite_process_output(utt,outtype,TRUE);
             delete_utterance(utt);
 

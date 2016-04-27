@@ -467,7 +467,14 @@ int main(int argc, char **argv)
 
     if (voice_type==HTSMODE)
     {
-       bell_file_to_speech(&engine, texttoread, voice, outtype, voice_type);
+       if ((strchr(texttoread,' ') && !explicit_filename) || explicit_text)
+       {
+           bell_text_to_speech(&engine,texttoread,voice,outtype);
+       }
+       else
+       {
+           bell_file_to_speech(&engine, texttoread, voice, outtype, voice_type);
+       }
     }
     else if (voice_type==CLUSTERGENMODE)
     {
@@ -478,7 +485,7 @@ int main(int argc, char **argv)
            if (ssml_mode)
                durs = flite_ssml_text_to_speech(texttoread,voice,outtype);
            else
-               durs = flite_text_to_speech(texttoread,voice,outtype);
+               durs = bell_text_to_speech(NULL,texttoread,voice,outtype);
        }
        else
        {

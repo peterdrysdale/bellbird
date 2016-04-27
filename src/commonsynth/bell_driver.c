@@ -238,35 +238,8 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    cst_free(endtone);
 }
 
-float bell_file_to_speech(HTS_Engine * engine,
-                           const char *filename, cst_voice *voice,
-                           const char *outtype, const int voice_type)
-{
-    cst_tokenstream *ts;
-
-    if ((ts = ts_open(filename,
-         get_param_string(voice->features,
-                          "text_whitespace",
-                          cst_ts_default_whitespacesymbols),
-         get_param_string(voice->features,"text_singlecharsymbols",""),
-         get_param_string(voice->features,"text_prepunctuation",""),
-         get_param_string(voice->features,"text_postpunctuation","")))
-        == NULL)
-    {
-        cst_errmsg("Failed to open file \"%s\" for reading\n",filename);
-        return -1.0;
-    }
-    if (voice_type == HTSMODE){
-       return bell_hts_ts_to_speech(engine,ts,voice,outtype);
-    }
-    else       // must be CLUSTERGENMODE
-    {
-       return flite_ts_to_speech(ts,voice,outtype);
-    }
-}
-
-float bell_hts_ts_to_speech(HTS_Engine * engine,
-                         cst_tokenstream *ts, cst_voice *voice, const char *outtype)
+static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
+                            cst_voice *voice, const char *outtype)
 {
     int i;
     cst_utterance *utt;
@@ -280,7 +253,6 @@ float bell_hts_ts_to_speech(HTS_Engine * engine,
     int num_tokens;
     cst_wave *w;
     cst_breakfunc breakfunc = default_utt_break;
-    cst_uttfunc utt_user_callback = 0;
     int fp;
 
     fp = get_param_int(voice->features,"file_start_position",0);
@@ -288,9 +260,6 @@ float bell_hts_ts_to_speech(HTS_Engine * engine,
         ts_set_stream_pos(ts,fp);
     if (feat_present(voice->features,"utt_break"))
         breakfunc = val_breakfunc(feat_val(voice->features,"utt_break"));
-
-    if (feat_present(voice->features,"utt_user_callback"))
-        utt_user_callback = val_uttfunc(feat_val(voice->features,"utt_user_callback"));
 
     /* If its a file we write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */
@@ -300,12 +269,19 @@ float bell_hts_ts_to_speech(HTS_Engine * engine,
     {
         w = new_wave();
         cst_wave_resize(w,0,1);
-        if (HTS_Engine_get_sampling_frequency(engine) > INT_MAX)
-        {
-            cst_errmsg("HTS sample rate appears unusually high");
-            cst_error();
+        if (engine != NULL)
+        {  // Is HTS voice type
+            if (HTS_Engine_get_sampling_frequency(engine) > INT_MAX)
+            {
+                cst_errmsg("HTS sample rate appears unusually high");
+                cst_error();
+            }
+            CST_WAVE_SET_SAMPLE_RATE(w,(int)HTS_Engine_get_sampling_frequency(engine));
         }
-        CST_WAVE_SET_SAMPLE_RATE(w,(int)HTS_Engine_get_sampling_frequency(engine));
+        else
+        {  // Is cg voice type
+            CST_WAVE_SET_SAMPLE_RATE(w,16000);
+        }
         cst_wave_save_riff(w,outtype);  /* an empty wave */
         delete_wave(w);
     }
@@ -322,9 +298,6 @@ float bell_hts_ts_to_speech(HTS_Engine * engine,
              breakfunc(ts,token,tokrel)))
         {
             /* An end of utt, so synthesize it */
-            if (utt_user_callback)
-                utt = (utt_user_callback)(utt);
-
             if (utt)
             {
                 utt = flite_do_synth(utt,voice,utt_synth_tokens);
@@ -333,28 +306,32 @@ float bell_hts_ts_to_speech(HTS_Engine * engine,
                     delete_utterance(utt); utt = NULL;
                     break;
                 }
-   /* hts specific code follows */
-                if (utt == NULL){
-                    delete_utterance(utt); utt = NULL;
-                    break;
+                if (engine != NULL)
+                { // HTS specific code
+                    if (utt == NULL)
+                    {
+                        delete_utterance(utt); utt = NULL;
+                        break;
+                    }
+                    for (s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s))
+                        label_size++;
+                    if (label_size <= 0) return FALSE;
+                    label_data = cst_alloc(char *,label_size);
+                    for (i = 0, s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s), i++)
+                    {
+                        label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
+                        Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
+                    }
+                    HTS_Engine_synthesize_from_strings(engine, label_data, label_size);
+                    bell_hts_get_wave(engine,utt);
+                    HTS_Engine_refresh(engine);
+                    for (i = 0; i < label_size; i++)
+                    {
+                        cst_free(label_data[i]);
+                    }
+                    cst_free(label_data);
+                    label_size=0;
                 }
-                for (s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s))
-                    label_size++;
-                if (label_size <= 0) return FALSE;
-                label_data = cst_alloc(char *,label_size);
-                for (i = 0, s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s), i++) {
-                    label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
-                    Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
-                }
-                HTS_Engine_synthesize_from_strings(engine, label_data, label_size);
-                bell_hts_get_wave(engine,utt);
-                HTS_Engine_refresh(engine);
-                for (i = 0; i < label_size; i++){
-                    cst_free(label_data[i]);
-                }
-                cst_free(label_data);
-                label_size=0;
-   /* hts specific code ends here */
                 durs += flite_process_output(utt,outtype,TRUE);
                 delete_utterance(utt); utt = NULL;
             }
@@ -386,6 +363,80 @@ float bell_hts_ts_to_speech(HTS_Engine * engine,
     delete_utterance(utt);
     ts_close(ts);
     return durs;
+}
+
+float bell_file_to_speech(HTS_Engine * engine,
+                           const char *filename, cst_voice *voice,
+                           const char *outtype, const int voice_type)
+{
+    cst_tokenstream *ts;
+
+    if ((ts = ts_open(filename,
+         get_param_string(voice->features,
+                          "text_whitespace",
+                          cst_ts_default_whitespacesymbols),
+         get_param_string(voice->features,"text_singlecharsymbols",""),
+         get_param_string(voice->features,"text_prepunctuation",""),
+         get_param_string(voice->features,"text_postpunctuation","")))
+        == NULL)
+    {
+        cst_errmsg("Failed to open file \"%s\" for reading\n",filename);
+        return -1.0;
+    }
+    if (voice_type == HTSMODE){
+       return bell_ts_to_speech(engine,ts,voice,outtype);
+    }
+    else       // must be CLUSTERGENMODE
+    {
+       return bell_ts_to_speech(NULL,ts,voice,outtype);
+    }
+}
+
+float bell_text_to_speech(HTS_Engine * engine, const char *text,
+                          cst_voice *voice, const char *outtype)
+{
+    cst_utterance *utt;
+    float dur;
+    int i;
+    cst_item *s = NULL;
+    char **label_data = NULL;
+    int label_size = 0;
+
+    utt = new_utterance();
+    utt_set_input_text(utt,text);
+    utt = flite_do_synth(utt, voice, utt_synth);
+    if (engine != NULL)
+    { // HTS specific code
+        if (utt == NULL)
+        {
+            delete_utterance(utt); utt = NULL;
+        }
+        else
+        {
+            for (s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s))
+                label_size++;
+            if (label_size <= 0) return FALSE;
+            label_data = cst_alloc(char *,label_size);
+            for (i = 0, s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s), i++)
+            {
+                label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
+                Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
+            }
+            HTS_Engine_synthesize_from_strings(engine, label_data, label_size);
+            bell_hts_get_wave(engine,utt);
+            HTS_Engine_refresh(engine);
+            for (i = 0; i < label_size; i++)
+            {
+                cst_free(label_data[i]);
+            }
+            cst_free(label_data);
+            label_size=0;
+        }
+    }
+    dur = flite_process_output(utt,outtype,FALSE);
+    delete_utterance(utt);
+
+    return dur;
 }
 
 static cst_voice *register_hts_voice(const cst_lang *lang_list)

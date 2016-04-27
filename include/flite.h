@@ -46,10 +46,6 @@
 #ifndef _FLITE_H__
 #define _FLITE_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include "cst_features.h"
 #include "cst_item.h"
 #include "cst_lexicon.h"
@@ -64,16 +60,12 @@ extern cst_lang flite_lang_list[20];
 /* Public functions */
 
 /* General top level functions */
-float flite_text_to_speech(const char *text, cst_voice *voice,
-			   const char *outtype);
 float flite_ssml_file_to_speech(const char *filename, cst_voice *voice,
                                 const char *outtype);
 float flite_ssml_text_to_speech(const char *text, cst_voice *voice,
                                 const char *outtype);
 
 /* Lower level user functions */
-float flite_ts_to_speech(cst_tokenstream *ts, cst_voice *voice,
-                         const char *outtype);
 cst_utterance *flite_do_synth(cst_utterance *u, cst_voice *voice,
                               cst_uttfunc synth);
 float flite_process_output(cst_utterance *u, const char *outtype,
@@ -83,9 +75,5 @@ float flite_process_output(cst_utterance *u, const char *outtype,
 /* before the initial synthesis occurs */
 int flite_add_lang(const char *langname, void (*lang_init)(cst_voice *vox),
                    cst_lexicon *(*lex_init)());
-
-#ifdef __cplusplus
-}  /* extern "C" */
-#endif /* __cplusplus */
 
 #endif
