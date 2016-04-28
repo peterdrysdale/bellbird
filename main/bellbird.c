@@ -117,13 +117,14 @@ static void bellbird_usage()
 {
     printf("bellbird: a speech synthesizer\n");
     bellbird_version();
-    printf("usage: bellbird [options ] [-f infile] [ -o outfile]\n"
+    printf("usage: bellbird [options ] [-f infile | -t textstring] [ -o outfile]\n"
           "  Converts text in infile to a synthesized speech in wav format in outfile.\n"
           "  Other options must appear before these options\n"
           "  --version              Output bellbird version number\n"
           "  --help                 Output usage string\n"
           "  -o outfile             Explicitly set output wav audio filename\n"
           "  -f infile              Explicitly set input filename\n"
+          "  -t TEXT                Explicitly set input textstring\n"
           "  --voice VOICEFILE      Use voice clustergen voice at VOICEFILE \n"
           "  --htsvoice VOICEFILE   Use voice hts voice at VOICEFILE \n"
           "  --add_dict FILENAME    Add dictionary addenda from FILENAME\n"
@@ -135,7 +136,6 @@ static void bellbird_usage()
           "  --sets F=V     Set string feature\n"
           " Clustergen specific options:\n"
           "  -ssml          Read input text/file in ssml mode\n"
-          "  -t TEXT        Explicitly set input textstring\n"
           " HTS specific options:                                   [  def][ min--max]\n"
           "  -b  f           postfiltering coefficient              [  0.0][-0.8--0.8]\n"
           "  -r  f           speech speed rate                      [  1.0][ 0.0--   ]\n"
