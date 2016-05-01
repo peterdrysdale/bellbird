@@ -139,22 +139,6 @@ HTS_File *HTS_fopen_from_fp(HTS_File * fp, size_t size)
       f->type = HTS_DATA;
       f->pointer = (void *) d;
       return f;
-   } else if (fp->type == HTS_DATA) {
-      HTS_File *f;
-      HTS_Data *tmp1, *tmp2;
-      tmp1 = (HTS_Data *) fp->pointer;
-      if (tmp1->index + size > tmp1->size)
-         return NULL;
-      tmp2 = cst_alloc(HTS_Data,1);
-      tmp2->data = cst_alloc(unsigned char,size);
-      tmp2->size = size;
-      tmp2->index = 0;
-      memcpy(tmp2->data, &tmp1->data[tmp1->index], size);
-      tmp1->index += size;
-      f = cst_alloc(HTS_File,1);
-      f->type = HTS_DATA;
-      f->pointer = (void *) tmp2;
-      return f;
    }
 
    cst_errmsg("HTS_fopen_from_fp: Unknown file type.\n");
@@ -229,18 +213,6 @@ int HTS_fseek(HTS_File * fp, long offset, int origin)
       return 1;
    } else if (fp->type == HTS_FILE) {
       return fseek((FILE *) fp->pointer, offset, origin);
-   } else if (fp->type == HTS_DATA) {
-      HTS_Data *d = (HTS_Data *) fp->pointer;
-      if (origin == SEEK_SET) {
-         d->index = (size_t) offset;
-      } else if (origin == SEEK_CUR) {
-         d->index += offset;
-      } else if (origin == SEEK_END) {
-         d->index = d->size + offset;
-      } else {
-         return 1;
-      }
-      return 0;
    }
    cst_errmsg("HTS_fseek: Unknown file type.\n");
    return 1;
@@ -264,29 +236,21 @@ size_t HTS_ftell(HTS_File * fp)
    return 0;
 }
 
-/* HTS_fread: wrapper for fread */
-static size_t HTS_fread(void *buf, size_t size, size_t n, HTS_File * fp)
+static size_t bell_buff_read(void *buf, size_t size, size_t n, HTS_File * fp)
 {
-   if (fp == NULL || size == 0 || n == 0) {
-      return 0;
-   } else if (fp->type == HTS_FILE) {
-      return fread(buf, size, n, (FILE *) fp->pointer);
-   } else if (fp->type == HTS_DATA) {
+// read from buffer
+   if (fp->type == HTS_DATA) {
       HTS_Data *d = (HTS_Data *) fp->pointer;
-      size_t i, length = size * n;
-      unsigned char *c = (unsigned char *) buf;
-      for (i = 0; i < length; i++) {
-         if (d->index < d->size)
-            c[i] = d->data[d->index++];
-         else
-            break;
-      }
-      if (i == 0)
+      size_t length = size * n;
+      if (d->index + length > d->size) return 0;
+      memcpy(buf, &d->data[d->index], length);
+      d->index += length;
+      if (length == 0)
          return 0;
       else
-         return i / size;
+         return length / size;
    }
-   cst_errmsg("HTS_fread: Unknown file type.\n");
+   cst_errmsg("bell_buff_read: Unknown file type.\n");
    return 0;
 }
 
@@ -313,7 +277,7 @@ static void HTS_byte_swap(void *p, size_t size, size_t block)
 /* HTS_fread_little_endian: fread with byteswap */
 size_t HTS_fread_little_endian(void *buf, size_t size, size_t n, HTS_File * fp)
 {
-   size_t block = HTS_fread(buf, size, n, fp);
+   size_t block = bell_buff_read(buf, size, n, fp);
 
 #ifdef WORDS_BIGENDIAN
    HTS_byte_swap(buf, size, block);
