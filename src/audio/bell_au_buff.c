@@ -11,7 +11,7 @@
 #ifdef CST_AUDIO_ALSA
 
 #include <sys/select.h>// for select()
-#include <sys/types.h> // for pid_t,WNOHANG
+#include <sys/types.h> // for pid_t
 #include <sys/wait.h>  // for waitpid()
 #include <unistd.h>    // for fork(),pipe()
 #include <time.h>      // for nanosleep()
@@ -19,6 +19,7 @@
 #include "cst_alloc.h"
 #include "cst_error.h"
 #include "bell_audio.h"
+#include "native_audio.h"
 #include "cst_string.h"
 
 // A queue is implemented holding cst_wave objects awaiting
@@ -112,6 +113,18 @@ static bell_q_elmt *bell_dequeue(bell_queue *queue)
     (queue->length)--;
     
     return retval;
+}
+
+static const cst_wave *bell_observe_queue_front(bell_queue *queue)
+{
+//  Observe the next cst_wave in play out queue.
+//  This cst_wave should be used in read only mode, it should
+//  not be modified. Ownership is not taken by the caller.
+    if (NULL == queue || NULL == queue->front)
+    {
+        return NULL;
+    }
+    return queue->front->content;
 }
 
 static void free_bell_queue(bell_queue *queue)
@@ -221,84 +234,110 @@ static int deserialize_wave(cst_wave *w,int fd)
     return rv;
 }
 
-static pid_t send_wave(bell_q_elmt *elmt,bell_queue *queue)
+static bell_queue *check_new_wave(bell_queue *q, int *p_stopreading, int *fd)
 {
-//  Start a process for playing a cst_wave
-    pid_t pid; //PID for play_wave output
+// Check if main thread is waiting to send the next cst_wave
+// to audio scheduler and if so add it to the queue for play out
+    fd_set rfds;             // file descriptor set for select()
+    char readbuffer[2];      // Holds command from main process to audio
+                             // scheduler
+    struct timeval  selecttime;
+    size_t readnum;
+    cst_wave *w;
 
-    pid=fork();
-    if (0 == pid)
+    if (FALSE == *p_stopreading && (BELL_QUEUE_LEN(q) < BELL_MAX_QUEUE_LEN) )
     {
-//  This is the child audio playing process
-        play_wave(elmt->content);
-        free_q_elmt(elmt);
-//  clean up queue in child since child processes is exiting here
-        free_bell_queue(queue);
-        _exit(0);
+        FD_ZERO(&rfds);
+        FD_SET(fd[0],&rfds);
+        selecttime.tv_sec = 0;
+        selecttime.tv_usec = 0;
+        if (select(fd[0]+1, &rfds, NULL, NULL, &selecttime) > 0)
+        {  // Only read if data is available from main process
+            readnum = read(fd[0],readbuffer,2);
+            if ((readnum == 2) &&
+                (cst_streq("W",readbuffer))) // About to receive a cst_wave
+            {
+                w=new_wave();
+                if (deserialize_wave(w,fd[0]) != BELL_IO_ERROR)
+                {
+                    q=bell_enqueue(w,q);
+                }
+            }
+            if ((readnum == 2) &&
+                (cst_streq("E",readbuffer))) // No more cst_wave to receive
+            {
+                *p_stopreading=TRUE;
+            }
+        }
     }
-    else if (pid > 0)
-    {
-//  This is the parent process
-        ;
-    }
-    else
-    {
-        cst_errmsg("send_wave: failed to fork audio play process");
-        return -1;
-    }
-
-    return pid;
+    return q;
 }
 
-static pid_t audio_dispatch(pid_t audio_play_pid, bell_queue *q)
+static cst_audiodev *audio_dispatch(bell_queue **p_q, cst_audiodev *ad,
+                                    int *p_stopreading, int *fd)
 {
-//  Send cst_wave for playing if nothing is currently playing
-//  Return PID for currently audio process currently playing
-    int status;
+//  Send cst_wave for playing in two halves
+//  Between halves check for new cst_wave becoming available
+//  Return audio device pointer for currently currently playing audio
     bell_q_elmt *elmt;
+    const cst_wave *w;
+    struct timespec sleepdelay;
+    int first_samples;
 
-    if ( (waitpid(audio_play_pid,&status,WNOHANG) != 0) &&
-         ((elmt=bell_dequeue(q)) != NULL) )
-// first subcondition of if statement checks if audio has finished playing
-// second subcondition checks if more audio is available in the queue to play
+    if ( (w = bell_observe_queue_front(*p_q)) != NULL )
+// condition checks if more audio is available in the queue to play
     {
-        audio_play_pid=send_wave(elmt,q);
-        if (-1 == audio_play_pid)
-        {
-            // On fork() error re-queue wave and try again on next iteration
-            // Ignore return value since we already have a valid queue
-            // as we have dequeued from it just above
-            bell_enqueue(elmt->content,q);
-            cst_free(elmt);  // Free queue element structure but not cst_wave
-                             // since we have requeued the cst_wave
+        if (NULL == ad)
+        { // Open audio device if it has not been opened already
+            if ((ad = audio_open_alsa(w->sample_rate, w->num_channels)) == NULL)
+            {
+                cst_errmsg("audio_dispatch: failed to open audio device.\n");
+                _exit(1);
+            }
+        }
+
+        first_samples = w->num_samples/2;
+        // Write first half of audio data
+        if (audio_write_alsa(ad,&w->samples[0],first_samples) <= 0)
+        {   // On error try to write whole cst_wave in second half write
+            first_samples = 0;
+        }
+        // Check for new data available for audio scheduler
+        *p_q = check_new_wave(*p_q, p_stopreading, fd);
+        // Write second half of audio data
+        if (audio_write_alsa(ad,
+                             &w->samples[0]+first_samples,
+                             w->num_samples-first_samples)
+            <= 0)
+        {   // On error try again on next iteration
+            ;
         }
         else
-        {
+        {   // On success dequeue the element which has been successfully
+            // played and free it.
+            elmt = bell_dequeue(*p_q);
             free_q_elmt(elmt);
         }
     }
-    return audio_play_pid;
+    else
+    {
+        // sleep while waiting on input for queue
+        sleepdelay.tv_sec=0;
+        sleepdelay.tv_nsec=10000000;  // 10ms delay
+        nanosleep(&sleepdelay,NULL);
+    }
+    return ad;
 }
 
 int audio_scheduler()
 {
 //  Start an audio scheduler process
     int fd[2];               //Pipe for audio_scheduler
-    fd_set rfds;             //file descriptor set for select()
     int retval = -1;         //file descriptor for pipe to scheduler
     pid_t pid;               //PID for audio_scheduler
-    pid_t audio_play_pid=-1; //PID for current audio playing process
-    int status;
     bell_queue *q=NULL;
-    char readbuffer[2];
-    size_t readnum;
     int stopreading = FALSE;
-    struct timespec sleepdelay;
-    struct timeval  selecttime;
-    cst_wave *w;
-
-    sleepdelay.tv_sec=0;
-    sleepdelay.tv_nsec=100000000; // 100ms delay
+    cst_audiodev *ad = NULL;
 
     if (pipe(fd) != 0)
     {
@@ -310,37 +349,16 @@ int audio_scheduler()
 //  This is the child audio scheduler process
         while(FALSE == stopreading || (TRUE == stopreading && BELL_QUEUE_LEN(q)>0 ) )
         {
-            if (FALSE == stopreading && (BELL_QUEUE_LEN(q) < BELL_MAX_QUEUE_LEN) )
-            {
-                FD_ZERO(&rfds);
-                FD_SET(fd[0],&rfds);
-                selecttime.tv_sec = 0;
-                selecttime.tv_usec = 0;
-                if (select(fd[0]+1, &rfds, NULL, NULL, &selecttime) > 0)
-                {  // Only read if data is available from main process
-                    readnum = read(fd[0],readbuffer,2);
-                    if ((readnum == 2) &&
-                        (cst_streq("W",readbuffer))) // About to receive a cst_wave
-                    {
-                        w=new_wave();
-                        if (deserialize_wave(w,fd[0]) != BELL_IO_ERROR)
-                        {
-                           q=bell_enqueue(w,q);
-                        }
-                    }
-                    if (cst_streq("E",readbuffer)) // No more cst_wave to receive
-                    {
-                        stopreading=TRUE;
-                    }
-                }
-            }
-            audio_play_pid=audio_dispatch(audio_play_pid,q);
-            nanosleep(&sleepdelay,NULL); // sleep while waiting on input or output
+            q = check_new_wave(q, &stopreading, fd);
+            ad = audio_dispatch(&q, ad, &stopreading, fd);
         }
-
+        // Audio scheduler has been commanded to end -
+        // Clean up and drain last sound. Then exit.
         free_bell_queue(q);
-        waitpid(audio_play_pid,&status,0); // Wait for child audio play process
-                                           // to exit
+        if (audio_close_alsa(ad) < 0)
+        {
+            cst_errmsg("audio scheduler: failed to close audio device.\n");
+        }
         _exit(0);
     }
     else if (pid > 0)
