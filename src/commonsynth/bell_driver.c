@@ -430,7 +430,6 @@ float bell_text_to_speech(HTS_Engine * engine, const char *text,
                 cst_free(label_data[i]);
             }
             cst_free(label_data);
-            label_size=0;
         }
     }
     dur = flite_process_output(utt,outtype,FALSE);
