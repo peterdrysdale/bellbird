@@ -1,0 +1,63 @@
+.\" ManPage for bellbird
+.\" Contact https://github.com/peterdrysdale/bellbird
+.TH man 1 "28 April 2016" "0.1.7-unstable" "bellbird man page"
+.SH NAME
+bellbird \- a text to speech utility
+.SH SYNOPSIS
+bellbird [options ] [-f infile | -t "textstring" ] [ -o outfile]
+.SH DESCRIPTION
+The bellbird program is a text to speech (TTS) utility which converts UTF-8 text files to
+speech. The speech data may be sent to the sound system, saved as a WAV file or passed for further
+processing/encoding via output redirection. Bellbird supports clustergen and HTS voice files for
+the conversion process.
+.SH OPTIONS
+.IP --version
+Output version number.
+.IP --help
+Output usage string.
+.IP "-o outfile"
+Explicitly set output wav audio filename. Special cases of the filename are: "-" which
+sends to stdout, \%"play" which sends to audio device, \%"none" which discards for benchmarking and
+\%"bufferedplay" which sends to audio device via a buffer to reduce pauses between utterances.
+.IP "-f infile"
+Explicitly set input filename. Special case is "-" which reads from stdin.
+.IP "-t textstring"
+Explicitly set input to a quoted text string.
+.IP "--voice VOICEFILE"
+Use clustergen voice at VOICEFILE for tts.
+.IP "--htsvoice VOICEFILE"
+Use HTS voice at VOICEFILE for tts.
+.IP "--add_dict filename"
+Add dictionary addenda from filename. Format for addenda may be found in
+bellbird documentation file "dictionary.md".
+.IP "--startpos n"
+Read input file from byte n (int), skipping first \%(n-1) bytes.
+.IP --printphones
+Print phones to stdout while generating speech. This option conflicts with stdout redirection of speech data.
+.IP --printtext
+Print text to stdout while generating speech. This option conflicts with stdout redirection of speech data.
+.IP "--seti F=V"
+Set feature F to integer value V.
+.IP "--setf F=V"
+Set feature F to float value V.
+.IP "--sets F=V"
+Set feature F to string value V.
+.IP --ssml
+Clustergen specific option to read input text/file in ssml mode.
+.IP "-b F"
+HTS specific option to set postfiltering coefficient.
+.IP "-r F"
+HTS specific option to set speech speed rate.
+.IP "-fm F"
+HTS specific option to add (or subtract) F semitones to speech pitch.
+.IP "-u F"
+HTS specific option to alter voiced/unvoiced threshold.
+.IP "-jm F"
+HTS specific option to alter global variance weight for spectrum.
+.IP "-jf F"
+HTS specific option to alter global variance weight for logarithm of F0.
+.SH BUGS
+Bugs should be reported to the bellbird issue tracker at https://github.com/peterdrysdale/bellbird.
+.SH AUTHOR
+The contributors to Bellbird (https://github.com/peterdrysdale/bellbird)
+
