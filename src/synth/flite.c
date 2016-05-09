@@ -43,13 +43,10 @@
 /*  Basic user level functions                                           */
 /*                                                                       */
 /*************************************************************************/
-#include "cst_alloc.h"
-#include "cst_error.h"
 #include "cst_synth.h"
 #include "cst_utt_utils.h"
 #include "flite.h"
 #include "bell_audio.h"
-#include "bell_relation_sym.h"
 
 /* This is a global, which isn't ideal, this may change */
 cst_lang flite_lang_list[20];
