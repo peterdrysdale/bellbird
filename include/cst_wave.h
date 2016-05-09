@@ -76,7 +76,6 @@ int cst_wave_append_riff(cst_wave *w,const char *filename);
 
 int cst_wave_save_riff_fd(cst_wave *w, cst_file fd);
 
-int cst_wave_load(cst_wave *w, const char *filename, const char *type);
 int cst_wave_load_riff(cst_wave *w, const char *filename);
 
 int cst_wave_load_riff_fd(cst_wave *w, cst_file fd);
