@@ -250,8 +250,6 @@ int main(int argc, char **argv)
     const char *outtype = "play";   /* default is to play */
     char *fn_voice = NULL;
     int i;
-    float durs;
-    int debug_durs = 0;
     int voice_type=CLUSTERGENMODE; /* default is clustergen voice */
     int explicit_filename, explicit_text;
     int ssml_mode = FALSE;         /* default to non-SSML reading */
@@ -478,25 +476,20 @@ int main(int argc, char **argv)
     }
     else if (voice_type==CLUSTERGENMODE)
     {
-       durs = 0.0;
-
        if ((strchr(texttoread,' ') && !explicit_filename) || explicit_text)
        {
            if (ssml_mode)
-               durs = flite_ssml_text_to_speech(texttoread,voice,outtype);
+               flite_ssml_text_to_speech(texttoread,voice,outtype);
            else
-               durs = bell_text_to_speech(NULL,texttoread,voice,outtype);
+               bell_text_to_speech(NULL,texttoread,voice,outtype);
        }
        else
        {
            if (ssml_mode)
-               durs = flite_ssml_file_to_speech(texttoread,voice,outtype);
+               flite_ssml_file_to_speech(texttoread,voice,outtype);
            else
-               durs = bell_file_to_speech(&engine,texttoread,voice,outtype,voice_type);
+               bell_file_to_speech(&engine,texttoread,voice,outtype,voice_type);
        }
-
-       if (debug_durs && (durs != 0.0)) printf("Durs was %f at end of run",durs);
-
     } /* end of voice_type==CLUSTERGENMODE */
 
 #ifdef CST_AUDIO_ALSA
