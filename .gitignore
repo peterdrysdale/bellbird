@@ -15,3 +15,12 @@ m4/
 config.guess
 config.sub
 configure
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+bellbird
+compile_regexes
+liblibbellbird.a
+liblibbellbird_cmulex.a
+liblibbellbird_usenglish.a
