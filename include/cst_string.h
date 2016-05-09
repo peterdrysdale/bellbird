@@ -54,11 +54,8 @@ typedef char cst_string;
 double cst_atof(const char *str);
 
 cst_string *cst_strdup(const cst_string *s);
-#define cst_strstr(h,n) \
-     ((cst_string *)strstr((const char *)h,(const char *)n))
 #define cst_strlen(s) (strlen((const char *)s))
 #define cst_streq(A,B) (strcmp(A,B) == 0)
-#define cst_streqn(A,B,N) (strncmp(A,B,N) == 0)
 int cst_member_string(const char *str, const char * const *slist);
 char *cst_substr(const char *str,int start, int length);
 
