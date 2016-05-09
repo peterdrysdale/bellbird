@@ -294,7 +294,7 @@ static void cg_F0_interpolate_spline(cst_utterance *utt,
     int i;
     float m;
 
-    start_f0 = mid_f0 = end_f0 = -1.0;
+    mid_f0 = end_f0 = -1.0;
 
     for (syl=UTT_REL_HEAD(utt,SYLLABLE); syl; syl=item_next(syl))
     {

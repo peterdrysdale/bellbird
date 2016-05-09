@@ -95,7 +95,6 @@ cst_utterance *cst_spamf0(cst_utterance *utt, int num_frames, cst_cg_db *cg_db, 
 
     acc_tree = cg_db->spamf0_accent_tree;
     phrase_tree = cg_db->spamf0_phrase_tree;
-    end = 0.0;
     i = 0;
     for (s = UTT_REL_HEAD(utt,SEGMENT); s; s=item_next(s))
     {
