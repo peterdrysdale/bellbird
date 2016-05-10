@@ -83,7 +83,6 @@
 #define DEF_CONST_VAL_STRING(N,S) const cst_val N = {{.a={.type=CST_VAL_TYPE_STRING,.ref_count=-1,.v={.vval= (void *)S}}}}
 #define DEF_CONST_VAL_FLOAT(N,F) const cst_val N = {{.a={.type=CST_VAL_TYPE_FLOAT,.ref_count=-1,.v={.fval=F}}}}
 
-#define DEF_STATIC_CONST_VAL_INT(N,V) static DEF_CONST_VAL_INT(N,V)
 #define DEF_STATIC_CONST_VAL_STRING(N,S) static DEF_CONST_VAL_STRING(N,S)
 #define DEF_STATIC_CONST_VAL_FLOAT(N,F) static DEF_CONST_VAL_FLOAT(N,F)
 
