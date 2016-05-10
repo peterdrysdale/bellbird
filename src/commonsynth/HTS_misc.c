@@ -72,7 +72,6 @@ HTS_MISC_C_START;
 /* check variance in finv() */
 #define INFTY   ((double) 1.0e+38)
 #define INFTY2  ((double) 1.0e+19)
-#define INVINF  ((double) 1.0e-38)
 #define INVINF2 ((double) 1.0e-19)
 
 #define HTS_FILE  0
