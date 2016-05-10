@@ -15,17 +15,6 @@ static const cst_regex ordinal_number_rx = {
 };
 const cst_regex * const ordinal_number = &ordinal_number_rx;
 
-static const unsigned char hasvowel_rxprog[] = {
-   156, 6, 0, 35, 1, 0, 3, 10, 0, 6, 3, 0, 0, 4, 0, 14, 
-   97, 101, 105, 111, 117, 65, 69, 73, 79, 85, 0, 10, 0, 6, 3, 0, 
-   0, 2, 0, 3, 0, 0, 0, 
-};
-static const cst_regex hasvowel_rx = {
-   0, 1, NULL, 0, 39,
-   (char *)hasvowel_rxprog
-};
-const cst_regex * const hasvowel = &hasvowel_rx;
-
 static const unsigned char usmoney_rxprog[] = {
    156, 6, 0, 72, 1, 0, 3, 8, 0, 5, 36, 0, 11, 0, 18, 4, 
    0, 0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 44, 0, 6, 0, 
