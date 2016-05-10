@@ -305,7 +305,7 @@ static cst_utterance *default_pause_insertion(cst_utterance *u)
     return u;
 }
 
-cst_utterance *cart_intonation(cst_utterance *u)
+static cst_utterance *cart_intonation(cst_utterance *u)
 {
     cst_cart *accents, *tones;
     cst_item *s;

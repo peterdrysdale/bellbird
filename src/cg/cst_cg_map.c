@@ -262,7 +262,7 @@ static char* replacefeat(const char * feat, const char* old, const char* new)
     return retstring;
 }
 
-const char * const ff_translation[] =
+static const char * const ff_translation[] =
 {
     "ph_vc",                  PH_VC,
     "ph_vlng",                PH_VLNG,
