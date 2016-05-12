@@ -91,7 +91,7 @@ SET(SRC_LIBBELLBIRD
     src/lexicon/cst_lexicon.c
     src/lexicon/cst_lts.c
     src/regex/cst_regex.c
-    src/regex/regexp.c
+    src/regex/regexec.c
     src/speech/cst_wave.c
     src/speech/cst_wave_io.c
     src/stats/cst_cart.c
@@ -191,12 +191,7 @@ TARGET_LINK_LIBRARIES (
 )
 endif ( ENABLE_WIN32 )
 
-ADD_EXECUTABLE ( compile_regexes main/compile_regexes.c )
+ADD_EXECUTABLE ( compile_regexes
+	        main/compile_regexes.c
+                src/regex/regcomp.c )
 
-TARGET_LINK_LIBRARIES (
-    compile_regexes
-    libbellbird_cmulex
-    libbellbird_usenglish
-    libbellbird
-    m
-)

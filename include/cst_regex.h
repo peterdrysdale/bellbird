@@ -87,9 +87,6 @@
 #ifndef _CST_REGEX_H__
 #define _CST_REGEX_H__
 
-#include "cst_file.h"
-#include "cst_string.h"
-
 typedef struct cst_regex_struct {
     char regstart;		/* Internal use only. */
     char reganch;		/* Internal use only. */
@@ -106,9 +103,6 @@ typedef struct cst_regstate_struct {
 	const char *input;
 	const char *bol;
 } cst_regstate;
-
-cst_regex *new_cst_regex(const char *str);
-void delete_cst_regex(cst_regex *r);
 
 int cst_regex_match(const cst_regex *r, const char *str);
 
