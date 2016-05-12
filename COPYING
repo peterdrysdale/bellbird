@@ -198,8 +198,9 @@ src/commonsynth/bell_driver.c
 /* POSSIBILITY OF SUCH DAMAGE.                                       */
 /* ----------------------------------------------------------------- */
 
-src/regex/regexp.c
-
+src/regex/hs_reg.h
+src/regex/regcomp.c
+src/regex/regexec.c
  *      Copyright (c) 1986 by University of Toronto.
  *      Written by Henry Spencer.  Not derived from licensed software.
  *
