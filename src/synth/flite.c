@@ -83,7 +83,7 @@ cst_utterance *flite_do_synth(cst_utterance *u,
 }
 
 float flite_process_output(cst_utterance *u, const char *outtype,
-                           int append)
+                           int append, cst_audiodev *ad)
 {
     /* Play or save (append) output to output file */
     cst_wave *w;
@@ -97,7 +97,7 @@ float flite_process_output(cst_utterance *u, const char *outtype,
 	     
     if (cst_streq(outtype,"play"))
     {
-	play_wave(w);
+	play_wave(w,ad);
     }
 #ifdef CST_AUDIO_ALSA
     else if (cst_streq(outtype,"bufferedplay"))

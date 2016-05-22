@@ -26,7 +26,7 @@ the current working directory)
 This will read inputtext and send it to `STDOUT` where it can be grabbed by `opusenc` (if that is your
 preferred and installed encoder).
 
-    ./bellbird --htsvoice cmu_us_arctic_slt.htsvoice -f inputtext -o - | lame --b 128 - outputfile.mp3
+    ./bellbird --htsvoice cmu_us_arctic_slt.htsvoice -f inputtext -o - | lame -b 128 - outputfile.mp3
 
 This will read inputtext and send it to `STDOUT` where it can be grabbed by `lame` (if that is your
 preferred and installed encoder).

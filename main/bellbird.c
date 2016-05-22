@@ -98,6 +98,7 @@
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 #include "../lang/cmulex/cmu_lex.h"
+#include "native_audio.h"
 
 #ifdef HAVE_CONFIG_H
   #include "config.h"
@@ -258,10 +259,11 @@ int main(int argc, char **argv)
     float tempfloat;
     int tempint;
     cst_lexicon *lex;
+    cst_audiodev *ad = NULL;  // audio device
+    int sampling_rate; // sampling rate to open audio device with
 #ifdef CST_AUDIO_ALSA
     int fd = -1;     // file descriptor for pipe to audio scheduler if used
 #endif //CST_AUDIO_ALSA
-
     HTS_Engine engine;
 
     explicit_text = explicit_filename = FALSE;
@@ -463,15 +465,32 @@ int main(int argc, char **argv)
         lex->lex_addenda = cst_lex_load_addenda(lex,lex_addenda_file);
     }
 
+    if (cst_streq(outtype,"play"))
+    { //  start audio device
+        if (HTSMODE == voice_type)
+        {
+            sampling_rate = engine.condition.sampling_frequency;
+        }
+        else
+        {
+            sampling_rate = 16000;
+        }
+        if ((ad = AUDIO_OPEN_NATIVE(sampling_rate, 1)) == NULL)
+        {
+            printf("Failed to open audio device - exiting.\n");
+            cst_error();
+        }
+    }
+
     if (voice_type==HTSMODE)
     {
        if ((strchr(texttoread,' ') && !explicit_filename) || explicit_text)
        {
-           bell_text_to_speech(&engine,texttoread,voice,outtype);
+           bell_text_to_speech(&engine,texttoread,voice,outtype,ad);
        }
        else
        {
-           bell_file_to_speech(&engine, texttoread, voice, outtype, voice_type);
+           bell_file_to_speech(&engine, texttoread, voice, outtype, voice_type, ad);
        }
     }
     else if (voice_type==CLUSTERGENMODE)
@@ -479,16 +498,16 @@ int main(int argc, char **argv)
        if ((strchr(texttoread,' ') && !explicit_filename) || explicit_text)
        {
            if (ssml_mode)
-               flite_ssml_text_to_speech(texttoread,voice,outtype);
+               flite_ssml_text_to_speech(texttoread,voice,outtype,ad);
            else
-               bell_text_to_speech(NULL,texttoread,voice,outtype);
+               bell_text_to_speech(NULL,texttoread,voice,outtype,ad);
        }
        else
        {
            if (ssml_mode)
-               flite_ssml_file_to_speech(texttoread,voice,outtype);
+               flite_ssml_file_to_speech(texttoread,voice,outtype,ad);
            else
-               bell_file_to_speech(&engine,texttoread,voice,outtype,voice_type);
+               bell_file_to_speech(&engine,texttoread,voice,outtype,voice_type,ad);
        }
     } /* end of voice_type==CLUSTERGENMODE */
 
@@ -498,6 +517,12 @@ int main(int argc, char **argv)
     if (fd != -1)
         audio_scheduler_close(fd);
 #endif // CST_AUDIO_ALSA
+
+    if (ad != NULL)
+    {
+        AUDIO_CLOSE_NATIVE(ad);
+    }
+
     bell_voice_unload(voice,voice_type,&engine);
     voice=NULL;
     return 0;

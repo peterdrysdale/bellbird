@@ -239,7 +239,8 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
 }
 
 static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
-                            cst_voice *voice, const char *outtype)
+                               cst_voice *voice, const char *outtype,
+                               cst_audiodev *ad)
 {
     int i;
     cst_utterance *utt;
@@ -332,7 +333,7 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
                     cst_free(label_data);
                     label_size=0;
                 }
-                durs += flite_process_output(utt,outtype,TRUE);
+                durs += flite_process_output(utt,outtype,TRUE,ad);
                 delete_utterance(utt); utt = NULL;
             }
             else 
@@ -365,9 +366,9 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
     return durs;
 }
 
-float bell_file_to_speech(HTS_Engine * engine,
-                           const char *filename, cst_voice *voice,
-                           const char *outtype, const int voice_type)
+float bell_file_to_speech(HTS_Engine * engine, const char *filename,
+                          cst_voice *voice, const char *outtype,
+                          const int voice_type, cst_audiodev *ad)
 {
     cst_tokenstream *ts;
 
@@ -384,16 +385,17 @@ float bell_file_to_speech(HTS_Engine * engine,
         return -1.0;
     }
     if (voice_type == HTSMODE){
-       return bell_ts_to_speech(engine,ts,voice,outtype);
+       return bell_ts_to_speech(engine,ts,voice,outtype,ad);
     }
     else       // must be CLUSTERGENMODE
     {
-       return bell_ts_to_speech(NULL,ts,voice,outtype);
+       return bell_ts_to_speech(NULL,ts,voice,outtype,ad);
     }
 }
 
 float bell_text_to_speech(HTS_Engine * engine, const char *text,
-                          cst_voice *voice, const char *outtype)
+                          cst_voice *voice, const char *outtype,
+                          cst_audiodev *ad)
 {
     cst_utterance *utt;
     float dur;
@@ -432,7 +434,7 @@ float bell_text_to_speech(HTS_Engine * engine, const char *text,
             cst_free(label_data);
         }
     }
-    dur = flite_process_output(utt,outtype,FALSE);
+    dur = flite_process_output(utt,outtype,FALSE,ad);
     delete_utterance(utt);
 
     return dur;

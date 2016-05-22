@@ -54,6 +54,7 @@
 #include "cst_utterance.h"
 #include "cst_wave.h"
 #include "cst_voice.h"
+#include "native_audio.h"
 
 extern cst_lang flite_lang_list[20];
 
@@ -61,15 +62,15 @@ extern cst_lang flite_lang_list[20];
 
 /* General top level functions */
 float flite_ssml_file_to_speech(const char *filename, cst_voice *voice,
-                                const char *outtype);
+                                const char *outtype, cst_audiodev *ad);
 float flite_ssml_text_to_speech(const char *text, cst_voice *voice,
-                                const char *outtype);
+                                const char *outtype, cst_audiodev *ad);
 
 /* Lower level user functions */
 cst_utterance *flite_do_synth(cst_utterance *u, cst_voice *voice,
                               cst_uttfunc synth);
 float flite_process_output(cst_utterance *u, const char *outtype,
-                           int append);
+                           int append, cst_audiodev *ad);
 
 /* These functions are *not* thread-safe, they are designed to be called */
 /* before the initial synthesis occurs */

@@ -52,7 +52,8 @@ if( ENABLE_CLANG )
 endif( ENABLE_CLANG )
 
 if( ENABLE_ANDROID )
-    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16")
+    SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE -pie -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16")
+    ADD_DEFINITIONS (-DBELL_AUDIO_ANDROID)
 endif( ENABLE_ANDROID )
 
 # Look for dependencies
@@ -65,6 +66,7 @@ INCLUDE_DIRECTORIES( include )
 
 SET(SRC_LIBBELLBIRD
     src/audio/au_alsa.c
+    src/audio/au_android.c
     src/audio/au_win32.c
     src/audio/au_none.c
     src/audio/bell_audio.c
@@ -148,6 +150,11 @@ if ( ENABLE_ALSA )
 TARGET_LINK_LIBRARIES (
     libbellbird
     ${ALSA_LIBRARY}
+)
+elseif ( ENABLE_ANDROID )
+TARGET_LINK_LIBRARIES (
+    libbellbird
+    OpenSLES
 )
 else ( ENABLE_ALSA )
 TARGET_LINK_LIBRARIES (

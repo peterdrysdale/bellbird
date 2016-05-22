@@ -1,5 +1,5 @@
 # Toolchain file for doing 32 bit Windows cross-compiles.
-# Call with 'cmake -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw64.cmake -DENABLE_ALSA=OFF .'
+# Call with 'cmake -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw64.cmake -DENABLE_WIN32=ON -DENABLE_ALSA=OFF .'
 SET(CMAKE_SYSTEM_NAME Windows)
 
 SET(CMAKE_C_COMPILER i686-w64-mingw32-gcc)

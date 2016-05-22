@@ -6,8 +6,9 @@
 #endif
 
 #include "cst_wave.h"
+#include "native_audio.h"
 
-bell_boolean play_wave(cst_wave *w);
+bell_boolean play_wave(cst_wave *w, cst_audiodev *ad);
 
 #ifdef CST_AUDIO_ALSA
 int audio_scheduler();

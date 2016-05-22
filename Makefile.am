@@ -21,8 +21,7 @@ AM_CFLAGS += -I./commonsynth/
 AM_CFLAGS += -I./hts/
 AM_CFLAGS += -I./cg/
 
-noinst_HEADERS = src/audio/native_audio.h \
-                 src/regex/cst_regex_defs.h \
+noinst_HEADERS = src/regex/cst_regex_defs.h \
                  src/regex/hs_reg.h \
 		 src/cg/cst_cg_map.h \
 		 src/cg/cst_spamf0.h \
@@ -39,6 +38,7 @@ libbellbird_la_LIBADD = $(top_builddir)/lang/cmulex/libbellbird_cmulex.la \
 libbellbird_la_SOURCES = src/audio/bell_au_buff.c \
                              src/audio/bell_audio.c \
                              src/audio/au_alsa.c \
+                             src/audio/au_android.c \
                              src/audio/au_win32.c \
                              src/audio/au_none.c \
                              src/utils/cst_alloc.c \
@@ -132,4 +132,4 @@ myinclude_HEADERS = include/cst_alloc.h \
         include/HTS_engine.h \
         include/bell_audio.h include/bell_driver.h \
         include/bell_file.h include/bell_track.h include/bell_ff_sym.h \
-        include/bell_relation_sym.h
+        include/bell_relation_sym.h include/native_audio.h

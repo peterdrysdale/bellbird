@@ -226,7 +226,8 @@ static cst_utterance *ssml_apply_tag(const char *tag,
 			       
 static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
                                      cst_voice *voice,
-                                     const char *outtype)
+                                     const char *outtype,
+                                     cst_audiodev *ad)
 {
     /* This is a very ugly function, that might be better written with gotos */
     /* This just doesn't seem to be properly functions -- perhaps a proper */
@@ -324,7 +325,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
                     delete_utterance(utt); utt = NULL;
                     break;
                 }
-                durs += flite_process_output(utt,outtype,TRUE);
+                durs += flite_process_output(utt,outtype,TRUE,ad);
                 delete_utterance(utt); utt = NULL;
             }
             else 
@@ -344,7 +345,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             /* Have to stream it if there is streaming */
             if (utt) delete_utterance(utt);
             utt = utt_synth_wave(wave,current_voice);
-            durs += flite_process_output(utt,outtype,TRUE);
+            durs += flite_process_output(utt,outtype,TRUE,ad);
             delete_utterance(utt);
 
             utt = new_utterance();
@@ -381,7 +382,8 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
 
 float flite_ssml_file_to_speech(const char *filename,
                                 cst_voice *voice,
-                                const char *outtype)
+                                const char *outtype,
+                                cst_audiodev *ad)
 {
     cst_tokenstream *ts;
     int fp;
@@ -416,7 +418,7 @@ float flite_ssml_file_to_speech(const char *filename,
 	delete_wave(w);
     }
 
-    d = flite_ssml_to_speech_ts(ts,voice,outtype);
+    d = flite_ssml_to_speech_ts(ts,voice,outtype,ad);
 
     ts_close(ts);
     
@@ -426,7 +428,8 @@ float flite_ssml_file_to_speech(const char *filename,
 
 float flite_ssml_text_to_speech(const char *text,
                                 cst_voice *voice,
-                                const char *outtype)
+                                const char *outtype,
+                                cst_audiodev *ad)
 {
     cst_tokenstream *ts;
     int fp;
@@ -459,7 +462,7 @@ float flite_ssml_text_to_speech(const char *text,
 	delete_wave(w);
     }
 
-    d = flite_ssml_to_speech_ts(ts,voice,outtype);
+    d = flite_ssml_to_speech_ts(ts,voice,outtype,ad);
 
     ts_close(ts);
     

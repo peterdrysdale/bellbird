@@ -1,4 +1,10 @@
 /*************************************************************************/
+/*                This code has been modified for Bellbird.              */
+/*                See COPYING for more copyright details.                */
+/*                The unmodified source code copyright notice            */
+/*                is included below.                                     */
+/*************************************************************************/
+/*************************************************************************/
 /*                                                                       */
 /*                  Language Technologies Institute                      */
 /*                     Carnegie Mellon University                        */
@@ -64,6 +70,12 @@ typedef struct cst_audiodev_struct {
 #define AUDIO_OPEN_NATIVE audio_open_win32
 #define AUDIO_CLOSE_NATIVE audio_close_win32
 #define AUDIO_WRITE_NATIVE audio_write_win32
+
+#elif defined(BELL_AUDIO_ANDROID)
+
+#define AUDIO_OPEN_NATIVE audio_open_android
+#define AUDIO_CLOSE_NATIVE audio_close_android
+#define AUDIO_WRITE_NATIVE audio_write_android
 
 #else
 

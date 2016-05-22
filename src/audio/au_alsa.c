@@ -195,7 +195,7 @@ int audio_close_alsa(cst_audiodev *ad)
 /* Returns zero if recovery was successful. */
 static int recover_from_error(snd_pcm_t *pcm_handle, ssize_t res)
 {
-  res = snd_pcm_recover(pcm_handle,res,0);
+  res = snd_pcm_prepare(pcm_handle);
   if (res < 0)
   {
 	/* Unknown failure */

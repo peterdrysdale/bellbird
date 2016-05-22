@@ -8,8 +8,12 @@
 #define CLUSTERGENMODE 0
 #define HTSMODE 1
 
-float bell_file_to_speech(HTS_Engine * engine, const char *filename, cst_voice *voice, const char *outtype, const int voice_type);
-float bell_text_to_speech(HTS_Engine * engine, const char *text, cst_voice *voice, const char *outtype);
+float bell_file_to_speech(HTS_Engine * engine, const char *filename,
+                          cst_voice *voice, const char *outtype,
+                          const int voice_type, cst_audiodev *ad);
+float bell_text_to_speech(HTS_Engine * engine, const char *text,
+                          cst_voice *voice, const char *outtype,
+                          cst_audiodev *ad);
 cst_voice * bell_voice_load(char *fn_name, const int voice_type, HTS_Engine * engine);
 void bell_voice_unload(cst_voice *voice, const int voice_type, HTS_Engine * engine);
 
