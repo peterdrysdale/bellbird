@@ -45,10 +45,6 @@
 #ifndef _US_ENGLISH_H_
 #define _US_ENGLISH_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include "cst_utterance.h"
 #include "cst_cart.h"
 #include "cst_val.h"
@@ -65,9 +61,5 @@ extern const cst_cart us_phrasing_cart;
 extern const cst_cart us_int_accent_cart;
 extern const cst_cart us_int_tone_cart;
 extern const cst_cart us_pos_cart;
-
-#ifdef __cplusplus
-}  /* extern "C" */
-#endif /* __cplusplus */
 
 #endif

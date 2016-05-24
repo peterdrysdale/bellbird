@@ -51,16 +51,6 @@
 #ifndef HTS_ENGINE_H
 #define HTS_ENGINE_H
 
-#ifdef __cplusplus
-#define HTS_ENGINE_H_START extern "C" {
-#define HTS_ENGINE_H_END   }
-#else
-#define HTS_ENGINE_H_START
-#define HTS_ENGINE_H_END
-#endif                          /* __CPLUSPLUS */
-
-HTS_ENGINE_H_START;
-
 #include <stdio.h>
 #include <stdint.h>
 
@@ -298,7 +288,5 @@ void HTS_Engine_refresh(HTS_Engine * engine);
 
 /* HTS_Engine_clear: free engine */
 void HTS_Engine_clear(HTS_Engine * engine);
-
-HTS_ENGINE_H_END;
 
 #endif                          /* !HTS_ENGINE_H */
