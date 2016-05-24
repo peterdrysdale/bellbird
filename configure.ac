@@ -105,7 +105,6 @@ esac
 AC_SUBST(AUDIODRIVER)
 AC_SUBST(AUDIOLIBS)
 
-AC_CONFIG_FILES([Makefile
-      lang/cmulex/Makefile
-      main/Makefile])
+AC_CONFIG_FILES([Makefile])
+
 AC_OUTPUT
