@@ -4,7 +4,7 @@
 .SH NAME
 bellbird \- a text to speech utility
 .SH SYNOPSIS
-bellbird [options ] [-f infile | -t "textstring" ] [ -o outfile]
+bellbird [options ] [--voice voicefile] [-f infile | -t "textstring" ] [ -o outfile]
 .SH DESCRIPTION
 The bellbird program is a text to speech (TTS) utility which converts UTF-8 text files to
 speech. The speech data may be sent to the sound system, saved as a WAV file or passed for further
@@ -23,10 +23,8 @@ sends to stdout, \%"play" which sends to audio device, \%"none" which discards f
 Explicitly set input filename. Special case is "-" which reads from stdin.
 .IP "-t textstring"
 Explicitly set input to a quoted text string.
-.IP "--voice VOICEFILE"
-Use clustergen voice at VOICEFILE for tts.
-.IP "--htsvoice VOICEFILE"
-Use HTS voice at VOICEFILE for tts.
+.IP "--voice voicefile"
+Use voice at voicefile for tts.
 .IP "--add_dict filename"
 Add dictionary addenda from filename. Format for addenda may be found in
 bellbird documentation file "dictionary.md".

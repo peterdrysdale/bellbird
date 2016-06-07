@@ -16,7 +16,7 @@ Here are some permutations of usage examples.
 
 This will read inputtext and play out to ALSA using the Clustergen voice (voice.flitevox)
 
-    ./bellbird --htsvoice cmu_us_arctic_slt.htsvoice -f - -o outputfile.wav
+    ./bellbird --voice cmu_us_arctic_slt.htsvoice -f - -o outputfile.wav
 
 This will read `STDIN` and output to a `wav` file using a hts voice (`cmu_us_arctic_slt.htsvoice` in
 the current working directory)
@@ -26,7 +26,7 @@ the current working directory)
 This will read inputtext and send it to `STDOUT` where it can be grabbed by `opusenc` (if that is your
 preferred and installed encoder).
 
-    ./bellbird --htsvoice cmu_us_arctic_slt.htsvoice -f inputtext -o - | lame -b 128 - outputfile.mp3
+    ./bellbird --voice cmu_us_arctic_slt.htsvoice -f inputtext -o - | lame -b 128 - outputfile.mp3
 
 This will read inputtext and send it to `STDOUT` where it can be grabbed by `lame` (if that is your
 preferred and installed encoder).
@@ -72,7 +72,7 @@ Bellbird voices are all dynamically loaded at Bellbird startup.
 Bellbird support two voices types at the current time.
 
  1. The argument "--voice" should be set to a full pathname of dumped Clustergen voice.
- 2. The argument "--htsvoice" should be set to a full pathname of HTS (version 1.07) voice.
+ 2. The argument "--voice" should be set to a full pathname of HTS (version 1.07) voice.
 
 Voice files for testing purposes are collected at `https://github.com/peterdrysdale/bellbird_extras`.
 

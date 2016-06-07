@@ -53,7 +53,7 @@
 #include "cst_synth.h"
 
 /* Voices call this to use usenglish. */
-void usenglish_init(cst_voice *v);
+void usenglish_init(bell_voice *v);
 
 /* Default functions and values that you might need. */
 extern const cst_phoneset us_phoneset;

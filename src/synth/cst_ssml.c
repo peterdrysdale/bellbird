@@ -225,7 +225,7 @@ static cst_utterance *ssml_apply_tag(const char *tag,
 }
 			       
 static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
-                                     cst_voice *voice,
+                                     bell_voice *voice,
                                      const char *outtype,
                                      cst_audiodev *ad)
 {
@@ -244,7 +244,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     cst_breakfunc breakfunc = default_utt_break;
     float durs = 0.0;
     cst_item *t;
-    cst_voice *current_voice; 
+    bell_voice *current_voice;
     int ssml_eou = 0;
     cst_wave *wave, *w;
 
@@ -277,7 +277,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     while (!ts_eof(ts) || num_tokens > 0)
     {
         current_voice = 
-            (cst_voice *)val_userdata(feat_val(ssml_feats,"current_voice"));
+            (bell_voice *)val_userdata(feat_val(ssml_feats,"current_voice"));
         /* printf("awb_debug prewhile %d %s\n",ssml_eou,token); */
         if (ssml_eou == 0)
             token = ts_get(ts);
@@ -381,7 +381,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
 }
 
 float flite_ssml_file_to_speech(const char *filename,
-                                cst_voice *voice,
+                                bell_voice *voice,
                                 const char *outtype,
                                 cst_audiodev *ad)
 {
@@ -427,7 +427,7 @@ float flite_ssml_file_to_speech(const char *filename,
 }
 
 float flite_ssml_text_to_speech(const char *text,
-                                cst_voice *voice,
+                                bell_voice *voice,
                                 const char *outtype,
                                 cst_audiodev *ad)
 {

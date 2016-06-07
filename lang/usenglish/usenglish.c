@@ -54,7 +54,7 @@ static const char * const us_english_prepunctuation = "\"'`({[";
 static const char * const us_english_singlecharsymbols = "";
 static const char * const us_english_whitespace = " \t\n\r";
 
-void usenglish_init(cst_voice *v)
+void usenglish_init(bell_voice *v)
 {
     /* utterance break function */
     feat_set(v->features,"utt_break",breakfunc_val(&default_utt_break));

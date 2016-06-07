@@ -53,7 +53,7 @@ cst_lang flite_lang_list[20];
 int flite_lang_list_length = 0;
 
 int flite_add_lang(const char *langname,
-                   void (*lang_init)(cst_voice *vox),
+                   void (*lang_init)(bell_voice *vox),
                    cst_lexicon *(*lex_init)())
 {
     if (flite_lang_list_length < 19)
@@ -69,7 +69,7 @@ int flite_add_lang(const char *langname,
 }
 
 cst_utterance *flite_do_synth(cst_utterance *u,
-                                     cst_voice *voice,
+                                     bell_voice *voice,
                                      cst_uttfunc synth)
 {		       
     utt_init(u, voice);

@@ -105,7 +105,7 @@
 #endif
 
 /* Its not very appropriate that these are declared here */
-void usenglish_init(cst_voice *v);
+void usenglish_init(bell_voice *v);
 cst_lexicon *cmu_lex_init(void);
 
 static void bellbird_version()
@@ -126,8 +126,7 @@ static void bellbird_usage()
           "  -o outfile             Explicitly set output wav audio filename\n"
           "  -f infile              Explicitly set input filename\n"
           "  -t TEXT                Explicitly set input textstring\n"
-          "  --voice VOICEFILE      Use voice clustergen voice at VOICEFILE \n"
-          "  --htsvoice VOICEFILE   Use voice hts voice at VOICEFILE \n"
+          "  --voice VOICEFILE      Use voice at VOICEFILE \n"
           "  --add_dict FILENAME    Add dictionary addenda from FILENAME\n"
           "  --startpos n   Read input file from byte n (int), skipping n-1 bytes\n"
           "  --printphones  Print phones while generating speech\n"
@@ -246,12 +245,11 @@ static void ef_set(cst_features *f,const char *fv,const char *type)
 
 int main(int argc, char **argv)
 {
-    cst_voice *voice = NULL;
+    bell_voice *voice = NULL;
     const char *texttoread=NULL;    /* Text to be read either filename or string */
     const char *outtype = "play";   /* default is to play */
     char *fn_voice = NULL;
     int i;
-    int voice_type=CLUSTERGENMODE; /* default is clustergen voice */
     int explicit_filename, explicit_text;
     int ssml_mode = FALSE;         /* default to non-SSML reading */
     cst_features *extra_feats = NULL;
@@ -294,11 +292,6 @@ int main(int argc, char **argv)
         {
            fn_voice = argv[++i];
         }
-        else if (cst_streq(argv[i],"--htsvoice") && (i+1 < argc))
-        {
-           voice_type=HTSMODE;
-           fn_voice = argv[++i];
-        }
         else if (cst_streq(argv[i],"-h") || cst_streq(argv[i],"--help") ||
                 cst_streq(argv[i],"-?"))
         {
@@ -307,7 +300,7 @@ int main(int argc, char **argv)
     }
 
     flite_add_lang("eng",usenglish_init,cmu_lex_init); /* removed set_lang_list */
-    voice = bell_voice_load(fn_voice,voice_type,&engine);
+    voice = bell_voice_load(fn_voice, &engine);
     if (NULL == voice) exit(1);
 
     for (i=1; i < argc; i++)
@@ -321,11 +314,6 @@ int main(int argc, char **argv)
           /* already loaded above */
 	    i++;
 	}
-        else if ( cst_streq(argv[i],"--htsvoice") && (i+1 < argc) )
-        {
-           /* Already loaded above */
-           i++;
-        }
 	else if ( cst_streq(argv[i],"--add_dict") && (i+1 < argc) )
 	{
             lex_addenda_file = argv[++i];
@@ -377,7 +365,7 @@ int main(int argc, char **argv)
 	    texttoread = argv[++i];
 	    explicit_text = TRUE;
 	}          
-        else if (voice_type==HTSMODE) /* hts specific options */
+        else if (BELL_HTS == voice->type) /* hts specific options */
         {
            if ( cst_streq(argv[i],"-b") && (i+1 < argc) )
            {
@@ -467,7 +455,7 @@ int main(int argc, char **argv)
 
     if (cst_streq(outtype,"play"))
     { //  start audio device
-        if (HTSMODE == voice_type)
+        if (BELL_HTS == voice->type)
         {
             sampling_rate = engine.condition.sampling_frequency;
         }
@@ -482,7 +470,7 @@ int main(int argc, char **argv)
         }
     }
 
-    if (voice_type==HTSMODE)
+    if (BELL_HTS == voice->type)
     {
        if ((strchr(texttoread,' ') && !explicit_filename) || explicit_text)
        {
@@ -490,10 +478,10 @@ int main(int argc, char **argv)
        }
        else
        {
-           bell_file_to_speech(&engine, texttoread, voice, outtype, voice_type, ad);
+           bell_file_to_speech(&engine, texttoread, voice, outtype, ad);
        }
     }
-    else if (voice_type==CLUSTERGENMODE)
+    else if (BELL_CLUSTERGEN == voice->type)
     {
        if ((strchr(texttoread,' ') && !explicit_filename) || explicit_text)
        {
@@ -507,9 +495,9 @@ int main(int argc, char **argv)
            if (ssml_mode)
                flite_ssml_file_to_speech(texttoread,voice,outtype,ad);
            else
-               bell_file_to_speech(&engine,texttoread,voice,outtype,voice_type,ad);
+               bell_file_to_speech(&engine,texttoread,voice,outtype,ad);
        }
-    } /* end of voice_type==CLUSTERGENMODE */
+    } // End of (BELL_CLUSTERGEN == voice->type)
 
 #ifdef CST_AUDIO_ALSA
 //  Close the audio scheduler if it has been started
@@ -523,7 +511,7 @@ int main(int argc, char **argv)
         AUDIO_CLOSE_NATIVE(ad);
     }
 
-    bell_voice_unload(voice,voice_type,&engine);
+    bell_voice_unload(voice, &engine);
     voice=NULL;
     return 0;
 }

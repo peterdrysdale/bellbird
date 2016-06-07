@@ -51,24 +51,27 @@
 #include "cst_utterance.h"
 #include "cst_lexicon.h"
 
-struct cst_voice_struct {
+#define BELL_CLUSTERGEN 0
+#define BELL_HTS        1
+
+typedef struct bell_voice_struct {
     const char *name;
+    int type; // Voice type: clustergen or hts
 
     cst_features *features;
     cst_ffunction *ffunctions; // Array for indexed access of features functions
-};
-typedef struct cst_voice_struct cst_voice;
+} bell_voice;
 
 /* Hold pointers to language and lexicon init function */
 struct cst_lang_struct {
     const char *lang;
-    void (*lang_init)(cst_voice *vox);
+    void (*lang_init)(bell_voice *vox);
     cst_lexicon *(*lex_init)();
 };
 typedef struct cst_lang_struct cst_lang;
 
 /* Constructor functions */
-cst_voice *new_voice();
-void delete_voice(cst_voice *u);
+bell_voice *new_voice();
+void delete_voice(bell_voice *u);
 
 #endif

@@ -51,10 +51,10 @@
 #include "cst_cg_map.h"
 #include "bell_file.h"
 
-cst_voice *cst_cg_load_voice(const char *filename,
+bell_voice *cst_cg_load_voice(const char *filename,
                              const cst_lang *lang_table)
 {
-    cst_voice *vox;
+    bell_voice *vox;
     cst_lexicon *lex = NULL;
     int i, end_of_features;
     const char *language;

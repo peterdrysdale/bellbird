@@ -134,7 +134,7 @@ cst_wave *mlsa_resynthesis(const bell_track *param_track,
                            const bell_track *str,
                            cst_cg_db *cg_db);
 
-cst_voice *cst_cg_load_voice(const char *voxdir,
+bell_voice *cst_cg_load_voice(const char *voxdir,
                              const cst_lang lang_table[]);
 
 void cg_mlpg(const bell_track *param_track, cst_cg_db *cg_db);

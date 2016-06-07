@@ -74,7 +74,7 @@ typedef struct cst_synth_module_struct {
 static const cst_synth_module synth_method_tokens[];
 static const cst_synth_module synth_module_tokenizer;
 
-cst_utterance *utt_synth_wave(cst_wave *w,cst_voice *v)
+cst_utterance *utt_synth_wave(cst_wave *w, bell_voice *v)
 {
     /* Create an utterance with a wave in it as if we've synthesized it */
     cst_utterance *u;
@@ -112,7 +112,7 @@ static cst_utterance *apply_synth_method(cst_utterance *u,
     return u;
 }
 
-cst_utterance *utt_init(cst_utterance *u, cst_voice *vox)
+cst_utterance *utt_init(cst_utterance *u, bell_voice *vox)
 {
     feat_copy_into(vox->features,u->features);
     u->ffunctions = vox->ffunctions;

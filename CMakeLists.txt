@@ -2,7 +2,7 @@
 PROJECT(BELLBIRD C)
 
 if( NOT VERSION )
-    SET( VERSION "0.1.7-unstable")
+    SET( VERSION "0.1.8-unstable")
 endif( NOT VERSION )
 
 cmake_minimum_required( VERSION 2.6.0 )

@@ -1,6 +1,6 @@
 AC_PREREQ([2.62])
 AC_INIT([bellbird], dnl Package name
-        [0.1.7-unstable], dnl Package version
+        [0.1.8-unstable], dnl Package version
         [https://github.com/peterdrysdale/bellbird/issues] dnl Report bug address
        )
 AC_CANONICAL_TARGET

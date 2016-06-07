@@ -47,17 +47,17 @@
 #include "cst_voice.h"
 #include "flite.h"
 
-cst_voice *new_voice()
+bell_voice *new_voice()
 {
-    cst_voice *v = cst_alloc(struct cst_voice_struct,1);
+    bell_voice *v = cst_alloc(bell_voice, 1);
 
     v->features = new_features();
-    v->ffunctions = cst_alloc(cst_ffunction,256);
+    v->ffunctions = cst_alloc(cst_ffunction, 256);
 
     return v;
 }
 
-void delete_voice(cst_voice *v)
+void delete_voice(bell_voice *v)
 {
     if (v != NULL)
     {

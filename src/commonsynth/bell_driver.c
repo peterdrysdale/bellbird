@@ -239,7 +239,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
 }
 
 static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
-                               cst_voice *voice, const char *outtype,
+                               bell_voice *voice, const char *outtype,
                                cst_audiodev *ad)
 {
     int i;
@@ -367,8 +367,8 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
 }
 
 float bell_file_to_speech(HTS_Engine * engine, const char *filename,
-                          cst_voice *voice, const char *outtype,
-                          const int voice_type, cst_audiodev *ad)
+                          bell_voice *voice, const char *outtype,
+                          cst_audiodev *ad)
 {
     cst_tokenstream *ts;
 
@@ -384,17 +384,17 @@ float bell_file_to_speech(HTS_Engine * engine, const char *filename,
         cst_errmsg("Failed to open file \"%s\" for reading\n",filename);
         return -1.0;
     }
-    if (voice_type == HTSMODE){
+    if (BELL_HTS == voice->type){
        return bell_ts_to_speech(engine,ts,voice,outtype,ad);
     }
-    else       // must be CLUSTERGENMODE
+    else       // must be BELL_CLUSTERGEN
     {
        return bell_ts_to_speech(NULL,ts,voice,outtype,ad);
     }
 }
 
 float bell_text_to_speech(HTS_Engine * engine, const char *text,
-                          cst_voice *voice, const char *outtype,
+                          bell_voice *voice, const char *outtype,
                           cst_audiodev *ad)
 {
     cst_utterance *utt;
@@ -440,11 +440,11 @@ float bell_text_to_speech(HTS_Engine * engine, const char *text,
     return dur;
 }
 
-static cst_voice *register_hts_voice(const cst_lang *lang_list)
+static bell_voice *register_hts_voice(const cst_lang *lang_list)
 {
     /* Voice initialization common to hts voices */
     int i;
-    cst_voice *voice=NULL;
+    bell_voice *voice=NULL;
     cst_lexicon *lex=NULL;
     const char *language;
 
@@ -480,21 +480,35 @@ static cst_voice *register_hts_voice(const cst_lang *lang_list)
     return voice;
 }
 
-cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
-                             HTS_Engine * engine)
+bell_voice * bell_voice_load(char *fn_voice, HTS_Engine * engine)
 {
+    int voice_type = BELL_CLUSTERGEN; // Set voice type to default
+    FILE *fd;
+    int first_char;
     /* Load clustergen or hts voice */
-    cst_voice *voice = NULL;
-    if (fn_voice == NULL)
+    bell_voice *voice = NULL;
+    if (NULL == fn_voice)
     {
        cst_errmsg("A voice must be specified.\n");
        return NULL;
     }
-    if (voice_type==CLUSTERGENMODE)
+    // Determine voice type
+    if ((fd = bell_fopen(fn_voice,"rb")) == NULL)
+    {
+       cst_errmsg("Unable to open voice file.\n");
+       return NULL;
+    }
+    // Test first character to check for HTS voice type
+    first_char = bell_fgetc(fd);
+    if ('[' == first_char) voice_type = BELL_HTS;
+    bell_fclose(fd);
+
+    if (BELL_CLUSTERGEN == voice_type)
     {
        voice = cst_cg_load_voice(fn_voice,flite_lang_list);
+       voice->type = BELL_CLUSTERGEN;
     }
-    if (voice_type==HTSMODE)
+    if (BELL_HTS == voice_type)
     {
        HTS_Engine_initialize(engine);
        if (HTS_Engine_load(engine, &fn_voice) != TRUE)
@@ -504,6 +518,7 @@ cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
        else
        {
           voice = register_hts_voice(flite_lang_list);
+          voice->type = BELL_HTS;
        }
     }
     if (voice == NULL)
@@ -513,9 +528,9 @@ cst_voice * bell_voice_load(char *fn_voice, const int voice_type,
     return voice;
 }
 
-void bell_voice_unload(cst_voice *voice, const int voice_type, HTS_Engine * engine)
+void bell_voice_unload(bell_voice *voice, HTS_Engine * engine)
 {
    /* Unload clustergen or hts voice types */
-    if (voice_type==HTSMODE) HTS_Engine_clear(engine);
+    if (BELL_HTS == voice->type) HTS_Engine_clear(engine);
     if (voice != NULL) delete_voice(voice); /* Clean up dynamically loaded voice */
 }
