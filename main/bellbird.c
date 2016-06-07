@@ -98,7 +98,6 @@
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 #include "../lang/cmulex/cmu_lex.h"
-#include "native_audio.h"
 
 #ifdef HAVE_CONFIG_H
   #include "config.h"

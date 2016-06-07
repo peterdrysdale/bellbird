@@ -12,7 +12,6 @@
 #include <time.h>      // for nanosleep()
 #include "cst_alloc.h"
 #include "bell_audio.h"
-#include "native_audio.h"
 #include "cst_error.h"
 
 typedef struct android_au_platform_struct {

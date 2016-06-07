@@ -12,7 +12,6 @@
 #include "cst_alloc.h"
 #include "cst_error.h"
 #include "bell_audio.h"
-#include "native_audio.h"
 
 // Structure for Win32 platform specific audio data
 typedef struct win32_au_platform_struct {

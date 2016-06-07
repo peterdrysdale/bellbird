@@ -40,7 +40,6 @@
 
 #include "cst_alloc.h"
 #include "bell_audio.h"
-#include "native_audio.h"
 
 cst_audiodev * audio_open_none(unsigned int sps, int channels)
 {
