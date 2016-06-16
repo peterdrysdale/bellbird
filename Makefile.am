@@ -144,7 +144,7 @@ myinclude_HEADERS = include/cst_alloc.h \
 	include/cst_utt_utils.h include/cst_utterance.h \
 	include/cst_val.h include/cst_val_const.h include/cst_val_defs.h \
 	include/cst_voice.h include/cst_wave.h \
-        include/flite.h include/HTS_misc.h include/pstream.h \
+        include/flite.h include/HTS_misc.h \
         include/HTS_engine.h \
         include/bell_audio.h include/bell_driver.h \
         include/bell_file.h include/bell_track.h include/bell_ff_sym.h \
