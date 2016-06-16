@@ -43,7 +43,6 @@
 /*  Basic wraparounds for calloc and free                                */
 /*                                                                       */
 /*************************************************************************/
-#include "cst_file.h"
 #include "cst_alloc.h"
 #include "cst_error.h"
 

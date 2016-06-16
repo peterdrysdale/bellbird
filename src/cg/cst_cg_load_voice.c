@@ -62,7 +62,7 @@ bell_voice *cst_cg_load_voice(const char *filename,
     cst_cg_db *cg_db;
     char* fname;
     char* fval;
-    cst_file vd;
+    FILE *vd;
     int num_param_models = 3;
     int num_dur_models = 1;
     int tempint;

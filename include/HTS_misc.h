@@ -51,8 +51,6 @@
 #ifndef HTS_MISC_H
 #define HTS_MISC_H
 
-#include "cst_file.h"
-
 typedef struct _HTS_File {
    unsigned char type;
    void *pointer;

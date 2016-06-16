@@ -135,8 +135,8 @@ myincludedir = $(pkgincludedir)/include
 
 myinclude_HEADERS = include/cst_alloc.h \
 	include/cst_cart.h include/cst_cg.h include/cst_endian.h \
-	include/cst_error.h include/cst_features.h include/cst_ffeatures.h \
-	include/cst_file.h include/cst_item.h \
+	include/cst_error.h include/cst_features.h \
+        include/cst_ffeatures.h include/cst_item.h \
 	include/cst_lexicon.h include/cst_lts.h \
 	include/cst_phoneset.h include/cst_regex.h \
 	include/cst_relation.h include/cst_string.h include/cst_synth.h \

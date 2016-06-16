@@ -53,7 +53,6 @@
 #include "cst_cg.h"
 #include "cst_error.h"
 #include "cst_features.h"
-#include "cst_file.h"
 #include "bell_file.h"
 #include "cst_item.h"
 #include "cst_regex.h"

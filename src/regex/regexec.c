@@ -48,7 +48,6 @@
 #include <ctype.h>
 #include "cst_alloc.h"
 #include "cst_string.h"
-#include "cst_file.h"
 #include "cst_error.h"
 #include "cst_regex.h"
 #include "hs_reg.h"

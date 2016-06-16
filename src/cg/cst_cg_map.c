@@ -54,7 +54,7 @@ static char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v2.0";
 // This is the supported voice type for this module
 // This string must not be set to greater than 199 chars
 
-static int cst_read_int(cst_file fd)
+static int cst_read_int(FILE *fd)
 {
     int val;
     int n;
@@ -68,7 +68,7 @@ static int cst_read_int(cst_file fd)
     return val;
 }
 
-static float cst_read_float(cst_file fd)
+static float cst_read_float(FILE *fd)
 {
     float val;
     int n;
@@ -82,7 +82,7 @@ static float cst_read_float(cst_file fd)
     return val;
 }
 
-static void *cst_read_padded(cst_file fd, int *numbytes)
+static void *cst_read_padded(FILE *fd, int *numbytes)
 {
     void* ret;
     int n; 
@@ -98,14 +98,14 @@ static void *cst_read_padded(cst_file fd, int *numbytes)
     return ret;
 }
 
-static char *cst_read_string(cst_file fd)
+static char *cst_read_string(FILE *fd)
 {
     int numbytes;
 
     return (char *)cst_read_padded(fd,&numbytes);
 }
 
-static void* cst_read_array(cst_file fd)
+static void* cst_read_array(FILE *fd)
 {
     int temp;
     void* ret;
@@ -113,7 +113,7 @@ static void* cst_read_array(cst_file fd)
     return ret;
 }
 
-static void** cst_read_2d_array(cst_file fd)
+static void** cst_read_2d_array(FILE *fd)
 {
     int numbytes;
     int numrows;
@@ -154,7 +154,7 @@ static void** cst_read_2d_array(cst_file fd)
     return arrayrows; 
 }
 
-static char **cst_read_db_types(cst_file fd)
+static char **cst_read_db_types(FILE *fd)
 {
     char** types;
     int numtypes;
@@ -172,7 +172,7 @@ static char **cst_read_db_types(cst_file fd)
     return types;
 }
 
-static cst_cart_node* cst_read_tree_nodes(cst_file fd)
+static cst_cart_node* cst_read_tree_nodes(FILE *fd)
 {   
     cst_cart_node* nodes;
     int temp;
@@ -369,7 +369,7 @@ static char* replaceff(const char * feat)
     return retstring;
 }
 
-static char** cst_read_tree_feats(cst_file fd)
+static char** cst_read_tree_feats(FILE *fd)
 {
     char** feats;
     int numfeats;
@@ -439,7 +439,7 @@ static char** cst_read_tree_feats(cst_file fd)
     return feats;
 }
 
-static cst_cart* cst_read_tree(cst_file fd)
+static cst_cart* cst_read_tree(FILE *fd)
 {
     cst_cart* tree;
 
@@ -450,7 +450,7 @@ static cst_cart* cst_read_tree(cst_file fd)
     return tree;
 }
 
-static cst_cart** cst_read_tree_array(cst_file fd)
+static cst_cart** cst_read_tree_array(FILE *fd)
 {
     cst_cart** trees = NULL;
     int numtrees;
@@ -470,7 +470,7 @@ static cst_cart** cst_read_tree_array(cst_file fd)
     return trees; 
 }
 
-static dur_stat** cst_read_dur_stats(cst_file fd)
+static dur_stat** cst_read_dur_stats(FILE *fd)
 {
     int numstats;
     int i,temp;
@@ -492,7 +492,7 @@ static dur_stat** cst_read_dur_stats(cst_file fd)
     return ds;
 }
 
-static char*** cst_read_phone_states(cst_file fd)
+static char*** cst_read_phone_states(FILE *fd)
 {
     int i,j,count1,count2,temp;
     char*** ps;
@@ -514,7 +514,7 @@ static char*** cst_read_phone_states(cst_file fd)
     return ps;
 }
 
-int cst_cg_read_header(cst_file fd)
+int cst_cg_read_header(FILE *fd)
 {
     char header[200];
     size_t n;
@@ -535,7 +535,7 @@ int cst_cg_read_header(cst_file fd)
     return 0;
 }
 
-cst_cg_db *cst_cg_load_db(cst_file fd,int num_param_models,int num_dur_models)
+cst_cg_db *cst_cg_load_db(FILE *fd,int num_param_models,int num_dur_models)
 {
     cst_cg_db* db = cst_alloc(cst_cg_db,1);
     int i;
@@ -639,7 +639,7 @@ void cst_cg_free_db(cst_cg_db *db)
     cst_free(db);
 }
 
-void cst_read_voice_feature(cst_file fd,char** fname, char** fval)
+void cst_read_voice_feature(FILE *fd,char** fname, char** fval)
 {
     int temp;
     *fname = cst_read_padded(fd,&temp);

@@ -53,10 +53,10 @@
 
 #include <stdarg.h>             /* for va_list */
 #include <string.h>             /* for memcpy */
+#include <stdio.h>
 
 #include "cst_alloc.h"
 #include "cst_error.h"
-#include "cst_file.h"
 #include "HTS_misc.h"
 
 /* check variance in finv() */

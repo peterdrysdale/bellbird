@@ -45,7 +45,6 @@
 /*************************************************************************/
 #include "cst_alloc.h"
 #include "cst_error.h"
-#include "cst_string.h"
 #include "cst_val.h"
 #include "cst_wave.h"
 

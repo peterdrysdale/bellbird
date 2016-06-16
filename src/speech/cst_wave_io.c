@@ -47,7 +47,6 @@
 #include "cst_alloc.h"
 #include "cst_endian.h"
 #include "cst_error.h"
-#include "cst_file.h"
 #include "cst_string.h"
 #include "cst_wave.h"
 #include "bell_file.h"
@@ -70,7 +69,7 @@ typedef struct  bell_wave_header_struct {
     uint16_t num_channels;
 } bell_wave_header;
 
-static int cst_wave_load_riff_header(bell_wave_header *header,cst_file fd)
+static int cst_wave_load_riff_header(bell_wave_header *header, FILE *fd)
 {
     char info[4];
     uint16_t d_uint16;
@@ -172,7 +171,7 @@ static int cst_wave_load_riff_header(bell_wave_header *header,cst_file fd)
 int cst_wave_append_riff(cst_wave *w,const char *filename)
 {
     /* Appends to wave in file if it already exists */
-    cst_file fd;
+    FILE *fd;
     bell_wave_header hdr;
     char info[4];
     uint32_t d_uint32;
@@ -341,7 +340,7 @@ int cst_wave_append_riff(cst_wave *w,const char *filename)
 
 int cst_wave_save_riff(cst_wave *w,const char *filename)
 {
-    cst_file fd;
+    FILE *fd;
     int rv;
 
     if (cst_streq("-",filename))
@@ -363,7 +362,7 @@ int cst_wave_save_riff(cst_wave *w,const char *filename)
     return rv;
 }
 
-int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
+int cst_wave_save_riff_fd(cst_wave *w, FILE *fd)
 {
     uint16_t d_uint16;
     uint32_t d_uint32;
@@ -505,7 +504,7 @@ int cst_wave_save_riff_fd(cst_wave *w, cst_file fd)
 
 int cst_wave_load_riff(cst_wave *w,const char *filename)
 {
-    cst_file fd;
+    FILE *fd;
     int rv;
 
     if ((fd = bell_fopen(filename,"rb")) == NULL)
@@ -521,7 +520,7 @@ int cst_wave_load_riff(cst_wave *w,const char *filename)
     return rv;
 }
 
-int cst_wave_load_riff_fd(cst_wave *w,cst_file fd)
+int cst_wave_load_riff_fd(cst_wave *w, FILE *fd)
 {
     bell_wave_header hdr;
     int rv;

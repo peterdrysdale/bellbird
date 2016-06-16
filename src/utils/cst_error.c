@@ -45,7 +45,7 @@
 /*************************************************************************/
 #include <stdlib.h>
 #include <stdarg.h>
-#include "cst_file.h"
+#include <stdio.h>
 #include "cst_error.h"
 
 int cst_errmsg(const char *fmt, ...)

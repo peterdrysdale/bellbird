@@ -47,10 +47,10 @@
 #define _CST_TOKENSTREAM_H__
 
 #include "cst_string.h"
-#include "cst_file.h"
+#include "bell_file.h"
 
 typedef struct  cst_tokenstream_struct {
-    cst_file fd;
+    FILE *fd;
     int file_pos;
     int line_number;
     cst_string *string_buffer;

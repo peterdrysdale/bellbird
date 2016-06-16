@@ -47,7 +47,7 @@
 #define _CST_WAVE_H__
 
 #include <stdint.h>
-#include "cst_file.h"
+#include "bell_file.h"
 #include "cst_val.h"
 
 typedef struct  cst_wave_struct {
@@ -74,11 +74,11 @@ void delete_wave(cst_wave *val);
 int cst_wave_save_riff(cst_wave *w, const char *filename);
 int cst_wave_append_riff(cst_wave *w,const char *filename);
 
-int cst_wave_save_riff_fd(cst_wave *w, cst_file fd);
+int cst_wave_save_riff_fd(cst_wave *w, FILE *fd);
 
 int cst_wave_load_riff(cst_wave *w, const char *filename);
 
-int cst_wave_load_riff_fd(cst_wave *w, cst_file fd);
+int cst_wave_load_riff_fd(cst_wave *w, FILE *fd);
 
 void cst_wave_resize(cst_wave *w,int samples, int num_channels);
 

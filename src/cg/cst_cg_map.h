@@ -46,18 +46,18 @@
 #ifndef __CST_CG_MAP_H
 #define __CST_CG_MAP_H
 
-#include "cst_file.h"
+#include <stdio.h>
 #include "cst_cg.h"
 #include "cst_cart.h"
 #include "cst_val.h"
 #include "cst_synth.h"
 
-int cst_cg_read_header(cst_file fd);
+int cst_cg_read_header(FILE *fd);
 
-cst_cg_db* cst_cg_load_db(cst_file fd, int num_param_models,
+cst_cg_db* cst_cg_load_db(FILE *fd, int num_param_models,
                           int num_dur_models);
 void cst_cg_free_db(cst_cg_db*);
 
-void cst_read_voice_feature(cst_file fd,char** fname, char** fval);
+void cst_read_voice_feature(FILE *fd,char** fname, char** fval);
 
 #endif

@@ -53,7 +53,6 @@
 
 #include "cst_alloc.h"
 #include "cst_error.h"
-#include "cst_file.h"
 #include "cst_string.h"
 #include "bell_file.h"
 /* hts_engine libraries */
