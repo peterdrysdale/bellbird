@@ -73,7 +73,6 @@ SET(SRC_LIBBELLBIRD
     src/audio/bell_au_buff.c
     src/cg/cst_cg.c
     src/cg/cst_cg_load_voice.c
-    src/cg/cst_cg_map.c
     src/cg/cst_mlpg.c
     src/cg/cst_mlsa.c
     src/cg/cst_spamf0.c

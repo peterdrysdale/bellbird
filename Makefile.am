@@ -25,7 +25,6 @@ AM_CFLAGS += -I./lang/cmulex/
 
 noinst_HEADERS = src/regex/cst_regex_defs.h \
                  src/regex/hs_reg.h \
-		 src/cg/cst_cg_map.h \
 		 src/cg/cst_spamf0.h \
 		 src/hts/HTS_hidden.h \
                  lang/cmulex/cmu_lts_model.h
@@ -82,7 +81,6 @@ libbellbird_la_SOURCES = src/audio/bell_au_buff.c \
                              src/cg/cst_mlsa.c \
                              src/cg/cst_mlpg.c \
                              src/cg/cst_cg_load_voice.c \
-                             src/cg/cst_cg_map.c \
                              src/cg/cst_spamf0.c \
                              src/hrg/cst_utterance.c \
                              src/hrg/cst_relation.c \
