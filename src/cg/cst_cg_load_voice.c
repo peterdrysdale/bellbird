@@ -670,15 +670,14 @@ bell_voice *cst_cg_load_voice(const char *filename,
 
     if ((vd = bell_fopen(filename,"rb")) == NULL)
     {
-        cst_errmsg("Unable to open clustergen voice: \"%s\" \n",filename);
-	cst_error();
+	return NULL;
     }
 
     if (cst_cg_read_header(vd) != 0)
     {
         bell_fclose(vd);
         cst_errmsg("Clustergen voice: \"%s\", appears to have the wrong format \n",filename);
-	cst_error();
+	return NULL;
     }
 
     vox = new_voice();
@@ -717,10 +716,10 @@ bell_voice *cst_cg_load_voice(const char *filename,
 
     /* Load up cg_db from external file */
     cg_db = cst_cg_load_db(vd,num_param_models,num_dur_models);
+    bell_fclose(vd);
 
     if (cg_db == NULL)
     {
-	bell_fclose(vd);
         return NULL;
     }
 
@@ -741,7 +740,6 @@ bell_voice *cst_cg_load_voice(const char *filename,
     {   /* Language is not supported */
 	/* Delete allocated memory in cg_db */
 	cst_cg_free_db(cg_db);
-	bell_fclose(vd);
 	return NULL;	
     }
     
@@ -755,8 +753,6 @@ bell_voice *cst_cg_load_voice(const char *filename,
     /* Waveform synthesis */
     feat_set(vox->features,"wave_synth_func",uttfunc_val(&cg_synth));
     feat_set(vox->features,"cg_db",cg_db_val(cg_db));
-
-    bell_fclose(vd);
 
     return vox;
 }
