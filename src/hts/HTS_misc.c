@@ -57,7 +57,7 @@
 
 #include "cst_alloc.h"
 #include "cst_error.h"
-#include "HTS_misc.h"
+#include "HTS_hidden.h"
 
 /* check variance in finv() */
 #define INFTY   ((double) 1.0e+38)

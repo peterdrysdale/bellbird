@@ -77,7 +77,6 @@ SET(SRC_LIBBELLBIRD
     src/cg/cst_mlsa.c
     src/cg/cst_spamf0.c
     src/cg/bell_track.c
-    src/commonsynth/HTS_misc.c
     src/commonsynth/bell_driver.c
     src/hrg/cst_ffeature.c
     src/hrg/cst_item.c
@@ -89,6 +88,7 @@ SET(SRC_LIBBELLBIRD
     src/hts/HTS_pstream.c
     src/hts/HTS_sstream.c
     src/hts/HTS_vocoder.c
+    src/hts/HTS_misc.c
     src/lexicon/cst_lexicon.c
     src/lexicon/cst_lts.c
     src/regex/cst_regex.c

@@ -68,7 +68,6 @@ libbellbird_la_SOURCES = src/audio/bell_au_buff.c \
                              src/utils/bell_file.c \
                              src/regex/cst_regex.c \
                              src/regex/regexec.c \
-                             src/commonsynth/HTS_misc.c \
                              src/commonsynth/bell_driver.c \
                              src/hts/HTS_engine.c \
                              src/hts/HTS_gstream.c \
@@ -76,6 +75,7 @@ libbellbird_la_SOURCES = src/audio/bell_au_buff.c \
                              src/hts/HTS_pstream.c \
                              src/hts/HTS_sstream.c \
                              src/hts/HTS_vocoder.c \
+                             src/hts/HTS_misc.c \
                              src/cg/bell_track.c \
                              src/cg/cst_cg.c \
                              src/cg/cst_mlsa.c \
@@ -142,8 +142,7 @@ myinclude_HEADERS = include/cst_alloc.h \
 	include/cst_utt_utils.h include/cst_utterance.h \
 	include/cst_val.h include/cst_val_const.h include/cst_val_defs.h \
 	include/cst_voice.h include/cst_wave.h \
-        include/flite.h include/HTS_misc.h \
-        include/HTS_engine.h \
+        include/flite.h include/HTS_engine.h \
         include/bell_audio.h include/bell_driver.h \
         include/bell_file.h include/bell_track.h include/bell_ff_sym.h \
         include/bell_relation_sym.h include/native_audio.h
