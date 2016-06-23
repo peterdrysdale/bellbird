@@ -505,7 +505,7 @@ bell_voice * bell_voice_load(char *fn_voice, HTS_Engine * engine)
     if (BELL_CLUSTERGEN == voice_type)
     {
        voice = cst_cg_load_voice(fn_voice,flite_lang_list);
-       voice->type = BELL_CLUSTERGEN;
+       if (voice != NULL) voice->type = BELL_CLUSTERGEN;
     }
     if (BELL_HTS == voice_type)
     {
