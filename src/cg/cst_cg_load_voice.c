@@ -43,7 +43,6 @@
 /*  Load a clustergen voice from a file                                  */
 /*                                                                       */
 /*************************************************************************/
-#include <stdio.h>
 
 #include "flite.h"
 #include "cst_error.h"
@@ -61,153 +60,263 @@ static char *cg_voice_header_string = "CMU_FLITE_CG_VOXDATA-v2.0";
 // This is the supported voice type for this module
 // This string must not be set to greater than 199 chars
 
-static int cst_read_int(FILE *fd)
+static bell_boolean bell_read_int(FILE *fd, int *pval)
 {
-    int val;
     int n;
 
-    n = bell_fread(&val,sizeof(int),1,fd);
+    n = bell_fread(pval,sizeof(int),1,fd);
     if (n != 1)
     {
-        cst_errmsg("cst_read_int: Unable to read in int from file.\n");
-        cst_error();
+        return FALSE;
     }
-    return val;
+    return TRUE;
 }
 
-static float cst_read_float(FILE *fd)
+static bell_boolean bell_read_float(FILE *fd, float* pval)
 {
-    float val;
     int n;
 
-    n = bell_fread(&val,sizeof(float),1,fd);
+    n = bell_fread(pval,sizeof(float),1,fd);
     if (n != 1)
     {
-        cst_errmsg("cst_read_float: Unable to read in float from file.\n");
-        cst_error();
+        return FALSE;
     }
-    return val;
+    return TRUE;
 }
 
-static void *cst_read_padded(FILE *fd, int *numbytes)
+static int bell_read_bytes(FILE *fd, void** ppval)
 {
-    void* ret;
+    int bytestoread;
     int n;
 
-    *numbytes = cst_read_int(fd);
-    ret = (void *)cst_alloc(char,*numbytes);
-    n = bell_fread(ret,sizeof(char),*numbytes,fd);
-    if (n != (*numbytes))
+
+    if ((bell_read_int(fd, &bytestoread) == TRUE)
+        && (bytestoread > 0)
+        && (bytestoread < 1000000)) // this part of a voice file should not be greater than ~1MB
     {
-        cst_errmsg("cst_read_padded: Unable to read in bytes from file.\n");
-        cst_error();
+        *ppval = (void *)cst_alloc(char,bytestoread);
+        n = bell_fread(*ppval, sizeof(char), bytestoread, fd);
+        if (n != bytestoread)
+        {
+            cst_free(*ppval);
+            return -1;
+        }
+        else
+        {
+            return n;
+        }
     }
-    return ret;
+    return -1;
 }
 
-static char *cst_read_string(FILE *fd)
+static bell_boolean bell_read_string(FILE *fd, char **pstring)
 {
-    int numbytes;
-
-    return (char *)cst_read_padded(fd,&numbytes);
+    int n;
+    n = bell_read_bytes(fd, (void *)pstring);
+    if (n >=0 && n < 3000) // String should not be too large
+    {
+        return TRUE;
+    }
+    else if (n > 3000)
+    {
+        cst_free(*pstring);
+    }
+    return FALSE;
 }
 
-static void* cst_read_array(FILE *fd)
-{
-    int temp;
-    void* ret;
-    ret = cst_read_padded(fd,&temp);
-    return ret;
-}
-
-static void** cst_read_2d_array(FILE *fd)
+static bell_boolean bell_read_2d_array(FILE *fd, void ***parrayrows)
 {
     int numbytes;
     int numrows;
     int i;
     int n;
-    void** arrayrows = NULL;
+    void **arrayrows = NULL;
+    bell_boolean err = FALSE;
 
-    numrows = cst_read_int(fd);
+    if (bell_read_int(fd,&numrows) != TRUE)
+    {
+        err = TRUE;
+    }
 
-    if (numrows > 0)
+    if  ((err != TRUE) && (numrows > 0) && (numrows < 100000))
     {
         arrayrows = cst_alloc(void *,numrows);
-        numbytes = cst_read_int(fd);
-        arrayrows[0] = (void *) cst_alloc(char,(numrows*numbytes));
-        n = bell_fread(arrayrows[0],sizeof(char),numbytes,fd);
-        if (n != numbytes)
+        if (TRUE == bell_read_int(fd,&numbytes)
+            && (numbytes >= 0 )
+            &&(numbytes*numrows < 10000000))
         {
-            cst_errmsg("cst_read_2d_array: Unable to read in bytes from file.\n");
-            cst_error();
+            arrayrows[0] = (void *) cst_alloc(char,(numrows*numbytes));
+            n = bell_fread(arrayrows[0],sizeof(char),numbytes,fd);
+            if (n != numbytes)
+            {
+                err = TRUE;
+            }
+            else
+            {
+                for (i=1; i < numrows; i++) {
+                    arrayrows[i] = arrayrows[i-1] + numbytes;
+                    if ((bell_read_int(fd,&n) != TRUE) && (n != numbytes))
+                    {
+                        err = TRUE;
+                    }
+                    n = bell_fread(arrayrows[i],sizeof(char),numbytes,fd);
+                    if (n != numbytes)
+                    {
+                        err = TRUE;
+                    }
+                }
+            }
+            if (TRUE == err)
+            {
+                cst_free(arrayrows[0]);
+            }
         }
-        for (i=1; i<numrows ;i++) {
-            arrayrows[i] = arrayrows[i-1] + numbytes;
-            n = cst_read_int(fd);
-            if (n != numbytes)
-            {
-                cst_errmsg("cst_read_2d_array: Ragged arrays are not supported.\n");
-                cst_error();
-            }
-            n = bell_fread(arrayrows[i],sizeof(char),numbytes,fd);
-            if (n != numbytes)
-            {
-                cst_errmsg("cst_read_2d_array: Unable to read in bytes from file.\n");
-                cst_error();
-            }
+        if (TRUE == err)
+        {
+            cst_free(arrayrows);
+            arrayrows = NULL;
+            err = TRUE;
         }
     }
 
-    return arrayrows;
+    *parrayrows = arrayrows;
+    if (TRUE == err) return FALSE;
+    return TRUE;
 }
 
-static char **cst_read_db_types(FILE *fd)
+static const char **bell_read_db_types(FILE *fd)
 {
     char** types;
-    int numtypes;
-    int i;
+    int n;
+    int i, j;
+    bell_boolean err = FALSE;
 
-    numtypes = cst_read_int(fd);
-    types = cst_alloc(char*,numtypes+1);
-
-    for (i=0;i<numtypes;i++)
+    if ((TRUE != bell_read_int(fd, &n)) || (n < 0) || (n > 10000))
     {
-        types[i] = cst_read_string(fd);
+        return NULL;
     }
-    types[i] = 0;
 
-    return types;
+    types = cst_alloc(char*,n+1);
+
+    for (i = 0; i < n; i++)
+    {
+        if (TRUE != bell_read_string(fd, &types[i]))
+        {
+            err = TRUE;
+            break;
+        }
+    }
+
+    if (TRUE == err)
+    {
+        for (j = 0; j < i; j++)
+        {
+            cst_free(types[j]);
+        }
+        cst_free(types);
+        return NULL;
+    }
+
+    types[i] = 0;
+    return (const char **)types;
 }
 
-static cst_cart_node* cst_read_tree_nodes(FILE *fd)
+static cst_cart_node* bell_read_tree_nodes(FILE *fd)
 {
     cst_cart_node* nodes;
-    int temp;
-    int i, num_nodes;
+    int tempint;
+    float tempfloat;
+    int i, j, n;
     short vtype;
     char *str;
+    bell_boolean err = FALSE;
 
-    num_nodes = cst_read_int(fd);
-    nodes = cst_alloc(cst_cart_node,num_nodes+1);
-
-    for (i=0; i<num_nodes; i++)
+    if ((TRUE != bell_read_int(fd,&n)) || (n < 0) || (n > 100000))
     {
-        bell_fread(&nodes[i].feat,sizeof(char),1,fd);
-        bell_fread(&nodes[i].op,sizeof(char),1,fd);
-        bell_fread(&nodes[i].no_node,sizeof(short),1,fd);
-        bell_fread(&vtype,sizeof(short),1,fd);
+        return NULL;
+    }
+    nodes = cst_alloc(cst_cart_node, n+1);
+
+    for (i = 0; i < n; i++)
+    {
+        if (1 != bell_fread(&nodes[i].feat, sizeof(char), 1, fd))
+        {
+            err = TRUE;
+            break;
+        }
+        if (1 != bell_fread(&nodes[i].op, sizeof(char), 1, fd))
+        {
+            err = TRUE;
+            break;
+        }
+        if (1 != bell_fread(&nodes[i].no_node, sizeof(short), 1, fd))
+        {
+            err = TRUE;
+            break;
+        }
+        if (1 != bell_fread(&vtype, sizeof(short), 1, fd))
+        {
+            err = TRUE;
+            break;
+        }
         if (vtype == CST_VAL_TYPE_STRING)
         {
-            str = cst_read_padded(fd,&temp);
-            nodes[i].val = string_val(str);
-            cst_free(str);
+            if (TRUE != bell_read_string(fd, &str))
+            {
+                err = TRUE;
+                break;
+            }
+            else
+            {
+                nodes[i].val = string_val(str);
+                cst_free(str);
+            }
         }
         else if (vtype == CST_VAL_TYPE_INT)
-            nodes[i].val = int_val(cst_read_int(fd));
+        {
+            if (TRUE != bell_read_int(fd, &tempint))
+            {
+                err = TRUE;
+                break;
+            }
+            else
+            {
+                nodes[i].val = int_val(tempint);
+            }
+        }
         else if (vtype == CST_VAL_TYPE_FLOAT)
-            nodes[i].val = float_val(cst_read_float(fd));
+        {
+            if (TRUE != bell_read_float(fd, &tempfloat))
+            {
+                err = TRUE;
+                break;
+            }
+            else
+            {
+                nodes[i].val = float_val(tempfloat);
+            }
+        }
         else
-            nodes[i].val = int_val(cst_read_int(fd));
+        {
+            if (TRUE != bell_read_int(fd, &tempint))
+            {
+                err = TRUE;
+                break;
+            }
+            else
+            {
+                nodes[i].val = int_val(tempint);
+            }
+        }
+    }
+    if (TRUE == err)
+    {
+        for (j = 0; j < i; j++)
+        {
+            delete_val((cst_val *)nodes[j].val);
+        }
+        cst_free(nodes);
+        return NULL;
     }
     nodes[i].val = NULL;
 
@@ -376,20 +485,28 @@ static char* replaceff(const char * feat)
     return retstring;
 }
 
-static char** cst_read_tree_feats(FILE *fd)
+static const char* const * bell_read_tree_feats(FILE *fd)
 {
     char** feats;
-    int numfeats;
-    int i;
+    int n;
+    int i, j;
     char* tempfeat;
     char* tempfeat2;
+    bell_boolean err = FALSE;
 
-    numfeats = cst_read_int(fd);
-    feats = cst_alloc(char *,numfeats+1);
-
-    for (i=0;i<numfeats;i++)
+    if ((TRUE != bell_read_int(fd, &n)) || (n < 0) || (n > 1000))
     {
-        tempfeat = cst_read_string(fd);
+        return NULL;
+    }
+    feats = cst_alloc(char *,n+1);
+
+    for (i = 0; i < n; i++)
+    {
+        if (TRUE != bell_read_string(fd, &tempfeat))
+        {
+            err = TRUE;
+            break;
+        }
         tempfeat2 = replacefeat(tempfeat,".parent",".P");
         if (tempfeat2)
         {
@@ -441,87 +558,188 @@ static char** cst_read_tree_feats(FILE *fd)
         feats[i] = replaceff(tempfeat);
         cst_free(tempfeat);
     }
+    if (TRUE == err)
+    {
+        for (j = 0; j < i; j++)
+        {
+            cst_free(feats[j]);
+        }
+        cst_free(feats);
+        return NULL;
+    }
     feats[i] = 0;
 
-    return feats;
+    return (const char * const *)feats;
 }
 
-static cst_cart* cst_read_tree(FILE *fd)
+static cst_cart* bell_read_tree(FILE *fd)
 {
     cst_cart* tree;
 
     tree = cst_alloc(cst_cart,1);
-    tree->rule_table = cst_read_tree_nodes(fd);
-    tree->feat_table = (const char * const *)cst_read_tree_feats(fd);
+    tree->rule_table = bell_read_tree_nodes(fd);
+    tree->feat_table = bell_read_tree_feats(fd);
 
+    if ((NULL == tree->rule_table) || (NULL == tree->feat_table))
+    {
+        delete_cart(tree);
+        return NULL;
+    }
     return tree;
 }
 
-static cst_cart** cst_read_tree_array(FILE *fd)
+static bell_boolean bell_read_tree_array(FILE *fd, cst_cart ***ptrees)
 {
     cst_cart** trees = NULL;
-    int numtrees;
-    int i;
+    int n;
+    int i, j;
+    bell_boolean err = FALSE;
 
-    numtrees = cst_read_int(fd);
-
-    if (numtrees > 0)
+    if ((TRUE != bell_read_int(fd, &n)) || (n < 0) || (n > 200))
     {
-        trees = cst_alloc(cst_cart *,numtrees+1);
-
-        for (i=0;i<numtrees;i++)
-            trees[i] = cst_read_tree(fd);
-        trees[i] = 0;
+        return FALSE;
     }
+    if (n > 0)
+    {
+        trees = cst_alloc(cst_cart *, n+1);
+        for (i = 0; i < n; i++)
+        {
+            trees[i] = bell_read_tree(fd);
+            if (NULL == trees[i])
+            { // error reading tree
+                err = TRUE;
+                break;
+            }
+        }
+        trees[i] = 0;
 
-    return trees;
+        if (TRUE == err)
+        { // Clean up after error reading one of the trees
+            for (j = 0; j < i; j++)
+            {
+                delete_cart(trees[j]);
+            }
+            cst_free(trees);
+            *ptrees = NULL;
+            return FALSE;
+        }
+    }
+    *ptrees = trees;
+    return TRUE;
 }
 
-static dur_stat** cst_read_dur_stats(FILE *fd)
+static dur_stat** bell_read_dur_stats(FILE *fd)
 {
-    int numstats;
-    int i,temp;
+    int n;
+    int i, j;
+    float tempfloat;
     dur_stat** ds;
+    bell_boolean err = FALSE;
 
-    numstats = cst_read_int(fd);
-    ds = cst_alloc(dur_stat *,(1+numstats));
+    if ((TRUE != bell_read_int(fd, &n)) || (n < 0) || (n > 1000))
+    {
+        return NULL;
+    }
+    ds = cst_alloc(dur_stat *,(1 + n));
 
-    /* load structuer values */
-    for (i=0;i<numstats;i++)
+    /* load structure values */
+    for (i = 0; i < n; i++)
     {
         ds[i] = cst_alloc(dur_stat,1);
-        ds[i]->mean = cst_read_float(fd);
-        ds[i]->stddev = cst_read_float(fd);
-        ds[i]->phone = cst_read_padded(fd,&temp);
+        if (TRUE != bell_read_float(fd, &tempfloat))
+        {
+            err = TRUE;
+            break;
+        }
+        ds[i]->mean = tempfloat;
+        if (TRUE != bell_read_float(fd, &tempfloat))
+        {
+            err = TRUE;
+            break;
+        }
+        ds[i]->stddev = tempfloat;
+        if (TRUE != bell_read_string(fd, &(ds[i]->phone)))
+        {
+            err = TRUE;
+            break;
+        }
     }
     ds[i] = NULL;
+
+    if (TRUE == err)
+    { // Clean up if an error has occurred with any dur_stat element
+        for (j = 0; j < i; j++)
+        {
+            cst_free(ds[j]->phone);
+            cst_free(ds[j]);
+        }
+        cst_free(ds);
+        return NULL;
+    }
 
     return ds;
 }
 
-static char*** cst_read_phone_states(FILE *fd)
+static char*** bell_read_phone_states(FILE *fd)
 {
-    int i,j,count1,count2,temp;
+    int n, n2;
+    int i, j;
+    int k, l;
     char*** ps;
+    bell_boolean err = FALSE;
 
-    count1 = cst_read_int(fd);
-    ps = cst_alloc(char **,count1+1);
-    for (i=0;i<count1;i++)
+    if ((TRUE != bell_read_int(fd, &n)) || (n < 0) || (n > 1000))
     {
-        count2 = cst_read_int(fd);
-        ps[i] = cst_alloc(char *,count2+1);
-        for (j=0;j<count2;j++)
+        return NULL;
+    }
+    ps = cst_alloc(char **, n + 1);
+
+    for (i = 0; i < n; i++)
+    {
+        if ((TRUE != bell_read_int(fd, &n2)) || (n2 < 0) || (n2 > 100))
+        {
+            err = TRUE;
+            break;
+        }
+        ps[i] = cst_alloc(char *, n2 + 1);
+        for (j = 0; j < n2; j++)
 	{
-            ps[i][j]=cst_read_padded(fd,&temp);
+            if (TRUE != bell_read_string(fd, &(ps[i][j])))
+            {
+                err = TRUE;
+                break;
+            }
 	}
         ps[i][j] = 0;
+        if (TRUE == err)
+        {
+            for (k = 0; k < j; k++)
+            {
+                cst_free(ps[i][k]);
+            }
+            cst_free(ps[i]);
+            break;
+        }
+    }
+    if (TRUE == err)
+    {
+        for(k = 0; k < i; k++)
+        {
+            for(l = 0; ps[k][l] != 0; l++)
+            {
+                cst_free(ps[k][l]);
+            }
+            cst_free(ps[k]);
+        }
+        cst_free(ps);
+        return NULL;
     }
     ps[i] = 0;
 
     return ps;
 }
 
-static int cst_cg_read_header(FILE *fd)
+static bell_boolean bell_cg_read_header(FILE *fd)
 {
     char header[200];
     size_t n;
@@ -530,126 +748,415 @@ static int cst_cg_read_header(FILE *fd)
     n = bell_fread(header,sizeof(char),cst_strlen(cg_voice_header_string)+1,fd);
 
     if (n < cst_strlen(cg_voice_header_string)+1)
-        return -1;
+        return FALSE;
 
     if (!cst_streq(header,cg_voice_header_string))
-        return -1;
+        return FALSE;
 
     bell_fread(&endianness,sizeof(int),1,fd); /* for byte order check */
     if (endianness != 1)
-        return -1;                           /* dumped with other byte order */
+        return FALSE;                           /* dumped with other byte order */
 
-    return 0;
+    return TRUE;
 }
 
 static cst_cg_db *cst_cg_load_db(FILE *fd,int num_param_models,int num_dur_models)
 {
-    cst_cg_db* db = cst_alloc(cst_cg_db,1);
-    int i;
+    cst_cg_db* db = new_cg_db();
+    int i, j, k;
+    int tempint;
+    float tempfloat;
+    void *tempvoid;
+    void **temparray;
+    char *tempstring;
+    cst_cart **tempcarts;
+    bell_boolean err = FALSE;
 
-    db->name = cst_read_string(fd);
-    db->types = (const char**)cst_read_db_types(fd);
-
-    db->num_types = cst_read_int(fd);
-    db->sample_rate = cst_read_int(fd);
-    db->f0_mean = cst_read_float(fd);
-    db->f0_stddev = cst_read_float(fd);
-
-    db->f0_trees = (const cst_cart**) cst_read_tree_array(fd);
-
+    if (TRUE == bell_read_string(fd, &tempstring))
+    {
+        db->name = tempstring;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if (FALSE == err)
+    {
+        db->types = bell_read_db_types(fd);
+        if (NULL == db->types) err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        db->num_types = tempint;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        db->sample_rate = tempint;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_float(fd, &tempfloat)))
+    {
+        db->f0_mean = tempfloat;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_float(fd, &tempfloat)))
+    {
+        db->f0_stddev = tempfloat;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_tree_array(fd, &tempcarts)))
+    {
+        db->f0_trees = (const cst_cart**) tempcarts;
+    }
+    else
+    {
+        err = TRUE;
+    }
     db->num_param_models = num_param_models;
-    db->param_trees = cst_alloc(const cst_cart **,db->num_param_models);
-    for (i=0; i<db->num_param_models; i++)
-        db->param_trees[i] = (const cst_cart **) cst_read_tree_array(fd);
-
-    db->spamf0 = cst_read_int(fd);
+    if (FALSE == err)
+    {
+        db->param_trees = cst_alloc(const cst_cart **,db->num_param_models);
+        for (i = 0; i < db->num_param_models; i++)
+        {
+            if (TRUE == bell_read_tree_array(fd, &tempcarts))
+            {
+                db->param_trees[i] = (const cst_cart **) tempcarts;
+            }
+            else
+            {
+                err = TRUE;
+                break;
+            }
+        }
+        if (TRUE == err)
+        { // Clean up partially read structures on error
+            for (j = 0; j < i; j++)
+            {
+                for (k = 0; db->param_trees[j][k]; k++)
+                {
+                    delete_cart((cst_cart *)(void *)db->param_trees[j][k]);
+                }
+                cst_free((void *)db->param_trees[j]);
+            }
+            cst_free(db->param_trees);
+            db->param_trees = NULL;
+        }
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        db->spamf0 = tempint;
+    }
+    else
+    {
+        err = TRUE;
+    }
     if (db->spamf0)
     {
-        db->spamf0_accent_tree = cst_read_tree(fd);
-        db->spamf0_phrase_tree = cst_read_tree(fd);
+        if (FALSE == err) db->spamf0_accent_tree = bell_read_tree(fd);
+        if (NULL == db->spamf0_accent_tree) err = TRUE;
+        if (FALSE == err) db->spamf0_phrase_tree = bell_read_tree(fd);
+        if (NULL == db->spamf0_phrase_tree) err = TRUE;
     }
-
-    db->num_channels = cst_alloc(int,db->num_param_models);
-    db->num_frames = cst_alloc(int,db->num_param_models);
-    db->model_vectors = cst_alloc(const unsigned short **,db->num_param_models);
-    for (i=0; i<db->num_param_models; i++)
+    if (FALSE == err)
     {
-        db->num_channels[i] = cst_read_int(fd);
-        db->num_frames[i] = cst_read_int(fd);
-        db->model_vectors[i] =
-            (const unsigned short **)cst_read_2d_array(fd);
+        db->num_channels = cst_alloc(int,db->num_param_models);
+        db->num_frames = cst_alloc(int,db->num_param_models);
+        db->model_vectors = cst_alloc(const unsigned short **,db->num_param_models);
+        for (i=0; i<db->num_param_models; i++)
+        {
+            if (TRUE == bell_read_int(fd,&tempint))
+            {
+                db->num_channels[i] = tempint;
+            }
+            else
+            {
+                err = TRUE;
+                break;
+            }
+            if (TRUE == bell_read_int(fd,&tempint))
+            {
+                db->num_frames[i] = tempint;
+            }
+            else
+            {
+                err = TRUE;
+                break;
+            }
+            if (TRUE == bell_read_2d_array(fd, &temparray))
+            {
+                db->model_vectors[i] = (const unsigned short **) temparray;
+            }
+            else
+            {
+                err = TRUE;
+                break;
+            }
+        }
+        if (TRUE == err)
+        { // Clean up partially read structures after error
+            cst_free(db->num_channels);
+            db->num_channels = NULL;
+            cst_free(db->num_frames);
+            db->num_frames = NULL;
+            for (j = 0; j < i; j++)
+            {
+                cst_free(db->model_vectors[j]);
+            }
+            cst_free(db->model_vectors);
+            db->model_vectors = NULL;
+        }
+        else
+        {
+        // In voices that were built before, they might have NULLs as the
+        // the vectors rather than a real model, so adjust the num_param_models
+        // accordingly -- this wont cause a leak as there is no alloc'd memory
+        // in the later unset vectors
+            for (i=0; i<db->num_param_models; i++)
+            {
+                if (db->model_vectors[i] == NULL)
+                    break;
+            }
+            db->num_param_models = i;
+        }
     }
-    /* In voices that were built before, they might have NULLs as the */
-    /* the vectors rather than a real model, so adjust the num_param_models */
-    /* accordingly -- this wont cause a leak as there is no alloc'd memory */
-    /* in the later unset vectors */
-    for (i=0; i<db->num_param_models; i++)
-    {
-        if (db->model_vectors[i] == NULL)
-            break;
-    }
-    db->num_param_models = i;
-
     if (db->spamf0)
     {
-        db->num_channels_spamf0_accent = cst_read_int(fd);
-        db->num_frames_spamf0_accent = cst_read_int(fd);
-        db->spamf0_accent_vectors =
-            (const float * const *)cst_read_2d_array(fd);
+        if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+        {
+            db->num_channels_spamf0_accent = tempint;
+        }
+        else
+        {
+            err = TRUE;
+        }
+        if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+        {
+            db->num_frames_spamf0_accent = tempint;
+        }
+        else
+        {
+            err = TRUE;
+        }
+        if ((FALSE == err) && (TRUE == bell_read_2d_array(fd, &temparray)))
+        {
+            db->spamf0_accent_vectors = (const float * const *) temparray;
+        }
+        else
+        {
+            err = TRUE;
+        }
     }
-
-    db->model_min = cst_read_array(fd);
-    db->model_range = cst_read_array(fd);
-
-    db->frame_advance = cst_read_float(fd);
-
+    if ((FALSE == err) && (bell_read_bytes(fd, &tempvoid) >= 0))
+    {
+        db->model_min = tempvoid;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (bell_read_bytes(fd, &tempvoid) >= 0))
+    {
+        db->model_range = tempvoid;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_float(fd, &tempfloat)))
+    {
+        db->frame_advance = tempfloat;
+    }
+    else
+    {
+        err = TRUE;
+    }
     db->num_dur_models = num_dur_models;
-    db->dur_stats = cst_alloc(const dur_stat **,db->num_dur_models);
-    db->dur_cart = cst_alloc(const cst_cart *,db->num_dur_models);
-
-    for (i=0; i<db->num_dur_models; i++)
+    if (FALSE == err)
     {
-        db->dur_stats[i] = (const dur_stat **)cst_read_dur_stats(fd);
-        db->dur_cart[i] = (const cst_cart *)cst_read_tree(fd);
+        db->dur_stats = cst_alloc(const dur_stat **,db->num_dur_models);
+        db->dur_cart = cst_alloc(const cst_cart *,db->num_dur_models);
+
+        for (i=0; i<db->num_dur_models; i++)
+        {
+            db->dur_stats[i] = (const dur_stat **)bell_read_dur_stats(fd);
+            if (NULL == db->dur_stats[i])
+            {
+                err = TRUE;
+                break;
+            }
+            db->dur_cart[i] = (const cst_cart *)bell_read_tree(fd);
+            if (NULL == db->dur_cart[i])
+            {
+                // First clean up dur_stats from this iteration
+                for (k = 0; db->dur_stats[i][k]; k++)
+                {
+                    cst_free((void *)db->dur_stats[i][k]->phone);
+                    cst_free((void *)db->dur_stats[i][k]);
+                }
+                cst_free((void *)db->dur_stats[i]);
+                err = TRUE;
+                break;
+            }
+        }
+        if (TRUE == err)
+        { //Clean up partially loaded structures on error
+            for (j = 0; j < i; j++)
+            {
+                // Clean up dur_stats and dur_cart from previous iterations before error
+                for (k = 0; db->dur_stats[j][k]; k++)
+                {
+                    cst_free((void *)db->dur_stats[j][k]->phone);
+                    cst_free((void *)db->dur_stats[j][k]);
+                }
+                cst_free((void *)db->dur_stats[j]);
+                delete_cart((void *)db->dur_cart[j]);
+            }
+            cst_free(db->dur_stats);
+            db->dur_stats = NULL;
+            cst_free(db->dur_cart);
+            db->dur_cart = NULL;
+        }
+    }
+    if (FALSE == err)
+    {
+        db->phone_states =
+            (const char * const * const *)bell_read_phone_states(fd);
+        if (NULL == db->phone_states) err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        if (0 == tempint)
+        {
+            cst_errmsg("Warning: only do_mlpg voice are supported");
+            err = TRUE;
+        }
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (bell_read_bytes(fd, &tempvoid) >= 0))
+    {
+        db->dynwin = tempvoid;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        db->dynwinsize = tempint;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_float(fd, &tempfloat)))
+    {
+        db->mlsa_alpha = tempfloat;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_float(fd, &tempfloat)))
+    {
+        db->mlsa_beta = tempfloat;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        ; // dummy read since multimodel parameter is misleading
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        db->mixed_excitation = tempint;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        db->ME_num = tempint;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        db->ME_order = tempint;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_2d_array(fd, &temparray)))
+    {
+        db->me_h = (const double * const *) temparray;
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_int(fd, &tempint)))
+    {
+        db->spamf0 = tempint; /* yes, twice, its above too */
+    }
+    else
+    {
+        err = TRUE;
+    }
+    if ((FALSE == err) && (TRUE == bell_read_float(fd, &tempfloat)))
+    {
+        db->gain = tempfloat;
+    }
+    else
+    {
+        err = TRUE;
     }
 
-    db->phone_states =
-        (const char * const * const *)cst_read_phone_states(fd);
-
-    if (cst_read_int(fd) == 0)
+    if (TRUE == err)
     {
-        cst_errmsg("Warning: only do_mlpg voice are supported");
+        delete_cg_db(db);
+        return NULL;
     }
-    db->dynwin = cst_read_array(fd);
-    db->dynwinsize = cst_read_int(fd);
-
-    db->mlsa_alpha = cst_read_float(fd);
-    db->mlsa_beta = cst_read_float(fd);
-
-    cst_read_int(fd); // dummy read since multimodel parameter is misleading
-    db->mixed_excitation = cst_read_int(fd);
-
-    db->ME_num = cst_read_int(fd);
-    db->ME_order = cst_read_int(fd);
-    db->me_h = (const double * const *)cst_read_2d_array(fd);
-
-    db->spamf0 = cst_read_int(fd); /* yes, twice, its above too */
-    db->gain = cst_read_float(fd);
-
     return db;
 }
 
-static void cst_cg_free_db(cst_cg_db *db)
+static bell_boolean bell_read_feature(FILE *fd,char** fname, char** fval)
 {
-    /* Only gets called when this isn't populated : I think */ 
-    cst_free(db);
-}
-
-static void cst_read_voice_feature(FILE *fd,char** fname, char** fval)
-{
-    int temp;
-    *fname = cst_read_padded(fd,&temp);
-    *fval = cst_read_padded(fd,&temp);
+    if (TRUE != bell_read_string(fd, fname))
+    {
+        return FALSE;
+    }
+    if (TRUE != bell_read_string(fd, fval))
+    {
+        cst_free(*fname);
+        return FALSE;
+    }
+    return TRUE;
 }
 
 bell_voice *cst_cg_load_voice(const char *filename,
@@ -661,8 +1168,8 @@ bell_voice *cst_cg_load_voice(const char *filename,
     const char *language;
     const char *xname;
     cst_cg_db *cg_db;
-    char* fname;
-    char* fval;
+    char* fname = "";
+    char* fval = NULL;
     FILE *vd;
     int num_param_models = 3;
     int num_dur_models = 1;
@@ -673,7 +1180,7 @@ bell_voice *cst_cg_load_voice(const char *filename,
 	return NULL;
     }
 
-    if (cst_cg_read_header(vd) != 0)
+    if (bell_cg_read_header(vd) != TRUE)
     {
         bell_fclose(vd);
         cst_errmsg("Clustergen voice: \"%s\", appears to have the wrong format \n",filename);
@@ -684,29 +1191,33 @@ bell_voice *cst_cg_load_voice(const char *filename,
 
     /* Read voice features from the external file */
     /* Read until the feature is "end_of_features" */
-    fname="";
     end_of_features = 0;
     while (end_of_features == 0)
     {
-	cst_read_voice_feature(vd,&fname, &fval);
-        if (cst_streq(fname,"end_of_features"))
+	if (TRUE != bell_read_feature(vd, &fname, &fval))
+        {
+            bell_fclose(vd);
+            delete_voice(vox);
+            return NULL;
+        }
+        if (cst_streq(fname, "end_of_features"))
             end_of_features = 1;
         else
         {
 // Only set features bellbird actually uses at this time
-            if (cst_streq(fname,"language"))
+            if (cst_streq(fname, "language"))
             {
-                xname = feat_own_string(vox->features,fname);
-                feat_set_string(vox->features,xname, fval);
+                xname = feat_own_string(vox->features, fname);
+                feat_set_string(vox->features, xname, fval);
             }
-            else if (cst_streq(fname,"num_param_models"))
+            else if (cst_streq(fname, "num_param_models"))
             {
-                bell_validate_atoi(fval,&tempint);
+                bell_validate_atoi(fval, &tempint);
                 num_param_models=tempint;
             }
-            else if (cst_streq(fname,"num_dur_models"))
+            else if (cst_streq(fname, "num_dur_models"))
             {
-                bell_validate_atoi(fval,&tempint);
+                bell_validate_atoi(fval, &tempint);
                 num_dur_models=tempint;
             }
         }
@@ -715,11 +1226,12 @@ bell_voice *cst_cg_load_voice(const char *filename,
     }
 
     /* Load up cg_db from external file */
-    cg_db = cst_cg_load_db(vd,num_param_models,num_dur_models);
+    cg_db = cst_cg_load_db(vd, num_param_models, num_dur_models);
     bell_fclose(vd);
 
     if (cg_db == NULL)
     {
+        delete_voice(vox);
         return NULL;
     }
 
@@ -738,21 +1250,21 @@ bell_voice *cst_cg_load_voice(const char *filename,
     }
     if (lex == NULL)
     {   /* Language is not supported */
-	/* Delete allocated memory in cg_db */
-	cst_cg_free_db(cg_db);
+	delete_cg_db(cg_db);
+        delete_voice(vox);
 	return NULL;	
     }
     
     /* Things that weren't filled in already. */
     vox->name = cg_db->name;
-    feat_set_string(vox->features,"name",cg_db->name);
+    feat_set_string(vox->features, "name", cg_db->name);
     
-    feat_set(vox->features,"lexicon",lexicon_val(lex));
-    feat_set(vox->features,"postlex_func",uttfunc_val(lex->postlex));
+    feat_set(vox->features,"lexicon", lexicon_val(lex));
+    feat_set(vox->features,"postlex_func", uttfunc_val(lex->postlex));
 
     /* Waveform synthesis */
-    feat_set(vox->features,"wave_synth_func",uttfunc_val(&cg_synth));
-    feat_set(vox->features,"cg_db",cg_db_val(cg_db));
+    feat_set(vox->features, "wave_synth_func", uttfunc_val(&cg_synth));
+    feat_set(vox->features, "cg_db", cg_db_val(cg_db));
 
     return vox;
 }

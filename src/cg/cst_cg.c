@@ -65,78 +65,154 @@
 
 CST_VAL_REGISTER_TYPE(cg_db,cst_cg_db)
 
-void delete_cg_db(cst_cg_db *db)
+cst_cg_db *new_cg_db(void)
 {
+    cst_cg_db* db = cst_alloc(cst_cg_db, 1);
+    db->name = NULL;
+    db->types = NULL;
+    db->f0_trees = NULL;
+    db->param_trees = NULL;
+    db->spamf0_accent_tree = NULL;
+    db->spamf0_phrase_tree = NULL;
+    db->spamf0_accent_vectors = NULL;
+    db->num_channels = NULL;
+    db->num_frames = NULL;
+    db->model_vectors = NULL;
+    db->model_min = NULL;
+    db->model_range = NULL;
+    db->dur_stats = NULL;
+    db->dur_cart = NULL;
+    db->phone_states = NULL;
+    db->dynwin = NULL;
+    db->me_h = NULL;
+    return db;
+}
+
+void delete_cg_db(cst_cg_db *db)
+{ // Delete cg_db even if it contains partially loaded data
     int i,j;
 
+    if (NULL == db)
+    {
+        return;
+    }
     /* Woo Hoo!  We're gonna free this garbage with a big mallet */
     /* In spite of what the const qualifiers say ... */
-    cst_free((void *)db->name);
-
-    for (i=0; db->types && db->types[i]; i++)
-        cst_free((void *)db->types[i]);
-    cst_free((void *)db->types);
-
-    for (i=0; db->f0_trees && db->f0_trees[i]; i++)
-        delete_cart((cst_cart *)(void *)db->f0_trees[i]);
-    cst_free((void *)db->f0_trees);
-
-    for (j=0; j<db->num_param_models; j++)
+    if (db->name)
     {
-        for (i=0; db->param_trees[j] && db->param_trees[j][i]; i++)
-            delete_cart((cst_cart *)(void *)db->param_trees[j][i]);
-        cst_free((void *)db->param_trees[j]);
+        cst_free((void *)db->name);
     }
-    cst_free((void *)db->param_trees);
-
+    if (db->types)
+    {
+        for (i=0; db->types[i]; i++)
+        {
+            cst_free((void *)db->types[i]);
+        }
+        cst_free((void *)db->types);
+    }
+    if (db->f0_trees)
+    {
+        for (i=0; db->f0_trees[i]; i++)
+        {
+             delete_cart((cst_cart *)(void *)db->f0_trees[i]);
+        }
+        cst_free((void *)db->f0_trees);
+    }
+    if (db->param_trees)
+    {
+        for (j=0; j<db->num_param_models; j++)
+        {
+            if (db->param_trees[j])
+            {
+                for (i=0; db->param_trees[j][i]; i++)
+                {
+                    delete_cart((cst_cart *)(void *)db->param_trees[j][i]);
+                }
+                cst_free((void *)db->param_trees[j]);
+            }
+        }
+        cst_free((void *)db->param_trees);
+    }
     if (db->spamf0)
     {
         delete_cart((cst_cart *)(void *)db->spamf0_accent_tree);
         delete_cart((cst_cart *)(void *)db->spamf0_phrase_tree);
-        cst_free((void *)db->spamf0_accent_vectors[0]);
-        cst_free((void *)db->spamf0_accent_vectors);
-    }
-
-    for (j=0; j<db->num_param_models; j++)
-    {
-        cst_free((void *)db->model_vectors[j][0]);
-        cst_free((void *)db->model_vectors[j]);
-    }
-    cst_free(db->num_channels);
-    cst_free(db->num_frames);
-    cst_free((void *)db->model_vectors);
-
-    cst_free((void *)db->model_min);
-    cst_free((void *)db->model_range);
-    for (j = 0; j<db->num_dur_models; j++)
-    {
-        for (i=0; db->dur_stats[j] && db->dur_stats[j][i]; i++)
+        if (db->spamf0_accent_vectors)
         {
-            cst_free((void *)db->dur_stats[j][i]->phone);
-            cst_free((void *)db->dur_stats[j][i]);
+            cst_free((void *)db->spamf0_accent_vectors[0]);
+            cst_free((void *)db->spamf0_accent_vectors);
         }
-        cst_free((void *)db->dur_stats[j]);
-        delete_cart((void *)db->dur_cart[j]);
     }
-    cst_free((void *)db->dur_stats);
-    cst_free((void *)db->dur_cart);
-
-    for (i=0; db->phone_states && db->phone_states[i]; i++)
+    if (db->model_vectors)
     {
-        for (j=0; db->phone_states[i][j]; j++)
-            cst_free((void *)db->phone_states[i][j]);
-        cst_free((void *)db->phone_states[i]);
+        for (j = 0; j < db->num_param_models; j++)
+        {
+            cst_free((void *)db->model_vectors[j][0]);
+            cst_free((void *)db->model_vectors[j]);
+        }
+        cst_free((void *)db->model_vectors);
     }
-    cst_free((void *)db->phone_states);
-
-    cst_free((void *)db->dynwin);
-
+    if (db->num_channels)
+    {
+        cst_free(db->num_channels);
+    }
+    if (db->num_frames)
+    {
+        cst_free(db->num_frames);
+    }
+    if (db->model_min)
+    {
+        cst_free((void *)db->model_min);
+    }
+    if (db->model_range)
+    {
+        cst_free((void *)db->model_range);
+    }
+    if (db->dur_stats)
+    {
+        for (j = 0; j < db->num_dur_models; j++)
+        {
+            if (db->dur_stats[j])
+            {
+                for (i = 0; db->dur_stats[j][i]; i++)
+                {
+                    cst_free((void *)db->dur_stats[j][i]->phone);
+                    cst_free((void *)db->dur_stats[j][i]);
+                }
+                cst_free((void *)db->dur_stats[j]);
+            }
+        }
+        cst_free((void *)db->dur_stats);
+    }
+    if (db->dur_cart)
+    {
+        for (j = 0; j < db->num_dur_models; j++)
+        {
+            delete_cart((void *)db->dur_cart[j]);
+        }
+        cst_free((void *)db->dur_cart);
+    }
+    if (db->phone_states)
+    {
+        for (i=0; db->phone_states[i]; i++)
+        {
+            for (j=0; db->phone_states[i][j]; j++)
+            {
+                cst_free((void *)db->phone_states[i][j]);
+            }
+            cst_free((void *)db->phone_states[i]);
+        }
+        cst_free((void *)db->phone_states);
+    }
+    if (db->dynwin)
+    {
+        cst_free((void *)db->dynwin);
+    }
     if (db->me_h)
     {
         cst_free((void *)db->me_h[0]);
         cst_free((void *)db->me_h);
     }
-
     cst_free((void *)db);
 }
 

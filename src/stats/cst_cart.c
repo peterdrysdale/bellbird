@@ -66,13 +66,19 @@ void delete_cart(cst_cart *cart)
     if (cart == NULL)
         return;
 
-    for (i=0; cart->rule_table[i].val; i++)
-        delete_val((cst_val *)(void *)cart->rule_table[i].val);
-    cst_free((void *)cart->rule_table);
+    if (cart->rule_table != NULL) // check for partially constructed cart
+    {
+        for (i=0; cart->rule_table[i].val; i++)
+            delete_val((cst_val *)(void *)cart->rule_table[i].val);
+        cst_free((void *)cart->rule_table);
+    }
 
-    for (i=0; cart->feat_table[i]; i++)
-        cst_free((void *)cart->feat_table[i]);
-    cst_free((void *)cart->feat_table);
+    if (cart->feat_table != NULL) // check for partially constructed cart
+    {
+        for (i=0; cart->feat_table[i]; i++)
+            cst_free((void *)cart->feat_table[i]);
+        cst_free((void *)cart->feat_table);
+    }
 
     cst_free(cart);
 

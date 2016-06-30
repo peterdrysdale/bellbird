@@ -127,6 +127,7 @@ typedef struct cst_cg_db_struct {
 } cst_cg_db;
 
 CST_VAL_USER_TYPE_DCLS(cg_db,cst_cg_db)
+cst_cg_db *new_cg_db(void);
 void delete_cg_db(cst_cg_db *db);
 
 cst_utterance *cg_synth(cst_utterance *utt);

@@ -299,7 +299,11 @@ int main(int argc, char **argv)
 
     flite_add_lang("eng",usenglish_init,cmu_lex_init); /* removed set_lang_list */
     voice = bell_voice_load(fn_voice, &engine);
-    if (NULL == voice) exit(1);
+    if (NULL == voice)
+    {
+        delete_features(extra_feats);
+        exit(1);
+    }
 
     for (i=1; i < argc; i++)
     {
