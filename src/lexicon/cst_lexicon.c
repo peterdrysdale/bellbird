@@ -65,16 +65,16 @@ void delete_lexicon(cst_lexicon *lexicon)
         delete_val(lexicon->lex_addenda);
 }
 
-static cst_val *lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
+static cst_val *lex_make_entry(const cst_lexicon *lex, const char *entry)
 {
 //  Parse and validate a line from pronouncing dictionary addenda
 //  Format is the same as Bellbird's uncompressed pronouncing dictionary
     cst_tokenstream *e;
     cst_val *phones = NULL;
     cst_val *ventry;
-    const cst_string *p;
-    cst_string *word;
-    cst_string *pos;
+    const char *p;
+    char *word;
+    char *pos;
     int entrylen;
     int i;
 
@@ -83,7 +83,7 @@ static cst_val *lex_make_entry(const cst_lexicon *lex, const cst_string *entry)
         return NULL; // Ignore entries which are clearly too short
 
 //  Extract part of speech information
-    pos = cst_alloc(cst_string,2);
+    pos = cst_alloc(char,2);
     pos[0] = entry[0];
     pos[1] = '\0';
 
@@ -141,7 +141,7 @@ cst_val *cst_lex_load_addenda(const cst_lexicon *lex, const char *lexfile)
 {
 //  Load a pronouncing dictionary addenda at runtime
     cst_tokenstream *lf;
-    const cst_string *line;
+    const char *line;
     cst_val *e = NULL;
     cst_val *na = NULL;
 

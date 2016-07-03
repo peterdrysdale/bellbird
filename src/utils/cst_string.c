@@ -57,13 +57,13 @@ double cst_atof(const char *str)
     return atof(str);
 }
 
-cst_string *cst_strdup(const cst_string *str)
+char *cst_strdup(const char *str)
 {
-    cst_string *nstr = NULL;
+    char *nstr = NULL;
 
     if (str)
     {
-	nstr = cst_alloc(cst_string,cst_strlen((const char *)str)+1);
+	nstr = cst_alloc(char,cst_strlen((const char *)str)+1);
 	memmove(nstr,str,cst_strlen((const char *)str)+1);
     }
     return nstr;
@@ -82,9 +82,9 @@ char *cst_substr(const char *str,int start, int length)
     return nstr;
 }
 
-cst_string *cst_downcase(const cst_string *str)
+char *cst_downcase(const char *str)
 {
-    cst_string *dc;
+    char *dc;
     int i;
 
     dc = cst_strdup(str);
@@ -96,9 +96,9 @@ cst_string *cst_downcase(const cst_string *str)
     return dc;
 }
 
-cst_string *cst_upcase(const cst_string *str)
+char *cst_upcase(const char *str)
 {
-    cst_string *uc;
+    char *uc;
     int i;
 
     uc = cst_strdup(str);

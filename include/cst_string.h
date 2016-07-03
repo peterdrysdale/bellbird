@@ -48,19 +48,16 @@
 
 #include <string.h>
 
-/* typedef unsigned char cst_string; */
-typedef char cst_string;
-
 double cst_atof(const char *str);
 
-cst_string *cst_strdup(const cst_string *s);
+char *cst_strdup(const char *s);
 #define cst_strlen(s) (strlen((const char *)s))
 #define cst_streq(A,B) (strcmp(A,B) == 0)
 int cst_member_string(const char *str, const char * const *slist);
 char *cst_substr(const char *str,int start, int length);
 
-cst_string *cst_downcase(const cst_string *str);
-cst_string *cst_upcase(const cst_string *str);
+char *cst_downcase(const char *str);
+char *cst_upcase(const char *str);
 
 int bell_validate_atof(const char * str, float * floatout);
 int bell_validate_atoi(const char * str, int * intout);

@@ -53,56 +53,56 @@ typedef struct  cst_tokenstream_struct {
     FILE *fd;
     int file_pos;
     int line_number;
-    cst_string *string_buffer;
+    char *string_buffer;
 
     int current_char;
 
     int token_pos;
     int ws_max;
-    cst_string *whitespace;
+    char *whitespace;
     int prep_max;
-    cst_string *prepunctuation;
+    char *prepunctuation;
     int token_max;
-    cst_string *token;
+    char *token;
     int postp_max;
-    cst_string *postpunctuation;
+    char *postpunctuation;
 
     void *streamtype_data;
 
     /* Should only be set through set_charclasses as charclass table needs */
     /* to be updated when you reset these                                  */
-    const cst_string *p_whitespacesymbols;
-    const cst_string *p_singlecharsymbols;
-    const cst_string *p_prepunctuationsymbols;
-    const cst_string *p_postpunctuationsymbols;
+    const char *p_whitespacesymbols;
+    const char *p_singlecharsymbols;
+    const char *p_prepunctuationsymbols;
+    const char *p_postpunctuationsymbols;
 
-    cst_string charclass[256];
+    char charclass[256];
 } cst_tokenstream;
 
-extern const cst_string * const cst_ts_default_whitespacesymbols;
+extern const char * const cst_ts_default_whitespacesymbols;
 
 /* Public functions for tokenstream manipulation */
 cst_tokenstream *ts_open(const char *filename,
-			 const cst_string *whitespacesymbols,
-			 const cst_string *singlecharsymbols,
-			 const cst_string *prepunctsymbols,
-			 const cst_string *postpunctsymbols);
-cst_tokenstream *ts_open_string(const cst_string *string,
-				const cst_string *whitespacesymbols,
-				const cst_string *singlecharsymbols,
-				const cst_string *prepunctsymbols,
-				const cst_string *postpunctsymbols);
+			 const char *whitespacesymbols,
+			 const char *singlecharsymbols,
+			 const char *prepunctsymbols,
+			 const char *postpunctsymbols);
+cst_tokenstream *ts_open_string(const char *string,
+				const char *whitespacesymbols,
+				const char *singlecharsymbols,
+				const char *prepunctsymbols,
+				const char *postpunctsymbols);
 void ts_close(cst_tokenstream *ts);
 
 int ts_eof(cst_tokenstream *ts);
-const cst_string *ts_get(cst_tokenstream *ts);
+const char *ts_get(cst_tokenstream *ts);
 
-const cst_string *ts_get_quoted_token(cst_tokenstream *ts,
+const char *ts_get_quoted_token(cst_tokenstream *ts,
 				char quote,
 				char escape);
 
 void set_singlecharsymbols(cst_tokenstream *ts,
-		           const cst_string *singlecharsymbols);
+		           const char *singlecharsymbols);
 
 int ts_set_stream_pos(cst_tokenstream *ts,int pos);
 int ts_get_stream_pos(cst_tokenstream *ts);
