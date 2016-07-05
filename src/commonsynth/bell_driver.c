@@ -313,11 +313,11 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
                         delete_utterance(utt); utt = NULL;
                         break;
                     }
-                    for (s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s))
+                    for (s = UTT_REL_HEAD(utt, SEGMENT); s; s = item_next(s))
                         label_size++;
                     if (label_size <= 0) return FALSE;
                     label_data = cst_alloc(char *,label_size);
-                    for (i = 0, s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s), i++)
+                    for (i = 0, s = UTT_REL_HEAD(utt, SEGMENT); s; s = item_next(s), i++)
                     {
                         label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
                         Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
@@ -414,11 +414,11 @@ float bell_text_to_speech(HTS_Engine * engine, const char *text,
         }
         else
         {
-            for (s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s))
+            for (s = UTT_REL_HEAD(utt, SEGMENT); s; s = item_next(s))
                 label_size++;
             if (label_size <= 0) return FALSE;
             label_data = cst_alloc(char *,label_size);
-            for (i = 0, s = relation_head(utt_relation(utt, SEGMENT)); s; s = item_next(s), i++)
+            for (i = 0, s = UTT_REL_HEAD(utt, SEGMENT); s; s = item_next(s), i++)
             {
                 label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
                 Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);

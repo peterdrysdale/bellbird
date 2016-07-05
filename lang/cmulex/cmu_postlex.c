@@ -42,6 +42,7 @@
 /*  Moved the CMU lexicon specific postlexical rules into cmulex itself  */
 /*************************************************************************/
 #include "cst_phoneset.h"
+#include "cst_utt_utils.h"
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 #include "flite.h"
@@ -55,8 +56,9 @@ static void apostrophe_s(cst_utterance *u)
 
     ps = val_phoneset(feat_val(u->features,"phoneset"));
 
-    for (s=item_next(relation_head(utt_relation(u,SEGMENT)));
-	 s; s=item_next(s))
+    for (s=item_next(UTT_REL_HEAD(u,SEGMENT));
+	 s;
+         s=item_next(s))
     {
 	word = val_string(ffeature(s, "R:"SYLSTRUCTURE".P.P.name"));
 	if (cst_streq("'s", word))
@@ -94,7 +96,7 @@ static void the_iy_ax(cst_utterance *u)
     const cst_item *i;
     const char *word;
 
-    for (i = relation_head(utt_relation(u, SEGMENT)); i; i = item_next(i))
+    for (i = UTT_REL_HEAD(u, SEGMENT); i; i = item_next(i))
     {
 	if (cst_streq("ax", ITEM_NAME(i)))
 	{

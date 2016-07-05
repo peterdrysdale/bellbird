@@ -158,7 +158,7 @@ static cst_utterance *bell_print_text(cst_utterance *u)
 //  print text (tokens without punctuation) from utterance
     cst_item *token;
 
-    for (token=relation_head(utt_relation(u,TOKEN));
+    for (token = UTT_REL_HEAD(u,TOKEN);
 	 token;
 	 token=item_next(token))
     {
@@ -174,7 +174,7 @@ static cst_utterance *bell_print_phones(cst_utterance *u)
 //  print phones with stress from utterance
     cst_item *phone;
 
-    for (phone=relation_head(utt_relation(u,SEGMENT));
+    for (phone = UTT_REL_HEAD(u,SEGMENT);
          phone;
          phone=item_next(phone))
     {

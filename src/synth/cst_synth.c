@@ -185,7 +185,7 @@ static cst_utterance *default_textanalysis(cst_utterance *u)
     word_rel = utt_relation_create(u,WORD);
     ttwv = feat_val(u->features, "tokentowords_func");
 
-    for (t=relation_head(utt_relation(u,TOKEN)); t; t=item_next(t))
+    for (t = UTT_REL_HEAD(u,TOKEN); t; t=item_next(t))
     {
 	if (ttwv)
 	    words = (cst_val *)(*val_itemfunc(ttwv))(t);
@@ -221,7 +221,7 @@ cst_utterance *default_phrasing(cst_utterance *u)
     r = utt_relation_create(u,PHRASE);
     phrasing_cart = val_cart(feat_val(u->features,"phrasing_cart"));
 
-    for (p=NULL,w=relation_head(utt_relation(u,WORD)); w; w=item_next(w))
+    for (p=NULL, w = UTT_REL_HEAD(u,WORD); w; w=item_next(w))
     {
 	if (p == NULL)
 	{
@@ -251,7 +251,7 @@ cst_utterance *hts_phrasing(cst_utterance *u)
     r = utt_relation_create(u,PHRASE);
     phrasing_cart = val_cart(feat_val(u->features,"phrasing_cart"));
 
-    for (p=NULL,w=relation_head(utt_relation(u,WORD)); w; w=item_next(w))
+    for (p=NULL, w = UTT_REL_HEAD(u,WORD); w; w=item_next(w))
     {
 	if (p == NULL)
 	{
@@ -281,14 +281,14 @@ static cst_utterance *default_pause_insertion(cst_utterance *u)
     silence = val_string(feat_val(u->features,"silence"));
 
     /* Insert initial silence */
-    s = relation_head(utt_relation(u,SEGMENT));
+    s = UTT_REL_HEAD(u,SEGMENT);
     if (s == NULL)
 	s = relation_append(utt_relation(u,SEGMENT),NULL);
     else
 	s = item_prepend(s,NULL);
     item_set_string(s,"name",silence);
 
-    for (p=relation_head(utt_relation(u,PHRASE)); p; p=item_next(p))
+    for (p = UTT_REL_HEAD(u,PHRASE); p; p=item_next(p))
     {
 	for (w = item_last_daughter(p); w; w=item_prev(w))
 	{
@@ -317,7 +317,7 @@ static cst_utterance *cart_intonation(cst_utterance *u)
     accents = val_cart(feat_val(u->features,"int_cart_accents"));
     tones = val_cart(feat_val(u->features,"int_cart_tones"));
     
-    for (s=relation_head(utt_relation(u,SYLLABLE)); s; s=item_next(s))
+    for (s = UTT_REL_HEAD(u,SYLLABLE); s; s=item_next(s))
     {
 	v = cart_interpret(s,accents);
 	if (!cst_streq("NONE",val_string(v)))
@@ -349,7 +349,7 @@ static cst_utterance *default_pos_tagger(cst_utterance *u)
         return u;
     tagger = val_cart(p);
 
-    for (word=relation_head(utt_relation(u,WORD));
+    for (word = UTT_REL_HEAD(u,WORD);
 	 word; word=item_next(word))
     {
         p = cart_interpret(word,tagger);
@@ -382,8 +382,9 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
     sylstructure = utt_relation_create(u,SYLSTRUCTURE);
     seg = utt_relation_create(u,SEGMENT);
 
-    for (word=relation_head(utt_relation(u,WORD));
-	 word; word=item_next(word))
+    for (word = UTT_REL_HEAD(u,WORD);
+	 word;
+         word=item_next(word))
     {
 	ssword = relation_append(sylstructure,word);
         pos = ffeature_string(word,"pos");
