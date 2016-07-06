@@ -58,6 +58,7 @@ cst_utterance *new_utterance()
 
     u->features = new_features();
     u->relations = new_features();
+    u->vox = NULL;
 
     return u;
 }

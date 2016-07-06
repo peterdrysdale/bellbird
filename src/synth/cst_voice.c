@@ -53,6 +53,12 @@ bell_voice *new_voice()
 
     v->features = new_features();
     v->ffunctions = cst_alloc(cst_ffunction, 256);
+    v->phrasing_cart = NULL;
+    v->pos_tagger_cart = NULL;
+    v->int_cart_accents = NULL;
+    v->int_cart_tones = NULL;
+    v->utt_break = NULL;
+    v->cg_db = NULL;
 
     return v;
 }
@@ -61,6 +67,7 @@ void delete_voice(bell_voice *v)
 {
     if (v != NULL)
     {
+        if (v->cg_db) delete_cg_db(v->cg_db);
 	delete_features(v->features);
 	cst_free(v->ffunctions);
 	cst_free(v);

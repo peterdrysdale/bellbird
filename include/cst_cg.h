@@ -53,82 +53,10 @@
 #define _CST_CG_H__
 
 #include "cst_cart.h"
+#include "cst_cg_db.h"
 #include "bell_track.h"
 #include "cst_voice.h"
 #include "cst_wave.h"
-
-typedef struct cst_dur_stats_struct {
-    char *phone;
-    float mean;
-    float stddev;
-} dur_stat;
-
-typedef struct cst_cg_db_struct {
-    /* Please do not change this structure, but if you do only add things
-       to the end of the struct.  If you change please modify dump/load  
-       voice too (in cst_cg_dump_voice and cst_cg_map) */
-    const char *name;
-    const char * const *types;
-    int num_types;
-
-    int sample_rate;
-
-    float f0_mean, f0_stddev;
-
-    /* Cluster trees */
-    const cst_cart * const *f0_trees; 
-
-    int num_param_models;
-    const cst_cart *** param_trees;
-
-    const cst_cart *spamf0_accent_tree; /* spam accent tree */
-    const cst_cart *spamf0_phrase_tree; /* spam phrase tree */
-
-    /* Model params e.g. mceps, deltas intersliced with stddevs */
-    int *num_channels;
-    int *num_frames;
-    const unsigned short *** model_vectors;
-
-    int num_channels_spamf0_accent;
-    int num_frames_spamf0_accent;
-    const float * const * spamf0_accent_vectors;
-
-    /* Currently shared between different models */
-    const float *model_min;    /* for vector coeffs encoding */
-    const float *model_range;  /* for vector coeffs encoding */
-
-    float frame_advance; 
-
-    /* duration model (cart + phonedurs) */
-    int num_dur_models;
-    const dur_stat *** dur_stats;
-    const cst_cart ** dur_cart;
-
-    /* phone to states map */
-    const char * const * const *phone_states;
-
-    /* Other parameters */    
-    float *dynwin;
-    int dynwinsize;
-
-    float mlsa_alpha;
-    float mlsa_beta;
-
-    int mixed_excitation;
-
-    /* filters for Mixed Excitation */
-    int ME_num;
-    int ME_order;
-    const double * const *me_h;  
-
-    int spamf0;
-    float gain;
-
-} cst_cg_db;
-
-CST_VAL_USER_TYPE_DCLS(cg_db,cst_cg_db)
-cst_cg_db *new_cg_db(void);
-void delete_cg_db(cst_cg_db *db);
 
 cst_utterance *cg_synth(cst_utterance *utt);
 cst_wave *mlsa_resynthesis(const bell_track *param_track,

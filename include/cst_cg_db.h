@@ -8,7 +8,7 @@
 /*                                                                       */
 /*                  Language Technologies Institute                      */
 /*                     Carnegie Mellon University                        */
-/*                        Copyright (c) 2001                             */
+/*                        Copyright (c) 2007                             */
 /*                        All Rights Reserved.                           */
 /*                                                                       */
 /*  Permission is hereby granted, free of charge, to use and distribute  */
@@ -37,50 +37,87 @@
 /*                                                                       */
 /*************************************************************************/
 /*             Author:  Alan W Black (awb@cs.cmu.edu)                    */
-/*               Date:  January 1999                                     */
+/*               Date:  November 2007                                    */
 /*************************************************************************/
 /*                                                                       */
-/*  User defined type registration                                       */
+/*  clustergen db                                                        */
 /*                                                                       */
 /*************************************************************************/
+#ifndef _CST_CG_DB_H__
+#define _CST_CG_DB_H__
 
-#include "cst_val.h"
-#include "cst_string.h"
+#include "cst_cart.h"
 
-#define VAL_REG(NAME,NUM)                              \
-extern const int cst_val_type_##NAME;                  \
-const int cst_val_type_##NAME=NUM;                     \
+typedef struct cst_dur_stats_struct {
+    char *phone;
+    float mean;
+    float stddev;
+} dur_stat;
 
-VAL_REG(wave,7)
-VAL_REG(uttfunc,9)
-VAL_REG(relation,11)
-VAL_REG(item,13)
-VAL_REG(phoneset,15)
-VAL_REG(lexicon,17)
-VAL_REG(userdata,19)
-CST_VAL_REGISTER_TYPE_NODEL(userdata,cst_userdata)   // This generic type has not been defined elsewhere
-VAL_REG(itemfunc,21)
-VAL_REG(features,23)
+typedef struct cst_cg_db_struct {
+    /* Please do not change this structure, but if you do only add things
+       to the end of the struct.  If you change please modify dump/load  
+       voice too (in cst_cg_dump_voice and cst_cg_map) */
+    const char *name;
+    const char * const *types;
+    int num_types;
 
-// The val takes ownership and must provide delete for these types
-void val_delete_wave(void *v);
-void val_delete_features(void *v);
-void val_delete_lexicon(void *v);
+    int sample_rate;
 
-// Table of names and delete functions (where required) for vals
-const cst_val_def cst_val_defs[] = {
-/* These ones are never called */
-    { "int"  , NULL },                     /* 1 INT */
-    { "float", NULL },                     /* 3 FLOAT */
-    { "string", NULL },                    /* 5 STRING */
-/* These are indexed (type/2) at print and delete time */
-    { "wave", val_delete_wave },           /*  7 wave */
-    { "uttfunc", NULL },                   /*  9 uttfunc */
-    { "relation", NULL },                  /* 11 relation */
-    { "item", NULL },                      /* 13 item */
-    { "phoneset", NULL },                  /* 15 phoneset */
-    { "lexicon", val_delete_lexicon },     /* 17 lexicon */
-    { "userdata", NULL },                  /* 19 userdata */
-    { "itemfunc", NULL },                  /* 21 itemfunc */
-    { "features", val_delete_features },   /* 23 features */
-};
+    float f0_mean, f0_stddev;
+
+    /* Cluster trees */
+    const cst_cart * const *f0_trees; 
+
+    int num_param_models;
+    const cst_cart *** param_trees;
+
+    const cst_cart *spamf0_accent_tree; /* spam accent tree */
+    const cst_cart *spamf0_phrase_tree; /* spam phrase tree */
+
+    /* Model params e.g. mceps, deltas intersliced with stddevs */
+    int *num_channels;
+    int *num_frames;
+    const unsigned short *** model_vectors;
+
+    int num_channels_spamf0_accent;
+    int num_frames_spamf0_accent;
+    const float * const * spamf0_accent_vectors;
+
+    /* Currently shared between different models */
+    const float *model_min;    /* for vector coeffs encoding */
+    const float *model_range;  /* for vector coeffs encoding */
+
+    float frame_advance; 
+
+    /* duration model (cart + phonedurs) */
+    int num_dur_models;
+    const dur_stat *** dur_stats;
+    const cst_cart ** dur_cart;
+
+    /* phone to states map */
+    const char * const * const *phone_states;
+
+    /* Other parameters */    
+    float *dynwin;
+    int dynwinsize;
+
+    float mlsa_alpha;
+    float mlsa_beta;
+
+    int mixed_excitation;
+
+    /* filters for Mixed Excitation */
+    int ME_num;
+    int ME_order;
+    const double * const *me_h;  
+
+    int spamf0;
+    float gain;
+
+} cst_cg_db;
+
+cst_cg_db *new_cg_db(void);
+void delete_cg_db(cst_cg_db *db);
+
+#endif

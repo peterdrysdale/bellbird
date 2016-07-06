@@ -47,12 +47,18 @@
 #define _CST_VOICE_H__
 
 #include "cst_val.h"
+#include "cst_cart.h"
 #include "cst_features.h"
-#include "cst_utterance.h"
 #include "cst_lexicon.h"
+#include "cst_tokenstream.h"
+#include "cst_cg_db.h"
 
 #define BELL_CLUSTERGEN 0
 #define BELL_HTS        1
+
+typedef int (*cst_breakfunc)(cst_tokenstream *ts,
+		             const char *token,
+			     cst_relation *tokens);
 
 typedef struct bell_voice_struct {
     const char *name;
@@ -60,6 +66,12 @@ typedef struct bell_voice_struct {
 
     cst_features *features;
     cst_ffunction *ffunctions; // Array for indexed access of features functions
+    const cst_cart *phrasing_cart;
+    const cst_cart *pos_tagger_cart; // Parts of speech tagger
+    const cst_cart *int_cart_accents;
+    const cst_cart *int_cart_tones;
+    cst_breakfunc utt_break;
+    cst_cg_db *cg_db;
 } bell_voice;
 
 /* Hold pointers to language and lexicon init function */

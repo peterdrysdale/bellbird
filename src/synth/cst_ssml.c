@@ -241,7 +241,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     cst_utterance *utt;
     cst_relation *tokrel;
     int num_tokens;
-    cst_breakfunc breakfunc = default_utt_break;
+    cst_breakfunc breakfunc = voice->utt_break;
     float durs = 0.0;
     cst_item *t;
     bell_voice *current_voice;
@@ -253,9 +253,6 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     feat_set(ssml_feats,"default_voice",userdata_val(voice));
     ssml_word_feats = new_features();
     set_singlecharsymbols(ts, ssml_singlecharsymbols_general);
-
-    if (feat_present(voice->features,"utt_break"))
-	breakfunc = val_breakfunc(feat_val(voice->features,"utt_break"));
 
     /* If its a file to write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */

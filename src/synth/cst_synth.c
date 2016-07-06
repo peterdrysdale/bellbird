@@ -54,8 +54,6 @@
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 
-CST_VAL_REGISTER_FUNCPTR(breakfunc,cst_breakfunc)
-
 #ifndef SYNTH_MODULES_DEBUG
 #define SYNTH_MODULES_DEBUG 0
 #endif
@@ -115,6 +113,7 @@ static cst_utterance *apply_synth_method(cst_utterance *u,
 cst_utterance *utt_init(cst_utterance *u, bell_voice *vox)
 {
     feat_copy_into(vox->features,u->features);
+    u->vox = vox;
     u->ffunctions = vox->ffunctions;
 
     return u;
@@ -216,10 +215,10 @@ cst_utterance *default_phrasing(cst_utterance *u)
     cst_relation *r;
     cst_item *w, *p, *lp=NULL;
     const cst_val *v;
-    cst_cart *phrasing_cart;
+    const cst_cart *phrasing_cart;
 
     r = utt_relation_create(u,PHRASE);
-    phrasing_cart = val_cart(feat_val(u->features,"phrasing_cart"));
+    phrasing_cart = u->vox->phrasing_cart;
 
     for (p=NULL, w = UTT_REL_HEAD(u,WORD); w; w=item_next(w))
     {
@@ -246,10 +245,10 @@ cst_utterance *hts_phrasing(cst_utterance *u)
     cst_relation *r;
     cst_item *w, *p, *lp=NULL;
     const cst_val *v;
-    cst_cart *phrasing_cart;
+    const cst_cart *phrasing_cart;
 
     r = utt_relation_create(u,PHRASE);
-    phrasing_cart = val_cart(feat_val(u->features,"phrasing_cart"));
+    phrasing_cart = u->vox->phrasing_cart;
 
     for (p=NULL, w = UTT_REL_HEAD(u,WORD); w; w=item_next(w))
     {
@@ -307,15 +306,15 @@ static cst_utterance *default_pause_insertion(cst_utterance *u)
 
 static cst_utterance *cart_intonation(cst_utterance *u)
 {
-    cst_cart *accents, *tones;
+    const cst_cart *accents, *tones;
     cst_item *s;
     const cst_val *v;
 
-    if (feat_present(u->features,"no_intonation_accent_model"))
+    if (NULL == u->vox->int_cart_accents)
         return u;  /* not all languages have intonation models */
 
-    accents = val_cart(feat_val(u->features,"int_cart_accents"));
-    tones = val_cart(feat_val(u->features,"int_cart_tones"));
+    accents = u->vox->int_cart_accents;
+    tones = u->vox->int_cart_tones;
     
     for (s = UTT_REL_HEAD(u,SYLLABLE); s; s=item_next(s))
     {
@@ -344,10 +343,11 @@ static cst_utterance *default_pos_tagger(cst_utterance *u)
     const cst_val *p;
     const cst_cart *tagger;
 
-    p = get_param_val(u->features,"pos_tagger_cart",NULL);
-    if (p == NULL)
+    tagger = u->vox->pos_tagger_cart;
+    if (NULL == tagger)
+    {
         return u;
-    tagger = val_cart(p);
+    }
 
     for (word = UTT_REL_HEAD(u,WORD);
 	 word; word=item_next(word))

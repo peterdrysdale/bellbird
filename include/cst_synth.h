@@ -52,10 +52,6 @@
 #include "cst_voice.h"
 #include "cst_wave.h"
 
-typedef int (*cst_breakfunc)(cst_tokenstream *ts, 
-		             const char *token, 
-			     cst_relation *tokens);
-CST_VAL_USER_FUNCPTR_DCLS(breakfunc,cst_breakfunc)
 int default_utt_break(cst_tokenstream *ts,
 		      const char *token, cst_relation *tokens);
 

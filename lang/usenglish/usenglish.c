@@ -57,7 +57,7 @@ static const char * const us_english_whitespace = " \t\n\r";
 void usenglish_init(bell_voice *v)
 {
     /* utterance break function */
-    feat_set(v->features,"utt_break",breakfunc_val(&default_utt_break));
+    v->utt_break = &default_utt_break;
 
     /* Phoneset */
     feat_set(v->features,"phoneset",phoneset_val(&us_phoneset));
@@ -74,14 +74,14 @@ void usenglish_init(bell_voice *v)
     feat_set(v->features,"tokentowords_func",itemfunc_val(&us_tokentowords));
 
     /* very simple POS tagger */
-    feat_set(v->features,"pos_tagger_cart",cart_val(&us_pos_cart));
+    v->pos_tagger_cart = (&us_pos_cart);
 
     /* Phrasing */
-    feat_set(v->features,"phrasing_cart",cart_val(&us_phrasing_cart));
+    v->phrasing_cart = &us_phrasing_cart;
 
     /* Intonation */
-    feat_set(v->features,"int_cart_accents",cart_val(&us_int_accent_cart));
-    feat_set(v->features,"int_cart_tones",cart_val(&us_int_tone_cart));
+    v->int_cart_accents = &us_int_accent_cart;
+    v->int_cart_tones = &us_int_tone_cart;
 
     if (v->name && cst_streq(v->name,"hts"))
     {

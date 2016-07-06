@@ -63,8 +63,6 @@
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 
-CST_VAL_REGISTER_TYPE(cg_db,cst_cg_db)
-
 cst_cg_db *new_cg_db(void)
 {
     cst_cg_db* db = cst_alloc(cst_cg_db, 1);
@@ -596,8 +594,7 @@ cst_utterance *cg_synth(cst_utterance *utt)
     bell_track *str_track = NULL; // A track will be allocated in cg_predict_params
                                   // if the voice is of mixed excitation type.
     bell_track *param_track = NULL; // A track will be allocated in cg_predict_params
-    cst_cg_db *cg_db;
-    cg_db = val_cg_db(UTT_FEAT_VAL(utt,"cg_db"));
+    cst_cg_db *cg_db = utt->vox->cg_db;
 
     cg_make_hmmstates(utt, cg_db);
     num_frames=cg_make_params(utt, cg_db);

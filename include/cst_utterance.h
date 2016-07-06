@@ -50,10 +50,12 @@
 #include "cst_features.h"
 #include "cst_relation.h"
 #include "cst_val.h"
+#include "cst_voice.h"
 
 struct cst_utterance_struct {
     cst_features *features;
     cst_ffunction *ffunctions; // Pointer to voice's features functions array
+    bell_voice *vox; // Pointer to voice for this utterance
     cst_features *relations;
 };
 

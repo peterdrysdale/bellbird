@@ -50,7 +50,6 @@ typedef struct cst_item_struct cst_item;
 /* So items, relations and utterances can be used as vals */
 CST_VAL_USER_TYPE_DCLS(relation,cst_relation)
 CST_VAL_USER_TYPE_DCLS(item,cst_item)
-CST_VAL_USER_TYPE_DCLS(utterance,cst_utterance)
 
 typedef struct cst_item_contents_struct {
     cst_features *features;

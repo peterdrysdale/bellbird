@@ -252,14 +252,12 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
     int label_size = 0;
     int num_tokens;
     cst_wave *w;
-    cst_breakfunc breakfunc = default_utt_break;
+    cst_breakfunc breakfunc = voice ->utt_break;
     int fp;
 
     fp = get_param_int(voice->features,"file_start_position",0);
     if (fp > 0)
         ts_set_stream_pos(ts,fp);
-    if (feat_present(voice->features,"utt_break"))
-        breakfunc = val_breakfunc(feat_val(voice->features,"utt_break"));
 
     /* If its a file we write to, create and save an empty wave file */
     /* as we are going to incrementally append to it                 */

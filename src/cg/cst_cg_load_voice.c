@@ -1264,7 +1264,7 @@ bell_voice *cst_cg_load_voice(const char *filename,
 
     /* Waveform synthesis */
     feat_set(vox->features, "wave_synth_func", uttfunc_val(&cg_synth));
-    feat_set(vox->features, "cg_db", cg_db_val(cg_db));
+    vox->cg_db = cg_db;
 
     return vox;
 }
