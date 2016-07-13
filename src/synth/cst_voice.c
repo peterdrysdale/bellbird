@@ -58,6 +58,8 @@ bell_voice *new_voice()
     v->int_cart_accents = NULL;
     v->int_cart_tones = NULL;
     v->utt_break = NULL;
+    v->language = NULL;
+    v->lexicon = NULL;
     v->cg_db = NULL;
 
     return v;
@@ -67,6 +69,8 @@ void delete_voice(bell_voice *v)
 {
     if (v != NULL)
     {
+        if (v->language) cst_free(v->language);
+        if (v->lexicon) delete_lexicon(v->lexicon);
         if (v->cg_db) delete_cg_db(v->cg_db);
 	delete_features(v->features);
 	cst_free(v->ffunctions);

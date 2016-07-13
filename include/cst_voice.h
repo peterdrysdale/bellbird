@@ -71,6 +71,8 @@ typedef struct bell_voice_struct {
     const cst_cart *int_cart_accents;
     const cst_cart *int_cart_tones;
     cst_breakfunc utt_break;
+    char * language;
+    cst_lexicon *lexicon;
     cst_cg_db *cg_db;
 } bell_voice;
 

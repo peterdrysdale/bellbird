@@ -59,6 +59,7 @@ cst_utterance *new_utterance()
     u->features = new_features();
     u->relations = new_features();
     u->vox = NULL;
+    u->wave = NULL;
 
     return u;
 }
@@ -73,6 +74,7 @@ void delete_utterance(cst_utterance *u)
 	for (fp=u->relations->head; fp; fp=fp->next)
 	    delete_relation(val_relation(fp->val)); 
 	delete_features(u->relations);
+        if (u->wave) delete_wave(u->wave);
 	cst_free(u);
     }
 }

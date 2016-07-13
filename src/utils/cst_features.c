@@ -87,7 +87,6 @@ void delete_features(cst_features *f)
 	    delete_val(n->val);
 	    cst_free(n);
 	}
-        delete_val(f->owned_strings);
 	cst_free(f);
     }
 }
@@ -253,12 +252,6 @@ int feat_copy_into(const cst_features *from,cst_features *to)
 	feat_set(to,p->name,p->val);
     
     return i;
-}
-
-const char *feat_own_string(cst_features *f,const char *n)
-{
-    f->owned_strings = cons_val(string_val(n),f->owned_strings);
-    return val_string(val_car(f->owned_strings));
 }
 
 #if defined(CART_DEBUG) || defined(SSML_DEBUG)

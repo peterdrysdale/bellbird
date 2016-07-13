@@ -1166,7 +1166,6 @@ bell_voice *cst_cg_load_voice(const char *filename,
     cst_lexicon *lex = NULL;
     int i, end_of_features;
     const char *language;
-    const char *xname;
     cst_cg_db *cg_db;
     char* fname = "";
     char* fval = NULL;
@@ -1207,8 +1206,7 @@ bell_voice *cst_cg_load_voice(const char *filename,
 // Only set features bellbird actually uses at this time
             if (cst_streq(fname, "language"))
             {
-                xname = feat_own_string(vox->features, fname);
-                feat_set_string(vox->features, xname, fval);
+                vox->language = cst_strdup(fval);
             }
             else if (cst_streq(fname, "num_param_models"))
             {
@@ -1236,7 +1234,7 @@ bell_voice *cst_cg_load_voice(const char *filename,
     }
 
     /* Use the language feature to initialize the correct voice */
-    language = get_param_string(vox->features, "language", "");
+    language = vox->language;
 
     /* Search Lang table for lang_init() and lex_init(); */
     for (i=0; lang_table[i].lang; i++)
@@ -1258,8 +1256,8 @@ bell_voice *cst_cg_load_voice(const char *filename,
     /* Things that weren't filled in already. */
     vox->name = cg_db->name;
     feat_set_string(vox->features, "name", cg_db->name);
-    
-    feat_set(vox->features,"lexicon", lexicon_val(lex));
+
+    vox->lexicon = lex;
     feat_set(vox->features,"postlex_func", uttfunc_val(lex->postlex));
 
     /* Waveform synthesis */

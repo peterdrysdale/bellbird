@@ -51,21 +51,17 @@
 extern const int cst_val_type_##NAME;                  \
 const int cst_val_type_##NAME=NUM;                     \
 
-VAL_REG(wave,7)
-VAL_REG(uttfunc,9)
-VAL_REG(relation,11)
-VAL_REG(item,13)
-VAL_REG(phoneset,15)
-VAL_REG(lexicon,17)
-VAL_REG(userdata,19)
+VAL_REG(uttfunc,7)
+VAL_REG(relation,9)
+VAL_REG(item,11)
+VAL_REG(phoneset,13)
+VAL_REG(userdata,15)
 CST_VAL_REGISTER_TYPE_NODEL(userdata,cst_userdata)   // This generic type has not been defined elsewhere
-VAL_REG(itemfunc,21)
-VAL_REG(features,23)
+VAL_REG(itemfunc,17)
+VAL_REG(features,19)
 
 // The val takes ownership and must provide delete for these types
-void val_delete_wave(void *v);
 void val_delete_features(void *v);
-void val_delete_lexicon(void *v);
 
 // Table of names and delete functions (where required) for vals
 const cst_val_def cst_val_defs[] = {
@@ -74,13 +70,11 @@ const cst_val_def cst_val_defs[] = {
     { "float", NULL },                     /* 3 FLOAT */
     { "string", NULL },                    /* 5 STRING */
 /* These are indexed (type/2) at print and delete time */
-    { "wave", val_delete_wave },           /*  7 wave */
-    { "uttfunc", NULL },                   /*  9 uttfunc */
-    { "relation", NULL },                  /* 11 relation */
-    { "item", NULL },                      /* 13 item */
-    { "phoneset", NULL },                  /* 15 phoneset */
-    { "lexicon", val_delete_lexicon },     /* 17 lexicon */
-    { "userdata", NULL },                  /* 19 userdata */
-    { "itemfunc", NULL },                  /* 21 itemfunc */
-    { "features", val_delete_features },   /* 23 features */
+    { "uttfunc", NULL },                   /*  7 uttfunc */
+    { "relation", NULL },                  /*  9 relation */
+    { "item", NULL },                      /* 11 item */
+    { "phoneset", NULL },                  /* 13 phoneset */
+    { "userdata", NULL },                  /* 15 userdata */
+    { "itemfunc", NULL },                  /* 17 itemfunc */
+    { "features", val_delete_features },   /* 19 features */
 };

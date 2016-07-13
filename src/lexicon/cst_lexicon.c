@@ -49,8 +49,6 @@
 #include "cst_tokenstream.h"
 #include "bell_file.h"
 
-CST_VAL_REGISTER_TYPE(lexicon,cst_lexicon)
-
 #define WP_SIZE 64
 
 static int lex_match_entry(const char *a, const char *b);

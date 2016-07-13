@@ -58,7 +58,6 @@ typedef struct cst_featvalpair_struct {
 
 typedef struct cst_features_struct {
     struct cst_featvalpair_struct *head;
-    cst_val *owned_strings; /* fnames that are owned by this struct */
 } cst_features;
 
 /* Constructor functions */

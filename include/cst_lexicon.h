@@ -77,8 +77,6 @@ cst_val *get_phones_lex_addenda(const cst_val *entry);
 cst_val *lex_lookup(const cst_lexicon *l, const char *word, const char *pos);
 int in_lex(const cst_lexicon *l, const char *word, const char *pos);
 
-CST_VAL_USER_TYPE_DCLS(lexicon,cst_lexicon)
-
 void delete_lexicon(cst_lexicon *lexicon);
 
 #endif

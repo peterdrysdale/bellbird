@@ -374,7 +374,7 @@ static cst_utterance *default_lexical_insertion(cst_utterance *u)
     const cst_val *vpn;
     int dp = 0;
 
-    lex = val_lexicon(feat_val(u->features,"lexicon"));
+    lex = u->vox->lexicon;
     if (lex->lex_addenda)
 	lex_addenda = lex->lex_addenda;
 

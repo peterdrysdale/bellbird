@@ -254,7 +254,6 @@ int main(int argc, char **argv)
     const char *lex_addenda_file = NULL;
     float tempfloat;
     int tempint;
-    cst_lexicon *lex;
     cst_audiodev *ad = NULL;  // audio device
     int sampling_rate; // sampling rate to open audio device with
 #ifdef CST_AUDIO_ALSA
@@ -451,8 +450,7 @@ int main(int argc, char **argv)
 
     if (lex_addenda_file)
     {
-        lex = val_lexicon(feat_val(voice->features,"lexicon"));
-        lex->lex_addenda = cst_lex_load_addenda(lex,lex_addenda_file);
+        voice->lexicon->lex_addenda = cst_lex_load_addenda(voice->lexicon,lex_addenda_file);
     }
 
     if (cst_streq(outtype,"play"))

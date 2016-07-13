@@ -234,7 +234,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 	nsw = item_feat_string(token,"nsw");
 
     utt = item_utt(token);
-    lex = val_lexicon(feat_val(utt->features,"lexicon"));
+    lex = utt->vox->lexicon;
 
     if (cst_streq("1",get_param_string(item_feats(token),"ssml_comment","0")))
         r = NULL;

@@ -82,6 +82,4 @@ int cst_wave_load_riff_fd(cst_wave *w, FILE *fd);
 
 void cst_wave_resize(cst_wave *w,int samples, int num_channels);
 
-CST_VAL_USER_TYPE_DCLS(wave,cst_wave)
-
 #endif

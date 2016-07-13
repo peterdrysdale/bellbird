@@ -449,7 +449,7 @@ static bell_voice *register_hts_voice(const cst_lang *lang_list)
     voice->name = "hts";
 
     /* Use the language feature to initialize the correct voice      */
-    /* language = get_param_string(voice->features, "language", ""); */
+    /* language = voice->language */
 
     /* Hack Hack Hack HTS voices don't have language set so set here */
     language = "eng";
@@ -469,7 +469,7 @@ static bell_voice *register_hts_voice(const cst_lang *lang_list)
         cst_errmsg("Language is not supported. \n");
         return NULL;
     }
-    feat_set(voice->features,"lexicon",lexicon_val(lex));
+    voice->lexicon = lex;
 
     /* Add hts specific post lexical rules */
     feat_set(voice->features,"postlex_func",uttfunc_val(&cmu_postlex));
