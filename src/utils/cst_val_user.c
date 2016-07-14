@@ -57,8 +57,7 @@ VAL_REG(item,11)
 VAL_REG(phoneset,13)
 VAL_REG(userdata,15)
 CST_VAL_REGISTER_TYPE_NODEL(userdata,cst_userdata)   // This generic type has not been defined elsewhere
-VAL_REG(itemfunc,17)
-VAL_REG(features,19)
+VAL_REG(features,17)
 
 // The val takes ownership and must provide delete for these types
 void val_delete_features(void *v);
@@ -75,6 +74,5 @@ const cst_val_def cst_val_defs[] = {
     { "item", NULL },                      /* 11 item */
     { "phoneset", NULL },                  /* 13 phoneset */
     { "userdata", NULL },                  /* 15 userdata */
-    { "itemfunc", NULL },                  /* 17 itemfunc */
-    { "features", val_delete_features },   /* 19 features */
+    { "features", val_delete_features },   /* 17 features */
 };

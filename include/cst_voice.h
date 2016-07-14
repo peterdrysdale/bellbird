@@ -60,6 +60,8 @@ typedef int (*cst_breakfunc)(cst_tokenstream *ts,
 		             const char *token,
 			     cst_relation *tokens);
 
+typedef cst_val *(bell_tokentwfunc)(cst_item *i);
+
 typedef struct bell_voice_struct {
     const char *name;
     int type; // Voice type: clustergen or hts
@@ -73,6 +75,11 @@ typedef struct bell_voice_struct {
     cst_breakfunc utt_break;
     char * language;
     cst_lexicon *lexicon;
+    const char * text_whitespace;
+    const char * text_postpunctuation;
+    const char * text_prepunctuation;
+    const char * text_singlecharsymbols;
+    bell_tokentwfunc *tokentowords;
     cst_cg_db *cg_db;
 } bell_voice;
 

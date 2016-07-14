@@ -388,10 +388,10 @@ float flite_ssml_file_to_speech(const char *filename,
     float d;
 
     if ((ts = ts_open(filename,
-              cst_ts_default_whitespacesymbols,
-	      get_param_string(voice->features,"text_singlecharsymbols",""),
-	      get_param_string(voice->features,"text_prepunctuation",""),
-	      get_param_string(voice->features,"text_postpunctuation","")))
+                      cst_ts_default_whitespacesymbols,
+                      voice->text_singlecharsymbols,
+                      voice->text_prepunctuation,
+                      voice->text_postpunctuation))
 	== NULL)
     {
 	cst_errmsg("failed to open file \"%s\" for ssml reading\n",
@@ -434,10 +434,10 @@ float flite_ssml_text_to_speech(const char *text,
     float d;
 
     if ((ts = ts_open_string(text,
-              cst_ts_default_whitespacesymbols,
-	      get_param_string(voice->features,"text_singlecharsymbols",""),
-	      get_param_string(voice->features,"text_prepunctuation",""),
-	      get_param_string(voice->features,"text_postpunctuation","")))
+                             cst_ts_default_whitespacesymbols,
+                             voice->text_singlecharsymbols,
+                             voice->text_prepunctuation,
+                             voice->text_postpunctuation))
 	== NULL)
     {
 	return 1;

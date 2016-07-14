@@ -64,14 +64,12 @@ void usenglish_init(bell_voice *v)
     feat_set_string(v->features,"silence",us_phoneset.silence);
 
     /* Text analyser */
-    feat_set_string(v->features,"text_whitespace",us_english_whitespace);
-    feat_set_string(v->features,"text_postpunctuation",us_english_punctuation);
-    feat_set_string(v->features,"text_prepunctuation",
-		    us_english_prepunctuation);
-    feat_set_string(v->features,"text_singlecharsymbols",
-		    us_english_singlecharsymbols);
+    v->text_whitespace = us_english_whitespace;
+    v->text_postpunctuation = us_english_punctuation;
+    v->text_prepunctuation = us_english_prepunctuation;
+    v->text_singlecharsymbols = us_english_singlecharsymbols;
 
-    feat_set(v->features,"tokentowords_func",itemfunc_val(&us_tokentowords));
+    v->tokentowords = &us_tokentowords;
 
     /* very simple POS tagger */
     v->pos_tagger_cart = (&us_pos_cart);

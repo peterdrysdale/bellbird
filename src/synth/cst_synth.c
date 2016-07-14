@@ -143,10 +143,10 @@ static cst_utterance *default_tokenization(cst_utterance *u)
     text = utt_input_text(u);
     r = utt_relation_create(u,TOKEN);
     fd = ts_open_string(text,
-	get_param_string(u->features,"text_whitespace",NULL),
-	get_param_string(u->features,"text_singlecharsymbols",NULL),
-	get_param_string(u->features,"text_prepunctuation",NULL),
-        get_param_string(u->features,"text_postpunctuation",NULL));
+                        u->vox->text_whitespace,
+                        u->vox->text_singlecharsymbols,
+                        u->vox->text_prepunctuation,
+                        u->vox->text_postpunctuation);
     
     while (!ts_eof(fd))
     {
@@ -168,28 +168,19 @@ static cst_utterance *default_tokenization(cst_utterance *u)
     return u;
 }
 
-static cst_val *default_tokentowords(cst_item *i)
-{
-    return cons_val(string_val(item_feat_string(i,"name")), NULL);
-}
-
 static cst_utterance *default_textanalysis(cst_utterance *u)
 {
     cst_item *t,*word;
     cst_relation *word_rel;
     cst_val *words;
     const cst_val *w;
-    const cst_val *ttwv;
 
     word_rel = utt_relation_create(u,WORD);
-    ttwv = feat_val(u->features, "tokentowords_func");
 
     for (t = UTT_REL_HEAD(u,TOKEN); t; t=item_next(t))
     {
-	if (ttwv)
-	    words = (cst_val *)(*val_itemfunc(ttwv))(t);
-	else
-	    words = default_tokentowords(t);
+        // Use tokentowords function from voice to convert token to words
+	words = (u->vox->tokentowords)(t);
 
 	for (w=words; w; w=val_cdr(w))
 	{
