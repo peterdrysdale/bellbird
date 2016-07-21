@@ -59,6 +59,8 @@ bell_voice *new_voice()
     v->int_cart_tones = NULL;
     v->utt_break = NULL;
     v->language = NULL;
+    v->synth_methods = NULL;
+    v->post_synth_func = NULL;
     v->lexicon = NULL;
     v->cg_db = NULL;
 
@@ -69,6 +71,7 @@ void delete_voice(bell_voice *v)
 {
     if (v != NULL)
     {
+        if (v->synth_methods) cst_free(v->synth_methods);
         if (v->language) cst_free(v->language);
         if (v->lexicon) delete_lexicon(v->lexicon);
         if (v->cg_db) delete_cg_db(v->cg_db);

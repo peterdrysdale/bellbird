@@ -64,14 +64,6 @@
 #define DPRINTF(l,x)
 #endif
 
-typedef struct cst_synth_module_struct {
-    const char *hookname;
-    cst_uttfunc defhook;
-} cst_synth_module;
-
-static const cst_synth_module synth_method_tokens[];
-static const cst_synth_module synth_module_tokenizer;
-
 cst_utterance *utt_synth_wave(cst_wave *w, bell_voice *v)
 {
     /* Create an utterance with a wave in it as if we've synthesized it */
@@ -80,32 +72,6 @@ cst_utterance *utt_synth_wave(cst_wave *w, bell_voice *v)
     u = new_utterance();
     utt_init(u,v);
     utt_set_wave(u,w);
-
-    return u;
-}
-
-static cst_utterance *apply_synth_module(cst_utterance *u,
-				  const cst_synth_module *mod)
-{
-    const cst_val *v;
-
-    v = feat_val(u->features, mod->hookname);
-    if (v)
-	return (*val_uttfunc(v))(u);
-    if (mod->defhook)
-	return (*mod->defhook)(u);
-    return u;
-}
-
-static cst_utterance *apply_synth_method(cst_utterance *u,
-				  const cst_synth_module meth[])
-{
-    while (meth->hookname)
-    {
-	if ((u = apply_synth_module(u, meth)) == NULL)
-	    return NULL;
-	++meth;
-    }
 
     return u;
 }
@@ -121,19 +87,31 @@ cst_utterance *utt_init(cst_utterance *u, bell_voice *vox)
 
 cst_utterance *utt_synth(cst_utterance *u)
 {
-// utt_synth is a tokenizer module followed by the usual utt_synth_tokens
+// utt_synth is a tokenizer method followed by the usual utt_synth_tokens
 // synthesis method
-    if ((u=apply_synth_module(u,&synth_module_tokenizer)) == NULL)
+    if ( (u=(*(u->vox->synth_methods[0]))(u)) == NULL)
        return NULL;
-    return apply_synth_method(u, synth_method_tokens);
+    return utt_synth_tokens(u);
 }
 
 cst_utterance *utt_synth_tokens(cst_utterance *u)
-{
-    return apply_synth_method(u, synth_method_tokens);
+{ // Step through synthesis methods to convert tokens to sound wave
+    int i = 1; // the method at index 0 is ignored as it is the tokenizer method
+    while ( (u->vox->synth_methods[i]) != NULL)
+    {
+        u = (*(u->vox->synth_methods[i]))(u);
+        if (NULL == u) return NULL;
+        i++;
+    }
+    if (u->vox->post_synth_func != NULL)
+    { // Apply a diagnostic post synthesis function to utterance
+        u = (*(u->vox->post_synth_func))(u);
+    }
+
+    return u;
 }
 
-static cst_utterance *default_tokenization(cst_utterance *u)
+cst_utterance *default_tokenization(cst_utterance *u)
 {
     const char *text,*token;
     cst_tokenstream *fd;
@@ -168,7 +146,7 @@ static cst_utterance *default_tokenization(cst_utterance *u)
     return u;
 }
 
-static cst_utterance *default_textanalysis(cst_utterance *u)
+cst_utterance *default_textanalysis(cst_utterance *u)
 {
     cst_item *t,*word;
     cst_relation *word_rel;
@@ -261,7 +239,7 @@ cst_utterance *hts_phrasing(cst_utterance *u)
     return u;
 }
 
-static cst_utterance *default_pause_insertion(cst_utterance *u)
+cst_utterance *default_pause_insertion(cst_utterance *u)
 {
     /* Add initial silences and silence at each phrase break */
     const char *silence;
@@ -295,7 +273,7 @@ static cst_utterance *default_pause_insertion(cst_utterance *u)
     return u;
 }
 
-static cst_utterance *cart_intonation(cst_utterance *u)
+cst_utterance *cart_intonation(cst_utterance *u)
 {
     const cst_cart *accents, *tones;
     cst_item *s;
@@ -328,7 +306,7 @@ static cst_utterance *cart_intonation(cst_utterance *u)
     return u;
 }
 
-static cst_utterance *default_pos_tagger(cst_utterance *u)
+cst_utterance *default_pos_tagger(cst_utterance *u)
 {
     cst_item *word;
     const cst_val *p;
@@ -350,7 +328,7 @@ static cst_utterance *default_pos_tagger(cst_utterance *u)
     return u;
 }
 
-static cst_utterance *default_lexical_insertion(cst_utterance *u)
+cst_utterance *default_lexical_insertion(cst_utterance *u)
 {
     cst_item *word;
     cst_relation *sylstructure,*seg,*syl;
@@ -491,19 +469,3 @@ int default_utt_break(cst_tokenstream *ts,
     else
 	return FALSE;
 }
-
-static const cst_synth_module synth_module_tokenizer =
-    { "tokenizer_func", default_tokenization };
-
-static const cst_synth_module synth_method_tokens[] = {
-    { "textanalysis_func", default_textanalysis },
-    { "pos_tagger_func", default_pos_tagger },
-    { "phrasing_func", NULL },
-    { "lexical_insertion_func", default_lexical_insertion },
-    { "pause_insertion_func", default_pause_insertion },
-    { "intonation_func", cart_intonation },
-    { "postlex_func", NULL },
-    { "wave_synth_func", NULL },
-    { "post_synth_hook_func", NULL },
-    { NULL, NULL }
-};

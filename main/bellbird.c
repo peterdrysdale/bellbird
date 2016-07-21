@@ -153,7 +153,7 @@ static void bellbird_usage()
     exit(0);
 }
 
-static cst_utterance *bell_print_text(cst_utterance *u)
+cst_utterance *bell_print_text(cst_utterance *u)
 {
 //  print text (tokens without punctuation) from utterance
     cst_item *token;
@@ -169,7 +169,7 @@ static cst_utterance *bell_print_text(cst_utterance *u)
     return u;
 }
 
-static cst_utterance *bell_print_phones(cst_utterance *u)
+cst_utterance *bell_print_phones(cst_utterance *u)
 {
 //  print phones with stress from utterance
     cst_item *phone;
@@ -337,13 +337,11 @@ int main(int argc, char **argv)
         }
         else if (cst_streq(argv[i],"--printphones"))
         {
-            feat_set(extra_feats,"post_synth_hook_func",
-                     uttfunc_val(&bell_print_phones));
+            voice->post_synth_func = &bell_print_phones;
         }
 	else if (cst_streq(argv[i],"--printtext"))
 	{
-	    feat_set(extra_feats,"post_synth_hook_func",
-		     uttfunc_val(&bell_print_text));
+            voice->post_synth_func = &bell_print_text;
 	}
         else if (cst_streq(argv[i],"-ssml"))
         {

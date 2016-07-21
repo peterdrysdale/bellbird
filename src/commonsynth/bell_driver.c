@@ -69,7 +69,6 @@
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 #include "../hts/HTS_hidden.h"
-#include "../lang/cmulex/cmu_lex.h"
 
 static void bell_hts_get_wave(HTS_Engine * engine,cst_utterance * utt)
 {
@@ -298,7 +297,8 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
             /* An end of utt, so synthesize it */
             if (utt)
             {
-                utt = flite_do_synth(utt,voice,utt_synth_tokens);
+                utt = utt_init(utt, voice);
+                utt = utt_synth_tokens(utt);
                 if (feat_present(utt->features,"Interrupted"))
                 {
                     delete_utterance(utt); utt = NULL;
@@ -401,7 +401,8 @@ float bell_text_to_speech(HTS_Engine * engine, const char *text,
 
     utt = new_utterance();
     utt_set_input_text(utt,text);
-    utt = flite_do_synth(utt, voice, utt_synth);
+    utt = utt_init(utt, voice);
+    utt = utt_synth(utt);
     if (engine != NULL)
     { // HTS specific code
         if (utt == NULL)
@@ -468,9 +469,6 @@ static bell_voice *register_hts_voice(const cst_lang *lang_list)
         return NULL;
     }
     voice->lexicon = lex;
-
-    /* Add hts specific post lexical rules */
-    feat_set(voice->features,"postlex_func",uttfunc_val(&cmu_postlex));
 
     return voice;
 }

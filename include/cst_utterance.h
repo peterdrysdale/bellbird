@@ -69,7 +69,4 @@ void delete_utterance(cst_utterance *u);
 cst_relation *utt_relation(const cst_utterance *u,const char *name);
 cst_relation *utt_relation_create(cst_utterance *u,const char *name);
 
-typedef cst_utterance *(*cst_uttfunc)(cst_utterance *i);
-CST_VAL_USER_FUNCPTR_DCLS(uttfunc,cst_uttfunc)
-
 #endif

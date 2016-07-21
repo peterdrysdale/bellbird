@@ -1258,10 +1258,7 @@ bell_voice *cst_cg_load_voice(const char *filename,
     feat_set_string(vox->features, "name", cg_db->name);
 
     vox->lexicon = lex;
-    feat_set(vox->features,"postlex_func", uttfunc_val(lex->postlex));
 
-    /* Waveform synthesis */
-    feat_set(vox->features, "wave_synth_func", uttfunc_val(&cg_synth));
     vox->cg_db = cg_db;
 
     return vox;

@@ -61,6 +61,12 @@ cst_utterance *utt_synth(cst_utterance *u);
 cst_utterance *utt_synth_tokens(cst_utterance *u);
 cst_utterance *utt_synth_wave(cst_wave *w, bell_voice *v);
 
+cst_utterance *default_tokenization(cst_utterance *u);
+cst_utterance *default_textanalysis(cst_utterance *u);
+cst_utterance *default_pos_tagger(cst_utterance *u);
+cst_utterance *default_lexical_insertion(cst_utterance *u);
+cst_utterance *default_pause_insertion(cst_utterance *u);
+cst_utterance *cart_intonation(cst_utterance *u);
 cst_utterance *default_phrasing(cst_utterance *u);
 cst_utterance *hts_phrasing(cst_utterance *u);
 

@@ -67,8 +67,6 @@ float flite_ssml_text_to_speech(const char *text, bell_voice *voice,
                                 const char *outtype, cst_audiodev *ad);
 
 /* Lower level user functions */
-cst_utterance *flite_do_synth(cst_utterance *u, bell_voice *voice,
-                              cst_uttfunc synth);
 float flite_process_output(cst_utterance *u, const char *outtype,
                            int append, cst_audiodev *ad);
 

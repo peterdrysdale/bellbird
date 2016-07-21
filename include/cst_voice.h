@@ -56,6 +56,8 @@
 #define BELL_CLUSTERGEN 0
 #define BELL_HTS        1
 
+typedef cst_utterance *(*cst_uttfunc)(cst_utterance *i);
+
 typedef int (*cst_breakfunc)(cst_tokenstream *ts,
 		             const char *token,
 			     cst_relation *tokens);
@@ -74,6 +76,8 @@ typedef struct bell_voice_struct {
     const cst_cart *int_cart_tones;
     cst_breakfunc utt_break;
     char * language;
+    cst_uttfunc *synth_methods;
+    cst_uttfunc post_synth_func;
     cst_lexicon *lexicon;
     const char * text_whitespace;
     const char * text_postpunctuation;

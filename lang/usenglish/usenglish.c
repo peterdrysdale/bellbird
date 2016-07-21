@@ -48,6 +48,8 @@
 #include "us_ffeatures.h"
 #include "us_ffeatures_hts.h"
 #include "cst_string.h"
+#include "../lang/cmulex/cmu_lex.h"
+#include "cst_cg.h"
 
 static const char * const us_english_punctuation = "\"'`.,:;!?(){}[]";
 static const char * const us_english_prepunctuation = "\"'`({[";
@@ -81,16 +83,29 @@ void usenglish_init(bell_voice *v)
     v->int_cart_accents = &us_int_accent_cart;
     v->int_cart_tones = &us_int_tone_cart;
 
+    v->synth_methods = cst_alloc(cst_uttfunc, 10);
+    v->synth_methods[0] = &default_tokenization;
+    v->synth_methods[1] = &default_textanalysis;
+    v->synth_methods[2] = &default_pos_tagger;
+//  synth_methods[3] is phrasing function and is set below
+    v->synth_methods[4] = &default_lexical_insertion;
+    v->synth_methods[5] = &default_pause_insertion;
+    v->synth_methods[6] = &cart_intonation;
+    v->synth_methods[7] = &cmu_postlex;
+//  synth_methods[8] is wave synthesis function for cg voices and is set below
+    v->synth_methods[9] = NULL;
+
     if (v->name && cst_streq(v->name,"hts"))
     {
-      feat_set(v->features,"phrasing_func",uttfunc_val(&hts_phrasing));
+      v->synth_methods[3] = &hts_phrasing;
+      v->synth_methods[8] = NULL;
 
-      /* Add ffunctions which are needed by hts voices */
       us_ff_register_hts(v->ffunctions);
     }
     else
     {
-      feat_set(v->features,"phrasing_func",uttfunc_val(&default_phrasing));
+      v->synth_methods[3] = &default_phrasing;
+      v->synth_methods[8] = &cg_synth;
 
       us_ff_register(v->ffunctions);
     }

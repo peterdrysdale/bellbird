@@ -68,20 +68,6 @@ int flite_add_lang(const char *langname,
     return TRUE;
 }
 
-cst_utterance *flite_do_synth(cst_utterance *u,
-                                     bell_voice *voice,
-                                     cst_uttfunc synth)
-{		       
-    utt_init(u, voice);
-    if ((*synth)(u) == NULL)
-    {
-	delete_utterance(u);
-	return NULL;
-    }
-    else
-	return u;
-}
-
 float flite_process_output(cst_utterance *u, const char *outtype,
                            int append, cst_audiodev *ad)
 {

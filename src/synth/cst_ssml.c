@@ -316,7 +316,8 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             /* An end of utt, so synthesize it */
             if (utt)
             {
-                utt = flite_do_synth(utt,current_voice,utt_synth_tokens);
+                utt = utt_init(utt, voice);
+                utt = utt_synth_tokens(utt);
                 if (feat_present(utt->features,"Interrupted"))
                 {
                     delete_utterance(utt); utt = NULL;
