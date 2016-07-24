@@ -44,7 +44,6 @@
 /*                                                                       */
 /*************************************************************************/
 #include "cst_synth.h"
-#include "cst_utt_utils.h"
 #include "flite.h"
 #include "bell_audio.h"
 

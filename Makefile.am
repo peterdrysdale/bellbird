@@ -92,7 +92,6 @@ libbellbird_la_SOURCES = src/audio/bell_au_buff.c \
                              src/lexicon/cst_lexicon.c \
                              src/lexicon/cst_lts.c \
                              src/synth/cst_synth.c \
-                             src/synth/cst_utt_utils.c \
                              src/synth/cst_voice.c \
                              src/synth/cst_phoneset.c \
                              src/synth/cst_ffeatures.c \
@@ -140,7 +139,7 @@ myinclude_HEADERS = include/cst_alloc.h \
 	include/cst_phoneset.h include/cst_regex.h \
 	include/cst_relation.h include/cst_string.h include/cst_synth.h \
 	include/cst_tokenstream.h \
-	include/cst_utt_utils.h include/cst_utterance.h \
+	include/cst_utterance.h \
 	include/cst_val.h include/cst_val_const.h include/cst_val_defs.h \
 	include/cst_voice.h include/cst_wave.h \
         include/flite.h include/HTS_engine.h \

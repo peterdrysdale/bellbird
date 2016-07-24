@@ -46,7 +46,6 @@
 
 #include <ctype.h>
 #include "cst_regex.h"
-#include "cst_utt_utils.h"
 #include "flite.h"
 #include "bell_file.h"
 #include "usenglish.h"

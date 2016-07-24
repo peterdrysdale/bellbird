@@ -42,7 +42,6 @@
 /*  Moved the CMU lexicon specific postlexical rules into cmulex itself  */
 /*************************************************************************/
 #include "cst_phoneset.h"
-#include "cst_utt_utils.h"
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"
 #include "flite.h"

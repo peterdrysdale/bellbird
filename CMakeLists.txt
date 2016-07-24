@@ -100,7 +100,6 @@ SET(SRC_LIBBELLBIRD
     src/synth/cst_phoneset.c
     src/synth/cst_ssml.c
     src/synth/cst_synth.c
-    src/synth/cst_utt_utils.c
     src/synth/cst_voice
     src/synth/flite.c
     src/utils/bell_file.c

@@ -89,7 +89,6 @@
 #include "cst_features.h"
 #include "cst_regex.h"
 #include "cst_string.h"
-#include "cst_utt_utils.h"
 #include "flite.h"
 #include "bell_audio.h"
 #include "bell_file.h"

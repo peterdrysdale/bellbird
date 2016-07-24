@@ -58,7 +58,6 @@
 #include "cst_cg.h"
 #include "cst_item.h"
 #include "cst_spamf0.h"
-#include "cst_utt_utils.h"
 #include "cst_utterance.h"
 #include "bell_ff_sym.h"
 #include "bell_relation_sym.h"

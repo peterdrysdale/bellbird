@@ -39,10 +39,7 @@
 /*             Author:  Alan W Black (awb@cs.cmu.edu)                    */
 /*               Date:  December 1999                                    */
 /*************************************************************************/
-/*                                                                       */
-/*  Utterances                                                           */
-/*                                                                       */
-/*************************************************************************/
+
 #ifndef _CST_UTTERANCE_H__
 #define _CST_UTTERANCE_H__
 
@@ -68,5 +65,15 @@ void delete_utterance(cst_utterance *u);
 
 cst_relation *utt_relation(const cst_utterance *u,const char *name);
 cst_relation *utt_relation_create(cst_utterance *u,const char *name);
+
+int utt_set_wave(cst_utterance *u, cst_wave *w);
+cst_wave *utt_wave(cst_utterance *u);
+
+const char *utt_input_text(cst_utterance *u);
+int utt_set_input_text(cst_utterance *u,const char *text);
+
+#define UTT_SET_FEAT_INT(U,F,V) (feat_set_int((U)->features,F,V))
+
+#define UTT_REL_HEAD(U,R) (relation_head(utt_relation((U),R)))
 
 #endif

@@ -62,7 +62,6 @@
 #include "cst_tokenstream.h"
 #include "cst_val.h"
 #include "cst_utterance.h"
-#include "cst_utt_utils.h"
 #include "cst_wave.h"
 #include "flite.h"
 #include "bell_driver.h"

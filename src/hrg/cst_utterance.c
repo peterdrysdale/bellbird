@@ -107,3 +107,28 @@ cst_relation *utt_relation(const cst_utterance *u,const char *name)
     }
     return NULL;
 }
+
+cst_wave *utt_wave(cst_utterance *u)
+{
+    if (u)
+	return u->wave;
+    else
+	return 0;
+}
+
+int utt_set_wave(cst_utterance *u, cst_wave *w)
+{
+    u->wave = w;
+    return 0;
+}
+
+const char *utt_input_text(cst_utterance *u)
+{
+    return u->inputtext;
+}
+
+int utt_set_input_text(cst_utterance *u,const char *text)
+{
+    u->inputtext = text;
+    return 0;
+}
