@@ -44,7 +44,7 @@
 
 CST_VAL_REGISTER_TYPE_NODEL(phoneset,cst_phoneset)
 
-int phone_id(const cst_phoneset *ps,const char* phonename)
+static int phone_id(const cst_phoneset *ps,const char* phonename)
 {
     int i;
 

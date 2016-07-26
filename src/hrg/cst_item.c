@@ -309,11 +309,6 @@ int item_feat_present(const cst_item *i,const char *name)
     return feat_present(item_feats(i),name);
 }
 
-int item_feat_remove(const cst_item *i,const char *name)
-{
-    return feat_remove(item_feats(i),name);
-}
-
 cst_features *item_feats(const cst_item *i)
 {
     return (i ? i->contents->features : NULL);

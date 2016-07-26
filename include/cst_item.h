@@ -91,7 +91,6 @@ cst_item *item_add_daughter(cst_item *i,cst_item *new_item);
 
 /* Feature accessor/manipulator functions */
 int item_feat_present(const cst_item *i,const char *name);
-int item_feat_remove(const cst_item *i,const char *name);
 cst_features *item_feats(const cst_item *i);
 const cst_val *item_feat(const cst_item *i,const char *name);
 int item_feat_int(const cst_item *i,const char *name);
