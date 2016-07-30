@@ -132,7 +132,7 @@ cst_utterance *default_tokenization(cst_utterance *u)
 	{
 	    t = relation_append(r,NULL);
 	    item_set_string(t,"name",token);
-	    item_set_string(t,"whitespace",fd->whitespace);
+	    item_set_string(t,WHITESPACE,fd->whitespace);
 	    item_set_string(t,"prepunctuation",fd->prepunctuation);
 	    item_set_string(t,"punc",fd->postpunctuation);
 	    item_set_int(t,"file_pos",fd->file_pos);

@@ -69,6 +69,7 @@
 #include "flite.h"
 #include "bell_file.h"
 #include "bell_relation_sym.h"
+#include "bell_ff_sym.h"
 
 static const char *ssml_singlecharsymbols_general = "<>&/\";";
 static const char *ssml_singlecharsymbols_inattr = "=>;/\"";
@@ -358,7 +359,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
 
             t = relation_append(tokrel, NULL);
             item_set_string(t,"name",token);
-            item_set_string(t,"whitespace",ts->whitespace);
+            item_set_string(t,WHITESPACE,ts->whitespace);
             item_set_string(t,"prepunctuation",ts->prepunctuation);
             item_set_string(t,"punc",ts->postpunctuation);
             /* Mark it at the beginning of the token */

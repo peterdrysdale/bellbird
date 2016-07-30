@@ -310,7 +310,7 @@ static int cg_make_params(cst_utterance *utt, cst_cg_db *cg_db)
         {
             mcep_frame = relation_append(mcep,NULL);
             item_add_daughter(mcep_parent,mcep_frame);
-            item_set_int(mcep_frame,"frame_number",num_frames);
+            item_set_int(mcep_frame,FRAME_NUMBER,num_frames);
             item_set(mcep_frame,"name",item_feat(mcep_parent,"name"));
         }
     }
@@ -334,7 +334,7 @@ static int voiced_frame(cst_item *m)
         return 0; /* unvoiced */
     else if (cst_streq("+",ph_vc))
         return 1; /* voiced */
-    else if (item_feat_float(m,"voicing") > 0.5)
+    else if (item_feat_float(m,VOICING) > 0.5)
         /* Even though the range is 0-10, I *do* mean 0.5 */
         return 1; /* voiced */
     else
@@ -371,8 +371,8 @@ static void cg_F0_interpolate_spline(cst_utterance *utt,
 
     for (syl=UTT_REL_HEAD(utt,SYLLABLE); syl; syl=item_next(syl))
     {
-        start_index = ffeature_int(syl,"R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK".d1.frame_number");
-        end_index = ffeature_int(syl,"R:"SYLSTRUCTURE".dn.R:"SEGSTATE".dn.R:"MCEP_LINK".dn.frame_number");
+        start_index = ffeature_int(syl,"R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK".d1."FRAME_NUMBER);
+        end_index = ffeature_int(syl,"R:"SYLSTRUCTURE".dn.R:"SEGSTATE".dn.R:"MCEP_LINK".dn."FRAME_NUMBER);
         mid_index = (int)((start_index + end_index)/2.0);
 
         start_f0 = param_track->frames[start_index][0];
@@ -392,8 +392,8 @@ static void cg_F0_interpolate_spline(cst_utterance *utt,
 
         if (item_next(syl))
         {
-            nsi = ffeature_int(syl,"n.R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK".d1.frame_number");
-            nei = ffeature_int(syl,"n.R:"SYLSTRUCTURE".dn.R:"SEGSTATE".dn.R:"MCEP_LINK".dn.frame_number");
+            nsi = ffeature_int(syl,"n.R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK".d1."FRAME_NUMBER);
+            nei = ffeature_int(syl,"n.R:"SYLSTRUCTURE".dn.R:"SEGSTATE".dn.R:"MCEP_LINK".dn."FRAME_NUMBER);
             nmi = (int)((nsi + nei)/2.0);
             nmid_f0 = param_track->frames[nmi][0];
         }
@@ -528,7 +528,7 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames, cst_c
                                     cg_db->num_channels[pm]-2) /
                     (float)(pm+1);
             }
-            item_set_float(mcep,"voicing",voicing);
+            item_set_float(mcep,VOICING,voicing);
             /* Apply local gain to c0 */
             param_track->frames[i][2] *= local_gain;
 
@@ -556,7 +556,7 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames, cst_c
                 }
             }
             /* last coefficient is average voicing for cluster */
-            item_set_float(mcep,"voicing",
+            item_set_float(mcep,VOICING,
                            BELL_MODEL_VECTOR(model_vectors[0],f,
                                            cg_db->num_channels[0]-2));
         }

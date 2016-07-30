@@ -134,9 +134,9 @@ static const cst_val *cg_state_place(const cst_item *p)
 {
     float start, end;
     int this;
-    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.d1.frame_number");
-    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.dn.frame_number");
-    this = item_feat_int(p,"frame_number");
+    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.d1."FRAME_NUMBER);
+    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.dn."FRAME_NUMBER);
+    this = item_feat_int(p,FRAME_NUMBER);
     if ((end-start) == 0.0)
         return float_val(0.0);
     else
@@ -147,8 +147,8 @@ static const cst_val *cg_state_index(const cst_item *p)
 {
     float start;
     int this;
-    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.d1.frame_number");
-    this = item_feat_int(p,"frame_number");
+    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.d1."FRAME_NUMBER);
+    this = item_feat_int(p,FRAME_NUMBER);
     return float_val(this-start);
 }
 
@@ -156,8 +156,8 @@ static const cst_val *cg_state_rindex(const cst_item *p)
 {
     float end;
     int this;
-    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.dn.frame_number");
-    this = item_feat_int(p,"frame_number");
+    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.dn."FRAME_NUMBER);
+    this = item_feat_int(p,FRAME_NUMBER);
     return float_val(end-this);
 }
 
@@ -165,9 +165,9 @@ static const cst_val *cg_phone_place(const cst_item *p)
 {
     float start, end;
     int this;
-    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.d1.R:"MCEP_LINK".d1.frame_number");
-    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.dn.R:"MCEP_LINK".dn.frame_number");
-    this = item_feat_int(p,"frame_number");
+    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.d1.R:"MCEP_LINK".d1."FRAME_NUMBER);
+    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.dn.R:"MCEP_LINK".dn."FRAME_NUMBER);
+    this = item_feat_int(p,FRAME_NUMBER);
     if ((end-start) == 0.0)
         return float_val(0.0);
     else
@@ -178,8 +178,8 @@ static const cst_val *cg_phone_index(const cst_item *p)
 {
     float start;
     int this;
-    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.d1.R:"MCEP_LINK".d1.frame_number");
-    this = item_feat_int(p,"frame_number");
+    start = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.d1.R:"MCEP_LINK".d1."FRAME_NUMBER);
+    this = item_feat_int(p,FRAME_NUMBER);
     return float_val(this-start);
 }
 
@@ -187,8 +187,8 @@ static const cst_val *cg_phone_rindex(const cst_item *p)
 {
     float end;
     int this;
-    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.dn.R:"MCEP_LINK".dn.frame_number");
-    this = item_feat_int(p,"frame_number");
+    end = (float)ffeature_int(p,"R:"MCEP_LINK".P.R:"SEGSTATE".P.dn.R:"MCEP_LINK".dn."FRAME_NUMBER);
+    this = item_feat_int(p,FRAME_NUMBER);
     return float_val(end-this);
 }
 
@@ -225,7 +225,7 @@ static const cst_val *cg_position_in_phrasep(const cst_item *p)
     else
     {
         x = phrasenumber +
-            ((CG_FRAME_SHIFT*item_feat_float(p,"frame_number"))-pstart) /
+            ((CG_FRAME_SHIFT*item_feat_float(p,FRAME_NUMBER))-pstart) /
             (pend - pstart);
         return float_val(x);
     }

@@ -94,4 +94,9 @@
 #define CONTENT_WORDS_OUT "\x75"
 #define LISP_CG_CONTENT_WORDS_IN_PHRASE "\x76"
 
+// Additional symbols which are not feature functions so must be two bytes long
+#define FRAME_NUMBER "fn"
+#define WHITESPACE "wh"
+#define VOICING "vc"
+
 #endif

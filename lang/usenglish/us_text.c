@@ -48,6 +48,7 @@
 #include "cst_regex.h"
 #include "flite.h"
 #include "bell_file.h"
+#include "bell_ff_sym.h"
 #include "usenglish.h"
 #include "us_text.h"
 
@@ -454,7 +455,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
 	    else if ((pname[0] >= 'a') && (pname[0] <= 'z') &&
 		     (nname[0] >= 'A') && (nname[0] <= 'Z'))
 		r = cons_val(string_val(saint),NULL);
-	    else if (cst_streq(ffeature_string(token,"n.whitespace")," "))
+	    else if (cst_streq(ffeature_string(token,"n."WHITESPACE)," "))
 		r = cons_val(string_val(saint),NULL);
 	    else
 		r = cons_val(string_val(street),NULL);
@@ -511,7 +512,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
     else if ((cst_strlen(name) == 1) &&
 	     (name[0] >= 'A') &&
 	     (name[0] <= 'Z') &&
-	     (cst_streq(" ",ffeature_string(token,"n.whitespace"))) &&
+	     (cst_streq(" ",ffeature_string(token,"n."WHITESPACE))) &&
 	     (ffeature_string(token,"n.name")[0] >= 'A') &&
 	     (ffeature_string(token,"n.name")[0] <= 'Z'))
     {

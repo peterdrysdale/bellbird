@@ -345,7 +345,7 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
 
         t = relation_append(tokrel, NULL);
         item_set_string(t,"name",token);
-        item_set_string(t,"whitespace",ts->whitespace);
+        item_set_string(t,WHITESPACE,ts->whitespace);
         item_set_string(t,"prepunctuation",ts->prepunctuation);
         item_set_string(t,"punc",ts->postpunctuation);
         /* Mark it at the beginning of the token */
