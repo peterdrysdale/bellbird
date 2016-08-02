@@ -306,7 +306,7 @@ static const cst_val *cg_syls_in_phrase(const cst_item *p)
 const cst_val *accented(const cst_item *syl)
 {
     if ((item_feat_present(syl,"accent")) ||
-	(item_feat_present(syl,"endtone")))
+	(item_feat_present(syl,ENDTONE)))
 	return &val_string_1;
     else
 	return &val_string_0;

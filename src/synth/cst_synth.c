@@ -133,10 +133,7 @@ cst_utterance *default_tokenization(cst_utterance *u)
 	    t = relation_append(r,NULL);
 	    item_set_string(t,"name",token);
 	    item_set_string(t,WHITESPACE,fd->whitespace);
-	    item_set_string(t,"prepunctuation",fd->prepunctuation);
 	    item_set_string(t,"punc",fd->postpunctuation);
-	    item_set_int(t,"file_pos",fd->file_pos);
-	    item_set_int(t,"line_number",fd->line_number);
 	}
     }
 
@@ -291,7 +288,7 @@ cst_utterance *cart_intonation(cst_utterance *u)
 	    item_set_string(s,"accent",val_string(v));
 	v = cart_interpret(s,tones);
 	if (!cst_streq("NONE",val_string(v)))
-	    item_set_string(s,"endtone",val_string(v));
+	    item_set_string(s,ENDTONE,val_string(v));
 	DPRINTF(0,("word %s gpos %s stress %s ssyl_in %s ssyl_out %s accent %s endtone %s\n",
 		   ffeature_string(s,"R:"SYLSTRUCTURE".P.name"),
 		   ffeature_string(s,"R:"SYLSTRUCTURE".P."GPOS),
@@ -299,7 +296,7 @@ cst_utterance *cart_intonation(cst_utterance *u)
 		   ffeature_string(s,SSYL_IN),
 		   ffeature_string(s,SSYL_OUT),
 		   ffeature_string(s,"accent"),
-		   ffeature_string(s,"endtone")));
+		   ffeature_string(s,ENDTONE)));
     }
 
     return u;
@@ -368,12 +365,12 @@ cst_utterance *default_lexical_insertion(cst_utterance *u)
 	/* FIXME: need to make sure that textanalysis won't split
            tokens with explicit pronunciation (or that it will
            propagate such to words, then we can remove the path here) */
-	if (item_feat_present(item_parent(item_as(word, TOKEN)), "phones"))
+	if (item_feat_present(item_parent(item_as(word, TOKEN)), PHONES))
         {
-            vpn = item_feat(item_parent(item_as(word, TOKEN)), "phones");
+            vpn = item_feat(item_parent(item_as(word, TOKEN)), PHONES);
             dp = 1;
             if (cst_streq(val_string(vpn),
-                          ffeature_string(word,"p.R:"TOKEN".P.phones")))
+                          ffeature_string(word,"p.R:"TOKEN".P."PHONES)))
                 phones = NULL; /* Already given these phones */
             else
                 phones = val_readlist_string(val_string(vpn));

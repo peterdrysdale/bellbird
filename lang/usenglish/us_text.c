@@ -227,7 +227,7 @@ static cst_val *us_tokentowords_one(cst_item *token, const char *name)
        done in the interface code rather than here once the
        tokentowords hook is accessible. AWB: no, they should set the
        nsw feature and this function should deal with it (doesn't yet though)*/
-    if (item_feat_present(token,"phones"))
+    if (item_feat_present(token,PHONES))
 	return cons_val(string_val(name),NULL);
     
     if (item_feat_present(token,"nsw"))

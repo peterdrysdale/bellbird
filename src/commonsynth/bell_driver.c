@@ -111,7 +111,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
 
    /* load endtone */
    endtone = cst_strdup(ffeature_string(item,
-                                           ("R:"SYLSTRUCTURE".P.P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn.endtone")));
+                                           ("R:"SYLSTRUCTURE".P.P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn."ENDTONE)));
 
    if (cst_streq(seg_c, "pau")) {
       /* for pause */
@@ -346,15 +346,7 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
         t = relation_append(tokrel, NULL);
         item_set_string(t,"name",token);
         item_set_string(t,WHITESPACE,ts->whitespace);
-        item_set_string(t,"prepunctuation",ts->prepunctuation);
         item_set_string(t,"punc",ts->postpunctuation);
-        /* Mark it at the beginning of the token */
-        item_set_int(t,"file_pos",
-                     ts->file_pos-(1+ /* as we are already on the next char */
-                                   cst_strlen(token)+
-                                   cst_strlen(ts->prepunctuation)+
-                                   cst_strlen(ts->postpunctuation)));
-        item_set_int(t,"line_number",ts->line_number);
     }
 
     delete_utterance(utt);

@@ -182,15 +182,15 @@ static cst_utterance *ssml_apply_tag(const char *tag,
         {
             /* Note SSML doesn't do stretch it does reciprical of stretch */
             if (cst_streq("rate",get_param_string(attributes,"_name0","")))
-                feat_set_float(word_feats,"local_duration_stretch",
+                feat_set_float(word_feats,LOCAL_DUR_STRETCH,
                                1.0/feat_float(attributes,"_val0"));
             if (cst_streq("rate",get_param_string(attributes,"_name1","")))
-                feat_set_float(word_feats,"local_duration_stretch",
+                feat_set_float(word_feats,LOCAL_DUR_STRETCH,
                                1.0/feat_float(attributes,"_val1"));
         }
         else if (cst_streq("end",feat_string(attributes,"_type")))
         {
-            feat_remove(word_feats,"local_duration_stretch");
+            feat_remove(word_feats,LOCAL_DUR_STRETCH);
         }
 
     }
@@ -202,12 +202,12 @@ static cst_utterance *ssml_apply_tag(const char *tag,
             {
                 const char *ph;
                 ph = feat_string(attributes,"_val0");
-                feat_set_string(word_feats,"phones",ph);
+                feat_set_string(word_feats,PHONES,ph);
             }
         }
         else if (cst_streq("end",feat_string(attributes,"_type")))
         {
-            feat_remove(word_feats,"phones");
+            feat_remove(word_feats,PHONES);
         }
 
     }
@@ -360,15 +360,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             t = relation_append(tokrel, NULL);
             item_set_string(t,"name",token);
             item_set_string(t,WHITESPACE,ts->whitespace);
-            item_set_string(t,"prepunctuation",ts->prepunctuation);
             item_set_string(t,"punc",ts->postpunctuation);
-            /* Mark it at the beginning of the token */
-            item_set_int(t,"file_pos",
-                 ts->file_pos-(1+ /* as we are already on the next char */
-                               cst_strlen(token)+
-                               cst_strlen(ts->prepunctuation)+
-                               cst_strlen(ts->postpunctuation)));
-            item_set_int(t,"line_number",ts->line_number);
             feat_copy_into(ssml_word_feats,item_feats(t));
         }
     }

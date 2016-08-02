@@ -295,7 +295,7 @@ static int cg_make_params(cst_utterance *utt, cst_cg_db *cg_db)
     for (s = UTT_REL_HEAD(utt,HMMSTATE); s; s=item_next(s))
     {
         start = end;
-        tok_stretch = ffeature_float(s,"R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"TOKEN".P.local_duration_stretch");
+        tok_stretch = ffeature_float(s,"R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"TOKEN".P."LOCAL_DUR_STRETCH);
         if (tok_stretch == 0)
             tok_stretch = 1.0;
         rdur = tok_stretch*dur_stretch*cg_state_duration(s,cg_db);
@@ -459,7 +459,7 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames, cst_c
     int i,j,f,p,o,pm;
     const char *mname;
     float f0_val;
-    float local_gain, voicing;
+    float voicing;
     int extra_feats = 0;
 
     extra_feats = 1;  /* voicing */
@@ -478,8 +478,6 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames, cst_c
     for (i=0,mcep=UTT_REL_HEAD(utt,MCEP); mcep; i++,mcep=item_next(mcep))
     {
         mname = item_feat_string(mcep,"name");
-        local_gain = ffeature_float(mcep,"R:"MCEP_LINK".P.R:"SEGSTATE".P.R:"SYLSTRUCTURE".P.P.R:"TOKEN".P.local_gain");
-        if (local_gain == 0.0) local_gain = 1.0;
         for (p=0; cg_db->types[p]; p++)
             if (cst_streq(mname,cg_db->types[p]))
                 break;
@@ -529,9 +527,6 @@ static cst_utterance *cg_predict_params(cst_utterance *utt,int num_frames, cst_c
                     (float)(pm+1);
             }
             item_set_float(mcep,VOICING,voicing);
-            /* Apply local gain to c0 */
-            param_track->frames[i][2] *= local_gain;
-
         }
         else
         {   /* SINGLE model */

@@ -98,5 +98,8 @@
 #define FRAME_NUMBER "fn"
 #define WHITESPACE "wh"
 #define VOICING "vc"
+#define ENDTONE "et"
+#define LOCAL_DUR_STRETCH "ld"
+#define PHONES "PH"
 
 #endif
