@@ -128,6 +128,7 @@ static void bellbird_usage()
           "  --startpos n   Read input file from byte n (int), skipping n-1 bytes\n"
           "  --printphones  Print phones while generating speech\n"
           "  --printtext    Print text while generating speech\n"
+          "  --rate         Speech speed up rate\n"
           "  --seti F=V     Set int feature\n"
           "  --setf F=V     Set float feature\n"
           "  --sets F=V     Set string feature\n"
@@ -135,7 +136,6 @@ static void bellbird_usage()
           "  -ssml          Read input text/file in ssml mode\n"
           " HTS specific options:                                   [  def][ min--max]\n"
           "  -b  f           postfiltering coefficient              [  0.0][-0.8--0.8]\n"
-          "  -r  f           speech speed rate                      [  1.0][ 0.0--   ]\n"
           "  -fm f           additional half-tone                   [  0.0][    --   ]\n"
           "  -u  f           voiced/unvoiced threshold              [  0.5][ 0.0--1.0]\n"
           "  -jm f           weight of GV for spectrum              [  1.0][ 0.0--2.0]\n"
@@ -362,7 +362,25 @@ int main(int argc, char **argv)
 	{
 	    texttoread = argv[++i];
 	    explicit_text = TRUE;
-	}          
+	}
+        else if ( cst_streq(argv[i],"--rate") && (i+1 < argc) )
+        {
+              if (bell_validate_atof(argv[++i],&tempfloat))
+              {
+                 if (BELL_HTS == voice->type)
+                 {
+                    HTS_Engine_set_speed(&engine, tempfloat);
+                 }
+                 else if (tempfloat > 1.0E-06)
+                 {
+                    feat_set_float(extra_feats,"duration_stretch",(1.0/tempfloat));
+                 }
+              }
+              else
+              {
+                  printf("Failed to set '--rate' command option\n");
+              }
+        }
         else if (BELL_HTS == voice->type) /* hts specific options */
         {
            if ( cst_streq(argv[i],"-b") && (i+1 < argc) )
@@ -374,17 +392,6 @@ int main(int argc, char **argv)
               else
               {
                  printf("Failed to set '-b' command option\n");
-              }
-           }
-           else if ( cst_streq(argv[i],"-r") && (i+1 < argc) )
-           {
-              if (bell_validate_atof(argv[++i],&tempfloat))
-              {
-                 HTS_Engine_set_speed(&engine, tempfloat);
-              }
-              else
-              {
-                  printf("Failed to set '-r' command option\n");
               }
            }
            else if ( cst_streq(argv[i],"-fm") && (i+1 < argc) )
