@@ -273,7 +273,7 @@ void HTS_PStreamSet_initialize(HTS_PStreamSet * pss)
 }
 
 /* HTS_PStreamSet_create: parameter generation using GV weight */
-HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, double *msd_threshold, double *gv_weight)
+HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, double *msd_threshold)
 {
    size_t i, j, k, l, m;
    int shift;
@@ -365,12 +365,6 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
       /* copy GV */
       if (HTS_SStreamSet_use_gv(sss, i)) {
          pst->gv_mean = HTS_SStreamSet_abandon_gv_mean(sss, i);
-         if (gv_weight[i] != 1.0)
-         {
-            for (j = 0; j < pst->vector_length; j++) {
-              pst->gv_mean[j] *= gv_weight[i];
-            }
-         }
          pst->gv_vari = HTS_SStreamSet_abandon_gv_vari(sss, i);
          pst->gv_switch = cst_alloc(HTS_Boolean,pst->length);
          if (HTS_SStreamSet_is_msd(sss, i)) {   /* for MSD */

@@ -231,7 +231,6 @@ typedef struct _HTS_Condition {
    size_t sampling_frequency;   /* sampling frequency */
    size_t fperiod;              /* frame period */
    double *msd_threshold;       /* MSD thresholds */
-   double *gv_weight;           /* GV weights */
 
    /* duration */
    double speed;                /* speech speed */
@@ -267,9 +266,6 @@ size_t HTS_Engine_get_sampling_frequency(HTS_Engine * engine);
 
 /* HTS_Egnine_set_msd_threshold: set MSD threshold */
 void HTS_Engine_set_msd_threshold(HTS_Engine * engine, size_t stream_index, double f);
-
-/* HTS_Engine_set_gv_weight: set GV weight */
-void HTS_Engine_set_gv_weight(HTS_Engine * engine, size_t stream_index, double f);
 
 /* HTS_Engine_set_speed: set speech speed */
 void HTS_Engine_set_speed(HTS_Engine * engine, double f);

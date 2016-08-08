@@ -64,7 +64,6 @@ void HTS_Engine_initialize(HTS_Engine * engine)
    engine->condition.sampling_frequency = 0;
    engine->condition.fperiod = 0;
    engine->condition.msd_threshold = NULL;
-   engine->condition.gv_weight = NULL;
 
    /* duration */
    engine->condition.speed = 1.0;
@@ -110,9 +109,6 @@ HTS_Boolean HTS_Engine_load(HTS_Engine * engine, char **voices)
    engine->condition.msd_threshold = cst_alloc(double,nstream);
    for (i = 0; i < nstream; i++)
       engine->condition.msd_threshold[i] = 0.5;
-   engine->condition.gv_weight = cst_alloc(double,nstream);
-   for (i = 0; i < nstream; i++)
-      engine->condition.gv_weight[i] = 1.0;
 
    /* spectrum */
    option = HTS_ModelSet_get_option(&engine->ms, 0);
@@ -155,14 +151,6 @@ void HTS_Engine_set_msd_threshold(HTS_Engine * engine, size_t stream_index, doub
    if (f > 1.0)
       f = 1.0;
    engine->condition.msd_threshold[stream_index] = f;
-}
-
-/* HTS_Engine_set_gv_weight: set GV weight */
-void HTS_Engine_set_gv_weight(HTS_Engine * engine, size_t stream_index, double f)
-{
-   if (f < 0.0)
-      f = 0.0;
-   engine->condition.gv_weight[stream_index] = f;
 }
 
 /* HTS_Engine_set_speed: set speech speed */
@@ -213,7 +201,7 @@ HTS_Boolean HTS_Engine_synthesize_from_strings(HTS_Engine * engine, char **lines
       }
    }
 // Generate parameter sequence
-   if (HTS_PStreamSet_create(&engine->pss, &engine->sss, engine->condition.msd_threshold, engine->condition.gv_weight) != TRUE) {
+   if (HTS_PStreamSet_create(&engine->pss, &engine->sss, engine->condition.msd_threshold) != TRUE) {
       HTS_Engine_refresh(engine);
       return FALSE;
    }
@@ -247,8 +235,6 @@ void HTS_Engine_clear(HTS_Engine * engine)
 {
    if (engine->condition.msd_threshold != NULL)
       cst_free(engine->condition.msd_threshold);
-   if (engine->condition.gv_weight != NULL)
-      cst_free(engine->condition.gv_weight);
 
    HTS_ModelSet_clear(&engine->ms);
    HTS_Engine_initialize(engine);

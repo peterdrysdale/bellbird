@@ -138,8 +138,6 @@ static void bellbird_usage()
           "  -b  f           postfiltering coefficient              [  0.0][-0.8--0.8]\n"
           "  -fm f           additional half-tone                   [  0.0][    --   ]\n"
           "  -u  f           voiced/unvoiced threshold              [  0.5][ 0.0--1.0]\n"
-          "  -jm f           weight of GV for spectrum              [  1.0][ 0.0--2.0]\n"
-          "  -jf f           weight of GV for Log F0                [  1.0][ 0.0--2.0]\n"
           "\n"
           " infile:\n"
           "   text file  dash(-) reads from stdin\n"
@@ -414,32 +412,6 @@ int main(int argc, char **argv)
               else
               {
                  printf("Failed to set '-u' command option\n");
-              }
-
-           }
-           else if ( cst_streq(argv[i],"-jm") && (i+1 < argc) )
-           {
-              if (bell_validate_atof(argv[++i],&tempfloat))
-              {
-
-               HTS_Engine_set_gv_weight(&engine, 0, tempfloat);
-              }
-              else
-              {
-                 printf("Failed to set '-jm' command option\n");
-              }
-
-           }
-	   else if ( cst_streq(argv[i],"-jf") && (i+1 < argc) )
-           {
-              if (bell_validate_atof(argv[++i],&tempfloat))
-              {
-
-               HTS_Engine_set_gv_weight(&engine, 1, tempfloat);
-              }
-              else
-              {
-                 printf("Failed to set '-jf' command option\n");
               }
 
            }

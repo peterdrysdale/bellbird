@@ -253,7 +253,7 @@ void HTS_SStreamSet_clear(HTS_SStreamSet * sss);
 void HTS_PStreamSet_initialize(HTS_PStreamSet * pss);
 
 /* HTS_PStreamSet_create: parameter generation using GV weight */
-HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, double *msd_threshold, double *gv_weight);
+HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, double *msd_threshold);
 
 /* HTS_PStreamSet_get_nstream: get number of stream */
 size_t HTS_PStreamSet_get_nstream(HTS_PStreamSet * pss);
