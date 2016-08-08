@@ -118,26 +118,32 @@ static const void *internal_ff(const cst_item *item,
 	      ((type == 1) && tk));
 	 j++, tk = tokens[j])
     {
-        if (tk[0]=='R' && tk[0]!='\0' && tk[1]==':')
+        if (tk[0]=='R' && tk[1]==':')
 	{
 	    /* A relation move */
 	    relation = tk+2; /* the bit past the 'R:' */
 	    pitem = item_as(pitem,relation);
 	}
-	else if (tk[0]=='P' && tk[1]=='\0')
+        else if ('\0' != tk[0] && '\0' == tk[1])
+        {
+	if (tk[0]=='P')
 	    pitem = item_parent(pitem);
-	else if (tk[0]=='n' && tk[1]=='\0')
+	else if (tk[0]=='n')
 	    pitem = item_next(pitem);
-	else if (tk[0]=='p' && tk[1]=='\0')
+	else if (tk[0]=='p')
 	    pitem = item_prev(pitem);
-	else if (tk[0]=='p' && tk[1]=='p' && tk[2]=='\0')
+        }
+        else if ('\0' != tk[0] && '\0' != tk[1] && '\0' == tk[2])
+        {
+	if (tk[0]=='p' && tk[1]=='p')
 	    pitem = item_prev(item_prev(pitem));
-	else if (tk[0]=='n' && tk[1]=='n' && tk[2]=='\0')
+	else if (tk[0]=='n' && tk[1]=='n')
 	    pitem = item_next(item_next(pitem));
-	else if (tk[0]=='d' && tk[1]=='1' && tk[2]=='\0')
+	else if (tk[0]=='d' && tk[1]=='1')
 	    pitem = item_daughter(pitem);
-	else if (tk[0]=='d' && tk[1]=='n' && tk[2]=='\0')
+	else if (tk[0]=='d' && tk[1]=='n')
 	    pitem = item_last_daughter(pitem);
+        }
 	else
 	{
 	    cst_errmsg("ffeature: unknown directive \"%s\" ignored\n",tk);
@@ -177,7 +183,7 @@ void ff_register(cst_ffunction *ffunctions, const char *name, cst_ffunction f)
 //  'name' should be a single byte string symbol which will be used as an
 //  unique index. This should be recorded in bell_ff_sym.h
 
-    if (name[1]!='\0' && name[1] != '\0')
+    if (name[0]!='\0' && name[1] != '\0')
         cst_errmsg("warning: ffunction identifier %s too long - truncating", name);
     if (ffunctions[(int)name[0]] != NULL)
 	cst_errmsg("warning: ffunction %s redefined\n", name);
