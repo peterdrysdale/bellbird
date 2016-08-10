@@ -245,13 +245,10 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     cst_breakfunc breakfunc = voice->utt_break;
     float durs = 0.0;
     cst_item *t;
-    bell_voice *current_voice;
     int ssml_eou = 0;
     cst_wave *wave, *w;
 
     ssml_feats = new_features();
-    feat_set(ssml_feats,"current_voice",userdata_val(voice));
-    feat_set(ssml_feats,"default_voice",userdata_val(voice));
     ssml_word_feats = new_features();
     set_singlecharsymbols(ts, ssml_singlecharsymbols_general);
 
@@ -274,8 +271,6 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
     tokrel = utt_relation_create(utt, TOKEN);
     while (!ts_eof(ts) || num_tokens > 0)
     {
-        current_voice = 
-            (bell_voice *)val_userdata(feat_val(ssml_feats,"current_voice"));
         /* printf("awb_debug prewhile %d %s\n",ssml_eou,token); */
         if (ssml_eou == 0)
             token = ts_get(ts);
@@ -343,7 +338,7 @@ static float flite_ssml_to_speech_ts(cst_tokenstream *ts,
             /* Should create an utterances with the waveform in it */
             /* Have to stream it if there is streaming */
             if (utt) delete_utterance(utt);
-            utt = utt_synth_wave(wave,current_voice);
+            utt = utt_synth_wave(wave, voice);
             durs += flite_process_output(utt,outtype,TRUE,ad);
             delete_utterance(utt);
 
