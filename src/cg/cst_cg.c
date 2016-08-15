@@ -423,9 +423,9 @@ static void cg_smooth_F0(cst_utterance *utt,cst_cg_db *cg_db,
 
     cg_F0_interpolate_spline(utt,param_track);
 
-    mean = get_param_float(utt->features,"int_f0_target_mean", cg_db->f0_mean);
+    mean = get_param_float(utt->features,"f0_target_mean", cg_db->f0_mean);
     stddev = 
-        get_param_float(utt->features,"int_f0_target_stddev", cg_db->f0_stddev);
+        get_param_float(utt->features,"f0_target_stddev", cg_db->f0_stddev);
     
     for (i=0,mcep=UTT_REL_HEAD(utt,MCEP); mcep; i++,mcep=item_next(mcep))
     {
