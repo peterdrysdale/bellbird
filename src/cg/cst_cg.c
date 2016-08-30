@@ -326,9 +326,11 @@ static int voiced_frame(cst_item *m)
 {
     const char *ph_vc;
     const char *ph_name;
+    cst_item *ph_item;
 
-    ph_vc = ffeature_string(m,"R:"MCEP_LINK".P.R:"SEGSTATE".P."PH_VC);
-    ph_name = ffeature_string(m,"R:"MCEP_LINK".P.R:"SEGSTATE".P.name");
+    ph_item = path_to_item(m,"R:"MCEP_LINK".P.R:"SEGSTATE".P");
+    ph_vc = ffeature_string(ph_item,PH_VC);
+    ph_name = ffeature_string(ph_item,"name");
 
     if (cst_streq(ph_name,"pau"))
         return 0; /* unvoiced */
@@ -366,13 +368,15 @@ static void cg_F0_interpolate_spline(cst_utterance *utt,
     cst_item *syl;
     int i;
     float m;
+    cst_item *mcep_link_item;
 
     mid_f0 = end_f0 = -1.0;
 
     for (syl=UTT_REL_HEAD(utt,SYLLABLE); syl; syl=item_next(syl))
     {
-        start_index = ffeature_int(syl,"R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK".d1."FRAME_NUMBER);
-        end_index = ffeature_int(syl,"R:"SYLSTRUCTURE".dn.R:"SEGSTATE".dn.R:"MCEP_LINK".dn."FRAME_NUMBER);
+        mcep_link_item = path_to_item(syl,"R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK);
+        start_index = ffeature_int(mcep_link_item,"d1."FRAME_NUMBER);
+        end_index = ffeature_int(mcep_link_item,"dn."FRAME_NUMBER);
         mid_index = (int)((start_index + end_index)/2.0);
 
         start_f0 = param_track->frames[start_index][0];
@@ -392,8 +396,9 @@ static void cg_F0_interpolate_spline(cst_utterance *utt,
 
         if (item_next(syl))
         {
-            nsi = ffeature_int(syl,"n.R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK".d1."FRAME_NUMBER);
-            nei = ffeature_int(syl,"n.R:"SYLSTRUCTURE".dn.R:"SEGSTATE".dn.R:"MCEP_LINK".dn."FRAME_NUMBER);
+            mcep_link_item = path_to_item(syl,"n.R:"SYLSTRUCTURE".d1.R:"SEGSTATE".d1.R:"MCEP_LINK);
+            nsi = ffeature_int(mcep_link_item,"d1."FRAME_NUMBER);
+            nei = ffeature_int(mcep_link_item,"dn."FRAME_NUMBER);
             nmi = (int)((nsi + nei)/2.0);
             nmid_f0 = param_track->frames[nmi][0];
         }
