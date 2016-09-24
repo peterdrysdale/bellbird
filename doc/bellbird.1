@@ -34,6 +34,8 @@ Read input file from byte n (int), skipping first \%(n-1) bytes.
 Print phones to stdout while generating speech. This option conflicts with stdout redirection of speech data.
 .IP --printtext
 Print text to stdout while generating speech. This option conflicts with stdout redirection of speech data.
+.IP --rate
+Set speech speed up rate.
 .IP "--seti F=V"
 Set feature F to integer value V.
 .IP "--setf F=V"
@@ -44,8 +46,6 @@ Set feature F to string value V.
 Clustergen specific option to read input text/file in ssml mode.
 .IP "-b F"
 HTS specific option to set postfiltering coefficient.
-.IP "-r F"
-HTS specific option to set speech speed rate.
 .IP "-fm F"
 HTS specific option to add (or subtract) F semitones to speech pitch.
 .IP "-u F"
