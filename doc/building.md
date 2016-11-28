@@ -4,7 +4,7 @@ Building and Installation
 Bellbird contains the following build prerequisites:
   - Gnu Make
   - ALSA development libraries (optional linux only, known as `libasound2-dev` on Debian and derivative systems)
-  - C compiler (gcc 4.8,4.9,5.1,5.2,5.3,6.1,6.1 and clang 3.5,3.6,3.7,3.8 have most recently been tested)
+  - C compiler (gcc 4.8,4.9,5.1,5.2,5.3,6.1,6.2 and clang 3.6,3.7,3.8,3.9 have most recently been tested)
 
 ## Build for linux with autotools
 
