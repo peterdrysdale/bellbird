@@ -442,6 +442,7 @@ int default_utt_break(cst_tokenstream *ts,
     /* This will be ok for some latin based languages */
     const char *postpunct = item_feat_string(relation_tail(tokens), "punc");
     const char *ltoken = ITEM_NAME(relation_tail(tokens));
+    int i;
 
     if (strchr(ts->whitespace,'\n') != strrchr(ts->whitespace,'\n'))
 	 /* contains two new lines */
@@ -463,5 +464,16 @@ int default_utt_break(cst_tokenstream *ts,
 		strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ",ltoken[0]))))
 	return TRUE;
     else
-	return FALSE;
+    {
+        for(i = 0; ltoken[i] != '\0'; i++)
+        {
+            if (ltoken[i] == '\xe2'
+                && ltoken[i+1] == '\x80'
+                && ltoken[i+2] == '\x94')
+            { // This breaks for utf-8 em-dash separated by whitespace
+                return TRUE;
+            }
+        }
+        return FALSE;
+    }
 }

@@ -344,13 +344,14 @@ static void extract_postpunctuation(cst_tokenstream *ts)
             {
                 p--; // check for '\0' or TS_CHARCLASS_POSTPUNCT char
             }
-            else if ( ((ts->token[p]&0xf8) == 0x98) &&
+            else if ( ((ts->token[p]&0xf8) == 0x98 || ts->token[p] == '\x94') &&
                       ((p-2) > 0) &&
                       (ts->token[p-1] == '\x80') &&
                       (ts->token[p-2] == '\xe2') )
             {
                 p -= 3;  //check for utf-8 quotation marks block
                          //UTF codes points U+2018 -> U+201F
+                         //check also for utf-8 em-dash code point U+2014
             }
             else
             {
