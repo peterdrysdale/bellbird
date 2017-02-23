@@ -106,6 +106,11 @@ extern const cst_val val_int_16;
 extern const cst_val val_int_17;
 extern const cst_val val_int_18;
 extern const cst_val val_int_19;
+extern const cst_val val_int_20;
+extern const cst_val val_int_21;
+extern const cst_val val_int_22;
+extern const cst_val val_int_23;
+extern const cst_val val_int_24;
 
 extern const cst_val val_string_0; 
 extern const cst_val val_string_1; 
@@ -127,6 +132,11 @@ extern const cst_val val_string_16;
 extern const cst_val val_string_17;
 extern const cst_val val_string_18;
 extern const cst_val val_string_19;
+extern const cst_val val_string_20;
+extern const cst_val val_string_21;
+extern const cst_val val_string_22;
+extern const cst_val val_string_23;
+extern const cst_val val_string_24;
 
 const cst_val *val_int_n(int n);
 

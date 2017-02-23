@@ -10,7 +10,7 @@
 /*           http://hts-engine.sourceforge.net/                      */
 /* ----------------------------------------------------------------- */
 /*                                                                   */
-/*  Copyright (c) 2005-2012  Nagoya Institute of Technology          */
+/*  Copyright (c) 2005-2016  Nagoya Institute of Technology          */
 /*                           Department of Computer Science          */
 /*                                                                   */
 /*                2005-2008  Tokyo Institute of Technology           */
@@ -49,6 +49,7 @@
 /* ----------------------------------------------------------------- */
 
 #include <limits.h>
+#include <string.h> // for strstr()
 #include "cst_alloc.h"
 #include "cst_cg.h"
 #include "cst_error.h"
@@ -177,7 +178,8 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
       labelretlen = bell_snprintf(label, labellen,
               "%s^%s-%s+%s=%s@%d_%d/A:%d_%d_%d/B:%d-%d-%d@%d-%d&%d-%d#%d-%d$%d-%d!%d-%d;%d-%d|%s/C:%d+%d+%d/D:%s_%d/E:%s+%d@%d+%d&%d+%d#%d+%d/F:%s_%d/G:%d_%d/H:%d=%d^%d=%d|%s/I:%d=%d/J:%d+%d-%d",
               strcmp(seg_pp, "0") == 0 ? "x" : seg_pp,
-              strcmp(seg_p, "0") == 0 ? "x" : seg_p, seg_c,
+              strcmp(seg_p, "0") == 0 ? "x" : seg_p,
+              seg_c,
               strcmp(seg_n, "0") == 0 ? "x" : seg_n,
               strcmp(seg_nn, "0") == 0 ? "x" : seg_nn,
               tmp1 + 1,
@@ -239,6 +241,163 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    cst_free(seg_n);
    cst_free(seg_nn);
    cst_free(endtone);
+}
+
+static void Flite_HTS_Engine_create_label_new(cst_item * item, char *label, size_t labellen)
+{
+// Create label per phoneme for new API HTS voices
+   cst_item *syl_item;
+   cst_item *word_item;
+   cst_item *phrase_item;
+   size_t labelretlen = 0;
+   cst_val *tmpsyl_vowel;
+   const char *p1 = ffeature_string(item, "p.p.name");
+   const char *p2 = ffeature_string(item, "p.name");
+   const char *p3 = ffeature_string(item, "name");
+   const char *p4 = ffeature_string(item, "n.name");
+   const char *p5 = ffeature_string(item, "n.n.name");
+
+   if (strcmp(p3, "pau") == 0) {
+      /* for pause */
+      int a3 = ffeature_int(item, "p.R:"SYLSTRUCTURE".P.R:"SYLLABLE"."SYL_NUMPHONES);
+      int c3 = ffeature_int(item, "n.R:"SYLSTRUCTURE".P.R:"SYLLABLE"."SYL_NUMPHONES);
+      int d2 = ffeature_int(item, "p.R:"SYLSTRUCTURE".P.P.R:"WORD"."WORD_NUMSYLS);
+      int f2 = ffeature_int(item, "n.R:"SYLSTRUCTURE".P.P.R:"WORD"."WORD_NUMSYLS);
+      int g1 = ffeature_int(item, "p.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_NUM_SYLS_IN_PHRASE);
+      int g2 = ffeature_int(item, "p.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_NUM_WORDS_IN_PHRASE);
+      int i1 = ffeature_int(item, "n.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_NUM_SYLS_IN_PHRASE);
+      int i2 = ffeature_int(item, "n.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_NUM_WORDS_IN_PHRASE);
+      int j1, j2, j3;
+      if (item_next(item) != NULL) {
+         j1 = ffeature_int(item, "n.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_TOTAL_SYLS);
+         j2 = ffeature_int(item, "n.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_TOTAL_WORDS);
+         j3 = ffeature_int(item, "n.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_TOTAL_PHRASES);
+      } else {
+         j1 = ffeature_int(item, "p.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_TOTAL_SYLS);
+         j2 = ffeature_int(item, "p.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_TOTAL_WORDS);
+         j3 = ffeature_int(item, "p.R:"SYLSTRUCTURE".P.P.R:"PHRASE".P."LISP_TOTAL_PHRASES);
+      }
+      labelretlen = bell_snprintf(label, labellen,
+                                  "%s^%s-%s+%s=%s@xx_xx/A:%s_%s_%s/B:xx-xx-xx@xx-xx&xx-xx#xx-xx$xx-xx!xx-xx;xx-xx|xx/C:%s+%s+%s/D:%s_%s/E:xx+xx@xx+xx&xx+xx#xx+xx/F:%s_%s/G:%s_%s/H:xx=xx^xx=xx|xx/I:%s=%s/J:%d+%d-%d",      /* */
+              strcmp(p1, "0") == 0 ? "xx" : p1, /* p1 */
+              strcmp(p2, "0") == 0 ? "xx" : p2, /* p2 */
+              p3,               /* p3 */
+              strcmp(p4, "0") == 0 ? "xx" : p4, /* p4 */
+              strcmp(p5, "0") == 0 ? "xx" : p5, /* p5 */
+              a3 == 0 ? "xx" : ffeature_string(item, "p.R:"SYLSTRUCTURE".P.R:"SYLLABLE".stress"),      /* a1 */
+              a3 == 0 ? "xx" : ffeature_string(item, "p.R:"SYLSTRUCTURE".P.R:"SYLLABLE"."ACCENTED),    /* a2 */
+              a3 == 0 ? "xx" : val_string(val_string_n(a3)),    /* a3 */
+              c3 == 0 ? "xx" : ffeature_string(item, "n.R:"SYLSTRUCTURE".P.R:"SYLLABLE".stress"),      /* c1 */
+              c3 == 0 ? "xx" : ffeature_string(item, "n.R:"SYLSTRUCTURE".P.R:"SYLLABLE"."ACCENTED),    /* c2 */
+              c3 == 0 ? "xx" : val_string(val_string_n(c3)),    /* c3 */
+              d2 == 0 ? "xx" : ffeature_string(item, "p.R:"SYLSTRUCTURE".P.P.R:"WORD"."GPOS),     /* d1 */
+              d2 == 0 ? "xx" : val_string(val_string_n(d2)),    /* d2 */
+              f2 == 0 ? "xx" : ffeature_string(item, "n.R:"SYLSTRUCTURE".P.P.R:"WORD"."GPOS),     /* f1 */
+              f2 == 0 ? "xx" : val_string(val_string_n(f2)),    /* f2 */
+              g1 == 0 ? "xx" : val_string(val_string_n(g1)),    /* g1 */
+              g2 == 0 ? "xx" : val_string(val_string_n(g2)),    /* g2 */
+              i1 == 0 ? "xx" : val_string(val_string_n(i1)),    /* i1 */
+              i2 == 0 ? "xx" : val_string(val_string_n(i2)),    /* i2 */
+              j1,               /* j1 */
+              j2,               /* j2 */
+              j3);              /* j3 */
+   } else {
+      /* for no pause */
+      syl_item = path_to_item(item, "R:"SYLSTRUCTURE".P.R:"SYLLABLE);
+      word_item = path_to_item(item, "R:"SYLSTRUCTURE".P.P.R:"WORD);
+      phrase_item = path_to_item(item, "R:"SYLSTRUCTURE".P.P.R:"PHRASE".P");
+      int p6 = ffeature_int(item, "R:"SYLSTRUCTURE"."POS_IN_SYL) + 1;
+      int a3 = ffeature_int(syl_item, "p."SYL_NUMPHONES);
+      int b3 = ffeature_int(syl_item, SYL_NUMPHONES);
+      int b4 = ffeature_int(syl_item, POS_IN_WORD) + 1;
+      int b12 = ffeature_int(syl_item, NEW_LISP_DISTANCE_TO_P_STRESS);
+      int b13 = ffeature_int(syl_item, NEW_LISP_DISTANCE_TO_N_STRESS);
+      int b14 = ffeature_int(syl_item, NEW_LISP_DISTANCE_TO_P_ACCENT);
+      int b15 = ffeature_int(syl_item, NEW_LISP_DISTANCE_TO_N_ACCENT);
+      int c3 = ffeature_int(syl_item, "n."SYL_NUMPHONES);
+      int d2 = ffeature_int(word_item, "p."WORD_NUMSYLS);
+      int e2 = ffeature_int(word_item, WORD_NUMSYLS);
+      int e3 = ffeature_int(word_item, POS_IN_PHRASE) + 1;
+      int e7 = ffeature_int(word_item, NEW_LISP_DISTANCE_TO_P_CONTENT);
+      int e8 = ffeature_int(word_item, NEW_LISP_DISTANCE_TO_N_CONTENT);
+      int f2 = ffeature_int(word_item, "n."WORD_NUMSYLS);
+      int g1 = ffeature_int(phrase_item, "p."LISP_NUM_SYLS_IN_PHRASE);
+      int g2 = ffeature_int(phrase_item, "p."LISP_NUM_WORDS_IN_PHRASE);
+      int h2 = ffeature_int(phrase_item, LISP_NUM_WORDS_IN_PHRASE);
+      int h3 = ffeature_int(syl_item, SUB_PHRASES) + 1;
+      const char *h5 = ffeature_string(item, "R:"SYLSTRUCTURE".P.P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn."ENDTONE);
+      int i1 = ffeature_int(phrase_item, "n."LISP_NUM_SYLS_IN_PHRASE);
+      int i2 = ffeature_int(phrase_item, "n."LISP_NUM_WORDS_IN_PHRASE);
+      int j1 = ffeature_int(phrase_item, LISP_TOTAL_SYLS);
+      int j2 = ffeature_int(phrase_item, LISP_TOTAL_WORDS);
+      int j3 = ffeature_int(phrase_item, LISP_TOTAL_PHRASES);
+
+      /* This code is to prevent memory leaks when calling syl_vowel             */
+      /* via ffeature_string which accidently leaks the cst_val.                 */
+      /* The cst_val created by syl_vowel is dynamically allocated hence casting */
+      /* away const will let us delete is when we are finished with it.          */
+      tmpsyl_vowel = (cst_val *) ffeature(syl_item, SYL_VOWEL);  /* b16 */
+
+      labelretlen = bell_snprintf(label, labellen,
+                                  "%s^%s-%s+%s=%s@%d_%d/A:%s_%s_%s/B:%d-%d-%d@%d-%d&%d-%d#%d-%d$%d-%d!%s-%s;%s-%s|%s/C:%s+%s+%s/D:%s_%s/E:%s+%d@%d+%d&%d+%d#%s+%s/F:%s_%s/G:%s_%s/H:%d=%d^%d=%d|%s/I:%s=%s/J:%d+%d-%d",      /* */
+              strcmp(p1, "0") == 0 ? "xx" : p1, /* p1 */
+              strcmp(p2, "0") == 0 ? "xx" : p2, /* p2 */
+              p3,               /* p3 */
+              strcmp(p4, "0") == 0 ? "xx" : p4, /* p4 */
+              strcmp(p5, "0") == 0 ? "xx" : p5, /* p5 */
+              p6,               /* p6 */
+              b3 - p6 + 1,      /* p7 */
+              a3 == 0 ? "xx" : ffeature_string(syl_item, "p.stress"),      /* a1 */
+              a3 == 0 ? "xx" : ffeature_string(syl_item, "p."ACCENTED),    /* a2 */
+              a3 == 0 ? "xx" : val_string(val_string_n(a3)),    /* a3 */
+              ffeature_int(syl_item, "stress"),    /* b1 */
+              ffeature_int(syl_item, ACCENTED),    /* b2 */
+              b3,               /* b3 */
+              b4,               /* b4 */
+              e2 - b4 + 1,      /* b5 */
+              ffeature_int(syl_item, SYL_IN) + 1,        /* b6 */
+              ffeature_int(syl_item, SYL_OUT) + 1,       /* b7 */
+              ffeature_int(syl_item, HTS_SSYL_IN),       /* b8 */
+              ffeature_int(syl_item, SSYL_OUT),          /* b9 */
+              ffeature_int(syl_item, ASYL_IN),           /* b10 */
+              ffeature_int(syl_item, ASYL_OUT),          /* b11 */
+              val_string(val_string_n(b12)),  /* b12 */
+              val_string(val_string_n(b13)),  /* b13 */
+              val_string(val_string_n(b14)),  /* b14 */
+              val_string(val_string_n(b15)),  /* b15 */
+              val_string(tmpsyl_vowel),
+              c3 == 0 ? "xx" : ffeature_string(syl_item, "n.stress"),      /* c1 */
+              c3 == 0 ? "xx" : ffeature_string(syl_item, "n."ACCENTED),    /* c2 */
+              c3 == 0 ? "xx" : val_string(val_string_n(c3)),               /* c3 */
+              d2 == 0 ? "xx" : ffeature_string(word_item, "p."GPOS),       /* d1 */
+              d2 == 0 ? "xx" : val_string(val_string_n(d2)),               /* d2 */
+              ffeature_string(word_item, GPOS),                            /* e1 */
+              e2,               /* e2 */
+              e3,               /* e3 */
+              h2 - e3 + 1,      /* e4 */
+              ffeature_int(word_item, CONTENT_WORDS_IN),                   /* e5 */
+              ffeature_int(word_item, CONTENT_WORDS_OUT),                  /* e6 */
+              val_string(val_string_n(e7)),               /* e7 */
+              val_string(val_string_n(e8)),               /* e8 */
+              f2 == 0 ? "xx" : ffeature_string(word_item, "n."GPOS),       /* f1 */
+              f2 == 0 ? "xx" : val_string(val_string_n(f2)),               /* f2 */
+              g1 == 0 ? "xx" : val_string(val_string_n(g1)),               /* g1 */
+              g2 == 0 ? "xx" : val_string(val_string_n(g2)),               /* g2 */
+              ffeature_int(phrase_item, LISP_NUM_SYLS_IN_PHRASE),          /* h1 */
+              h2,               /* h2 */
+              h3,               /* h3 */
+              j3 - h3 + 1,      /* h4 */
+              strcmp(h5, "0") == 0 ? "NONE" : h5,                          /* h5 */
+              i1 == 0 ? "xx" : val_string(val_string_n(i1)),    /* i1 */
+              i2 == 0 ? "xx" : val_string(val_string_n(i2)),    /* i2 */
+              j1,               /* j1 */
+              j2,               /* j2 */
+              j3);              /* j3 */
+      delete_val(tmpsyl_vowel);
+   }
+   if (labelretlen > labellen -1) {
+      cst_errmsg("Flite_HTS_Engine_create_label: Buffer overflow");
+   }
 }
 
 static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
@@ -323,7 +482,14 @@ static float bell_ts_to_speech(HTS_Engine * engine, cst_tokenstream *ts,
                     for (i = 0, s = UTT_REL_HEAD(utt, SEGMENT); s; s = item_next(s), i++)
                     {
                         label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
-                        Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
+                        if (engine->bell_new_label_api)
+                        {
+                           Flite_HTS_Engine_create_label_new(s, label_data[i], HTS_MAXBUFLEN);
+                        }
+                        else
+                        {
+                           Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
+                        }
                     }
                     HTS_Engine_synthesize_from_strings(engine, label_data, label_size);
                     bell_hts_get_wave(engine,utt);
@@ -415,7 +581,14 @@ float bell_text_to_speech(HTS_Engine * engine, const char *text,
             for (i = 0, s = UTT_REL_HEAD(utt, SEGMENT); s; s = item_next(s), i++)
             {
                 label_data[i] = cst_alloc(char,HTS_MAXBUFLEN);
-                Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
+                if (engine->bell_new_label_api)
+                {
+                   Flite_HTS_Engine_create_label_new(s, label_data[i], HTS_MAXBUFLEN);
+                }
+                else
+                {
+                   Flite_HTS_Engine_create_label(s, label_data[i], HTS_MAXBUFLEN);
+                }
             }
             HTS_Engine_synthesize_from_strings(engine, label_data, label_size);
             bell_hts_get_wave(engine,utt);
@@ -470,6 +643,53 @@ static bell_voice *register_hts_voice(const cst_lang *lang_list)
     return voice;
 }
 
+static int bell_hts_find_api(HTS_Engine * engine)
+// Return TRUE if voice uses new HTS engine label type
+// Return FALSE if voice uses old HTS engine label type
+{
+    size_t i;
+    HTS_ModelSet * modelset=&engine->ms;
+    HTS_Model * model;
+    HTS_Question * question;
+    int retval = FALSE;
+
+// Search model questions for characteristic signature of new label api
+    model = modelset->duration;
+    question = model->question;
+    for (; question; question = question->next)
+    {
+       if (strstr(question->string,"=xx"))
+       {
+          retval = TRUE;
+          break;
+       }
+    }
+    for (i = 0; i < modelset->num_streams; i++)
+    {
+       model = &(modelset->stream[i]);
+       question = model->question;
+       for (; question; question = question->next)
+       {
+          if (strstr(question->string,"=xx"))
+          {
+             retval = TRUE;
+             break;
+          }
+       }
+    }
+    model = modelset->gv;
+    question = model->question;
+    for (; question; question = question->next)
+    {
+       if (strstr(question->string,"=xx"))
+       {
+          retval = TRUE;
+          break;
+       }
+    }
+    return retval;
+}
+
 bell_voice * bell_voice_load(char *fn_voice, HTS_Engine * engine)
 {
     int voice_type = BELL_CLUSTERGEN; // Set voice type to default
@@ -509,6 +729,7 @@ bell_voice * bell_voice_load(char *fn_voice, HTS_Engine * engine)
        {
           voice = register_hts_voice(flite_lang_list);
           voice->type = BELL_HTS;
+          engine->bell_new_label_api = bell_hts_find_api(engine);
        }
     }
     if (voice == NULL)

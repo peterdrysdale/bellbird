@@ -68,6 +68,11 @@ DEF_CONST_VAL_STRING(val_string_16,"16");
 DEF_CONST_VAL_STRING(val_string_17,"17");
 DEF_CONST_VAL_STRING(val_string_18,"18");
 DEF_CONST_VAL_STRING(val_string_19,"19");
+DEF_CONST_VAL_STRING(val_string_20,"20");
+DEF_CONST_VAL_STRING(val_string_21,"21");
+DEF_CONST_VAL_STRING(val_string_22,"22");
+DEF_CONST_VAL_STRING(val_string_23,"23");
+DEF_CONST_VAL_STRING(val_string_24,"24");
 
 DEF_CONST_VAL_INT(val_int_0,0);
 DEF_CONST_VAL_INT(val_int_1,1);
@@ -89,8 +94,13 @@ DEF_CONST_VAL_INT(val_int_16,16);
 DEF_CONST_VAL_INT(val_int_17,17);
 DEF_CONST_VAL_INT(val_int_18,18);
 DEF_CONST_VAL_INT(val_int_19,19);
+DEF_CONST_VAL_INT(val_int_20,20);
+DEF_CONST_VAL_INT(val_int_21,21);
+DEF_CONST_VAL_INT(val_int_22,22);
+DEF_CONST_VAL_INT(val_int_23,23);
+DEF_CONST_VAL_INT(val_int_24,24);
 
-static const int val_int_const_max = 20;
+static const int val_int_const_max = 25;
 static const cst_val * const val_int_const [] = {
     &val_int_0,
     &val_int_1,
@@ -111,7 +121,12 @@ static const cst_val * const val_int_const [] = {
     &val_int_16,
     &val_int_17,
     &val_int_18,
-    &val_int_19 };
+    &val_int_19,
+    &val_int_20,
+    &val_int_21,
+    &val_int_22,
+    &val_int_23,
+    &val_int_24 };
 
 static const cst_val * const val_string_const [] = {
     &val_string_0,
@@ -133,7 +148,12 @@ static const cst_val * const val_string_const [] = {
     &val_string_16,
     &val_string_17,
     &val_string_18,
-    &val_string_19 };
+    &val_string_19,
+    &val_string_20,
+    &val_string_21,
+    &val_string_22,
+    &val_string_23,
+    &val_string_24 };
   
 const cst_val *val_int_n(int n)
 {

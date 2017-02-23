@@ -10,7 +10,7 @@
 /*           http://hts-engine.sourceforge.net/                      */
 /* ----------------------------------------------------------------- */
 /*                                                                   */
-/*  Copyright (c) 2005-2011  Nagoya Institute of Technology          */
+/*  Copyright (c) 2005-2016  Nagoya Institute of Technology          */
 /*                           Department of Computer Science          */
 /*                                                                   */
 /*                2005-2008  Tokyo Institute of Technology           */
@@ -101,6 +101,30 @@ static const cst_val *lisp_distance_to_p_stress(const cst_item *syl)
     }
 }
 
+/* 21 by Toda-san */
+static const cst_val *new_lisp_distance_to_p_stress(const cst_item *syl)
+{
+    const cst_item *s, *fs;
+    int c;
+
+    s=item_as(syl,SYLLABLE);
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
+    if (item_equal(s,fs)) return val_string_n(0);
+    s=item_prev(s);
+    for (c=1; s && (!item_equal(s,fs)); s=item_prev(s),c++)
+    {
+        if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
+    }
+    if (strcmp("1", ffeature_string(s,"stress")) == 0)
+    {
+        return val_string_n(c);
+    }
+    else
+    {
+        return val_string_n(0);
+    }
+}
+
 /* 22 by Toda-san */
 static const cst_val *lisp_distance_to_n_stress(const cst_item *syl)
 {
@@ -112,6 +136,30 @@ static const cst_val *lisp_distance_to_n_stress(const cst_item *syl)
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_next(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
+    {
+        if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
+    }
+    if (strcmp("1", ffeature_string(s,"stress")) == 0)
+    {
+        return val_string_n(c);
+    }
+    else
+    {
+        return val_string_n(0);
+    }
+}
+
+/* 22 by Toda-san */
+static const cst_val *new_lisp_distance_to_n_stress(const cst_item *syl)
+{
+    const cst_item *s, *fs;
+    int c;
+
+    s=item_as(syl,SYLLABLE);
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
+    if (item_equal(s,fs)) return val_string_n(0);
+    s=item_next(s);
+    for (c=1; s && (!item_equal(s,fs)); s=item_next(s),c++)
     {
         if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
     }
@@ -149,6 +197,30 @@ static const cst_val *lisp_distance_to_p_accent(const cst_item *syl)
     }
 }
 
+/* 23 by Toda-san */
+static const cst_val *new_lisp_distance_to_p_accent(const cst_item *syl)
+{
+    const cst_item *s, *fs;
+    int c;
+
+    s=item_as(syl,SYLLABLE);
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
+    if (item_equal(s,fs)) return val_string_n(0);
+    s=item_prev(s);
+    for (c=1; s && (!item_equal(s,fs)); s=item_prev(s),c++)
+    {
+        if (val_int(accented(s))) return val_string_n(c);
+    }
+    if (val_int(accented(s)))
+    {
+        return val_string_n(c);
+    }
+    else
+    {
+        return val_string_n(0);
+    }
+}
+
 /* 24 by Toda-san */
 static const cst_val *lisp_distance_to_n_accent(const cst_item *syl)
 {
@@ -160,6 +232,30 @@ static const cst_val *lisp_distance_to_n_accent(const cst_item *syl)
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_next(s);
     for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
+    {
+        if (val_int(accented(s))) return val_string_n(c);
+    }
+    if (val_int(accented(s)))
+    {
+        return val_string_n(c);
+    }
+    else
+    {
+        return val_string_n(0);
+    }
+}
+
+/* 24 by Toda-san */
+static const cst_val *new_lisp_distance_to_n_accent(const cst_item *syl)
+{
+    const cst_item *s, *fs;
+    int c;
+
+    s=item_as(syl,SYLLABLE);
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
+    if (item_equal(s,fs)) return val_string_n(0);
+    s=item_next(s);
+    for (c=1; s && (!item_equal(s,fs)); s=item_next(s),c++)
     {
         if (val_int(accented(s))) return val_string_n(c);
     }
@@ -227,6 +323,35 @@ static const cst_val *lisp_distance_to_p_content(const cst_item *syl)
     return val_string_n(c);
 }
 
+/* 36 */
+static const cst_val *new_lisp_distance_to_p_content(const cst_item *p)
+{
+    const cst_item *s;
+    int i=0;
+    p=item_as(p,WORD);
+    s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".R:"PHRASE".P.d1"),WORD);
+
+    if (item_equal(p,s))
+    {
+        return val_string_n(0);
+    }
+
+    for (p=item_prev(p); p; p=item_prev(p))
+    {
+        if (!strcmp(ffeature_string(p,GPOS),"content"))
+        {
+            i++;
+            break;
+        }
+        if (item_equal(p,s))
+        {
+          return val_string_n(0);
+        }
+        i++;
+    }
+    return val_string_n(i);
+}
+
 /* 37 */
 static const cst_val *lisp_distance_to_n_content(const cst_item *syl)
 {
@@ -240,6 +365,34 @@ static const cst_val *lisp_distance_to_n_content(const cst_item *syl)
             break;
     }
     return val_string_n(c);
+}
+
+/* 37 */
+static const cst_val *new_lisp_distance_to_n_content(const cst_item *p){
+    const cst_item *s;
+    int i=0;
+    p=item_as(p,WORD);
+    s=item_as(path_to_item(p,"R:"SYLSTRUCTURE".R:"PHRASE".P.dn"),WORD);
+
+    if (item_equal(p,s))
+    {
+        return val_string_n(0);
+    }
+
+    for (p=item_next(p); p; p=item_next(p))
+    {
+        if (!strcmp(ffeature_string(p,GPOS),"content"))
+        {
+            i++;
+            break;
+        }
+        if (item_equal(p,s))
+        {
+            return val_string_n(0);
+        }
+        i++;
+    }
+    return val_string_n(i);
 }
 
 /* 38 39 40 59 60 by Toda-san */
@@ -326,22 +479,61 @@ static const cst_val *lisp_total_phrases(const cst_item *phrase)
     return val_string_n(c);
 }
 
+static const cst_val *hts_ssyl_in(const cst_item *syl)
+{
+    /* Number of stressed syllables since last major break */
+    const cst_item *ss,*p,*fs;
+    int c;
+
+    ss = item_as(syl,SYLLABLE);
+
+    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
+
+    if (item_equal(ss,fs))
+    {
+        return val_string_n(0);
+    }
+
+    for (c=0, p=item_prev(ss);
+	 p && (c < CST_CONST_INT_MAX);
+	 p=item_prev(p))
+    {
+         if (cst_streq("1",ffeature_string(p,"stress")))
+         {
+	     c++;
+         }
+	 if (item_equal(p,fs))
+         {
+	     break;
+         }
+    }
+
+    return val_string_n(c);  /* its used randomly as int and float */
+}
+
 void us_ff_register_hts(cst_ffunction *ffunctions)
 {
     us_ff_register(ffunctions);
 
     ff_register(ffunctions, LISP_DISTANCE_TO_P_STRESS,lisp_distance_to_p_stress); /* 21 */
+    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_P_STRESS,new_lisp_distance_to_p_stress); /* 21 */
     ff_register(ffunctions, LISP_DISTANCE_TO_N_STRESS,lisp_distance_to_n_stress); /* 22 */
+    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_N_STRESS,new_lisp_distance_to_n_stress); /* 22 */
     ff_register(ffunctions, LISP_DISTANCE_TO_P_ACCENT,lisp_distance_to_p_accent); /* 23 */
+    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_P_ACCENT,new_lisp_distance_to_p_accent); /* 23 */
     ff_register(ffunctions, LISP_DISTANCE_TO_N_ACCENT,lisp_distance_to_n_accent); /* 24 */
+    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_N_ACCENT,new_lisp_distance_to_n_accent); /* 24 */
     ff_register(ffunctions, WORDS_OUT,words_out); /* 33 */
     ff_register(ffunctions, HTS_CONTENT_WORDS_IN,hts_content_words_in); /* 34 */
     ff_register(ffunctions, HTS_CONTENT_WORDS_OUT,hts_content_words_out); /* 35 */
     ff_register(ffunctions, LISP_DISTANCE_TO_P_CONTENT,lisp_distance_to_p_content); /* 36 */
+    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_P_CONTENT,new_lisp_distance_to_p_content); /* 36 */
     ff_register(ffunctions, LISP_DISTANCE_TO_N_CONTENT,lisp_distance_to_n_content); /* 37 */
+    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_N_CONTENT,new_lisp_distance_to_n_content); /* 37 */
     ff_register(ffunctions, LISP_NUM_SYLS_IN_PHRASE,lisp_num_syls_in_phrase); /* 38 39 40 59 60 */
     ff_register(ffunctions, LISP_NUM_WORDS_IN_PHRASE,lisp_num_words_in_phrase); /* 41 42 43 61 62 */
     ff_register(ffunctions, LISP_TOTAL_SYLS,lisp_total_syls); /* 46 */
     ff_register(ffunctions, LISP_TOTAL_WORDS,lisp_total_words); /* 47 */
     ff_register(ffunctions, LISP_TOTAL_PHRASES,lisp_total_phrases); /* 48 */
+    ff_register(ffunctions, HTS_SSYL_IN,hts_ssyl_in);
 }

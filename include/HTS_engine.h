@@ -251,6 +251,7 @@ typedef struct _HTS_Engine {
    HTS_SStreamSet sss;          /* set of state streams */
    HTS_PStreamSet pss;          /* set of PDF streams */
    HTS_GStreamSet gss;          /* set of generated parameter streams */
+   int bell_new_label_api;          // TRUE if label api is in new format for voice
 } HTS_Engine;
 
 /* engine method --------------------------------------------------- */

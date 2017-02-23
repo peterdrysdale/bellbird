@@ -8,7 +8,7 @@ component of code orginated from:
 Bellbird also contains code from:
 -flite 2.0 (Dec 2014)
 -hts_engine 1.08 (Dec 2013)
--flite+hts 1.04 (Dec 2012)
+-flite+hts 1.04 & 1.07 (Dec 2016)
 
 We would like to acknowledge the work of the projects on which bellbird's
 source was based without which bellbird would not be possible. In numerous
