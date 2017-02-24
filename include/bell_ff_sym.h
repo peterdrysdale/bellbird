@@ -86,20 +86,16 @@
 #define LISP_TOTAL_PHRASES "\x6d"
 #define NEW_LISP_DISTANCE_TO_P_CONTENT "\x6e"
 #define NEW_LISP_DISTANCE_TO_N_CONTENT "\x6f"
-#define NEW_LISP_DISTANCE_TO_P_STRESS "\x70"
-#define NEW_LISP_DISTANCE_TO_N_STRESS "\x71"
-#define NEW_LISP_DISTANCE_TO_P_ACCENT "\x72"
-#define NEW_LISP_DISTANCE_TO_N_ACCENT "\x73"
-#define HTS_SSYL_IN "\x74"
+#define HTS_SSYL_IN "\x70"
 
 // en_US symbols
-#define GPOS "\x75"
-#define NUM_DIGITS "\x76"
-#define MONTH_RANGE "\x77"
-#define TOKEN_POS_GUESS "\x78"
-#define CONTENT_WORDS_IN "\x79"
-#define CONTENT_WORDS_OUT "\x7a"
-#define LISP_CG_CONTENT_WORDS_IN_PHRASE "\x7b"
+#define GPOS "\x71"
+#define NUM_DIGITS "\x72"
+#define MONTH_RANGE "\x73"
+#define TOKEN_POS_GUESS "\x74"
+#define CONTENT_WORDS_IN "\x75"
+#define CONTENT_WORDS_OUT "\x76"
+#define LISP_CG_CONTENT_WORDS_IN_PHRASE "\x77"
 
 // Additional symbols which are not feature functions so must be two bytes long
 #define FRAME_NUMBER "fn"

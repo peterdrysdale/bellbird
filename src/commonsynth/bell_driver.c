@@ -310,10 +310,10 @@ static void Flite_HTS_Engine_create_label_new(cst_item * item, char *label, size
       int a3 = ffeature_int(syl_item, "p."SYL_NUMPHONES);
       int b3 = ffeature_int(syl_item, SYL_NUMPHONES);
       int b4 = ffeature_int(syl_item, POS_IN_WORD) + 1;
-      int b12 = ffeature_int(syl_item, NEW_LISP_DISTANCE_TO_P_STRESS);
-      int b13 = ffeature_int(syl_item, NEW_LISP_DISTANCE_TO_N_STRESS);
-      int b14 = ffeature_int(syl_item, NEW_LISP_DISTANCE_TO_P_ACCENT);
-      int b15 = ffeature_int(syl_item, NEW_LISP_DISTANCE_TO_N_ACCENT);
+      int b12 = ffeature_int(syl_item, LISP_DISTANCE_TO_P_STRESS);
+      int b13 = ffeature_int(syl_item, LISP_DISTANCE_TO_N_STRESS);
+      int b14 = ffeature_int(syl_item, LISP_DISTANCE_TO_P_ACCENT);
+      int b15 = ffeature_int(syl_item, LISP_DISTANCE_TO_N_ACCENT);
       int c3 = ffeature_int(syl_item, "n."SYL_NUMPHONES);
       int d2 = ffeature_int(word_item, "p."WORD_NUMSYLS);
       int e2 = ffeature_int(word_item, WORD_NUMSYLS);

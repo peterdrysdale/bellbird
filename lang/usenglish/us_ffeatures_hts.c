@@ -87,30 +87,6 @@ static const cst_val *lisp_distance_to_p_stress(const cst_item *syl)
     fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_prev(s);
-    for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_prev(s),c++)
-    {
-        if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
-    }
-    if (strcmp("1", ffeature_string(s,"stress")) == 0)
-    {
-        return val_string_n(c);
-    }
-    else
-    {
-        return val_string_n(0);
-    }
-}
-
-/* 21 by Toda-san */
-static const cst_val *new_lisp_distance_to_p_stress(const cst_item *syl)
-{
-    const cst_item *s, *fs;
-    int c;
-
-    s=item_as(syl,SYLLABLE);
-    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
-    if (item_equal(s,fs)) return val_string_n(0);
-    s=item_prev(s);
     for (c=1; s && (!item_equal(s,fs)); s=item_prev(s),c++)
     {
         if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
@@ -127,30 +103,6 @@ static const cst_val *new_lisp_distance_to_p_stress(const cst_item *syl)
 
 /* 22 by Toda-san */
 static const cst_val *lisp_distance_to_n_stress(const cst_item *syl)
-{
-    const cst_item *s, *fs;
-    int c;
-
-    s=item_as(syl,SYLLABLE);
-    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
-    if (item_equal(s,fs)) return val_string_n(0);
-    s=item_next(s);
-    for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
-    {
-        if (strcmp("1", ffeature_string(s,"stress")) == 0) return val_string_n(c);
-    }
-    if (strcmp("1", ffeature_string(s,"stress")) == 0)
-    {
-        return val_string_n(c);
-    }
-    else
-    {
-        return val_string_n(0);
-    }
-}
-
-/* 22 by Toda-san */
-static const cst_val *new_lisp_distance_to_n_stress(const cst_item *syl)
 {
     const cst_item *s, *fs;
     int c;
@@ -183,30 +135,6 @@ static const cst_val *lisp_distance_to_p_accent(const cst_item *syl)
     fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
     if (item_equal(s,fs)) return val_string_n(0);
     s=item_prev(s);
-    for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_prev(s),c++)
-    {
-        if (val_int(accented(s))) return val_string_n(c);
-    }
-    if (val_int(accented(s)))
-    {
-        return val_string_n(c);
-    }
-    else
-    {
-        return val_string_n(0);
-    }
-}
-
-/* 23 by Toda-san */
-static const cst_val *new_lisp_distance_to_p_accent(const cst_item *syl)
-{
-    const cst_item *s, *fs;
-    int c;
-
-    s=item_as(syl,SYLLABLE);
-    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.d1.R:"SYLSTRUCTURE".d1");
-    if (item_equal(s,fs)) return val_string_n(0);
-    s=item_prev(s);
     for (c=1; s && (!item_equal(s,fs)); s=item_prev(s),c++)
     {
         if (val_int(accented(s))) return val_string_n(c);
@@ -223,30 +151,6 @@ static const cst_val *new_lisp_distance_to_p_accent(const cst_item *syl)
 
 /* 24 by Toda-san */
 static const cst_val *lisp_distance_to_n_accent(const cst_item *syl)
-{
-    const cst_item *s, *fs;
-    int c;
-
-    s=item_as(syl,SYLLABLE);
-    fs = path_to_item(syl,"R:"SYLSTRUCTURE".P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn");
-    if (item_equal(s,fs)) return val_string_n(0);
-    s=item_next(s);
-    for (c=1; s && (!item_equal(s,fs)) && (c < CST_CONST_INT_MAX); s=item_next(s),c++)
-    {
-        if (val_int(accented(s))) return val_string_n(c);
-    }
-    if (val_int(accented(s)))
-    {
-        return val_string_n(c);
-    }
-    else
-    {
-        return val_string_n(0);
-    }
-}
-
-/* 24 by Toda-san */
-static const cst_val *new_lisp_distance_to_n_accent(const cst_item *syl)
 {
     const cst_item *s, *fs;
     int c;
@@ -516,13 +420,9 @@ void us_ff_register_hts(cst_ffunction *ffunctions)
     us_ff_register(ffunctions);
 
     ff_register(ffunctions, LISP_DISTANCE_TO_P_STRESS,lisp_distance_to_p_stress); /* 21 */
-    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_P_STRESS,new_lisp_distance_to_p_stress); /* 21 */
     ff_register(ffunctions, LISP_DISTANCE_TO_N_STRESS,lisp_distance_to_n_stress); /* 22 */
-    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_N_STRESS,new_lisp_distance_to_n_stress); /* 22 */
     ff_register(ffunctions, LISP_DISTANCE_TO_P_ACCENT,lisp_distance_to_p_accent); /* 23 */
-    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_P_ACCENT,new_lisp_distance_to_p_accent); /* 23 */
     ff_register(ffunctions, LISP_DISTANCE_TO_N_ACCENT,lisp_distance_to_n_accent); /* 24 */
-    ff_register(ffunctions, NEW_LISP_DISTANCE_TO_N_ACCENT,new_lisp_distance_to_n_accent); /* 24 */
     ff_register(ffunctions, WORDS_OUT,words_out); /* 33 */
     ff_register(ffunctions, HTS_CONTENT_WORDS_IN,hts_content_words_in); /* 34 */
     ff_register(ffunctions, HTS_CONTENT_WORDS_OUT,hts_content_words_out); /* 35 */
