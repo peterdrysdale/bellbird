@@ -87,11 +87,11 @@ static void bell_hts_get_wave(HTS_Engine * engine,cst_utterance * utt)
 
 static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t labellen)
 {
-   char * seg_pp;
-   char * seg_p;
-   char * seg_c;
-   char * seg_n;
-   char * seg_nn;
+   const char * seg_pp;
+   const char * seg_p;
+   const char * seg_c;
+   const char * seg_n;
+   const char * seg_nn;
    char * endtone;
    cst_val *tmpsyl_vowel;
    size_t labelretlen = 0;
@@ -107,11 +107,11 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    int tmp4 = 0;
 
    /* load segments */
-   seg_pp = cst_strdup(ffeature_string(item, "p.p.name"));
-   seg_p = cst_strdup(ffeature_string(item, "p.name"));
-   seg_c = cst_strdup(ffeature_string(item, "name"));
-   seg_n = cst_strdup(ffeature_string(item, "n.name"));
-   seg_nn = cst_strdup(ffeature_string(item, "n.n.name"));
+   seg_pp = ffeature_string(item, "p.p.name");
+   seg_p = ffeature_string(item, "p.name");
+   seg_c = ffeature_string(item, "name");
+   seg_n = ffeature_string(item, "n.name");
+   seg_nn = ffeature_string(item, "n.n.name");
 
    /* load endtone */
    endtone = cst_strdup(ffeature_string(item,
@@ -235,11 +235,6 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    if (labelretlen > labellen -1) {
       cst_errmsg("Flite_HTS_Engine_create_label: Buffer overflow");
    }
-   cst_free(seg_pp);
-   cst_free(seg_p);
-   cst_free(seg_c);
-   cst_free(seg_n);
-   cst_free(seg_nn);
    cst_free(endtone);
 }
 
