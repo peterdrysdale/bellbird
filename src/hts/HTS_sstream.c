@@ -183,16 +183,12 @@ HTS_Boolean HTS_SStreamSet_create(HTS_SStreamSet * sss, HTS_ModelSet * ms, char*
    for (i = 0; i < sss->nstream; i++) {
       sst = &sss->sstream[i];
       sst->vector_length = HTS_ModelSet_get_vector_length(ms, i);
-      sst->mean = cst_alloc(double *,sss->total_state);
-      sst->vari = cst_alloc(double *,sss->total_state);
+      sst->mean = bell_alloc_dmatrix(sss->total_state, sst->vector_length * HTS_ModelSet_get_window_size(ms, i));
+      sst->vari = bell_alloc_dmatrix(sss->total_state, sst->vector_length * HTS_ModelSet_get_window_size(ms, i));
       if (HTS_ModelSet_is_msd(ms, i))
          sst->msd = cst_alloc(double,sss->total_state);
       else
          sst->msd = NULL;
-      for (j = 0; j < sss->total_state; j++) {
-         sst->mean[j] = cst_alloc(double,(sst->vector_length * HTS_ModelSet_get_window_size(ms, i)));
-         sst->vari[j] = cst_alloc(double,(sst->vector_length * HTS_ModelSet_get_window_size(ms, i)));
-      }
       if (HTS_ModelSet_use_gv(ms, i)) {
          sst->gv_switch = cst_alloc(HTS_Boolean,sss->total_state);
          for (j = 0; j < sss->total_state; j++)
@@ -412,14 +408,10 @@ void HTS_SStreamSet_clear(HTS_SStreamSet * sss)
    if (sss->sstream) {
       for (i = 0; i < sss->nstream; i++) {
          sst = &sss->sstream[i];
-         for (j = 0; j < sss->total_state; j++) {
-            cst_free(sst->mean[j]);
-            cst_free(sst->vari[j]);
-         }
+         bell_free_dmatrix(sst->mean);
+         bell_free_dmatrix(sst->vari);
          if (sst->msd)
             cst_free(sst->msd);
-         cst_free(sst->mean);
-         cst_free(sst->vari);
          for (j = 0; j < sst->win_size; j++) {
             sst->win_coefficient[j] += sst->win_l_width[j];
             cst_free(sst->win_coefficient[j]);
