@@ -92,7 +92,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    const char * seg_c;
    const char * seg_n;
    const char * seg_nn;
-   char * endtone;
+   const char * endtone;
    cst_val *tmpsyl_vowel;
    size_t labelretlen = 0;
    cst_item *syl_item;
@@ -114,8 +114,7 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    seg_nn = ffeature_string(item, "n.n.name");
 
    /* load endtone */
-   endtone = cst_strdup(ffeature_string(item,
-                                           ("R:"SYLSTRUCTURE".P.P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn."ENDTONE)));
+   endtone = ffeature_string(item,"R:"SYLSTRUCTURE".P.P.R:"PHRASE".P.dn.R:"SYLSTRUCTURE".dn."ENDTONE);
 
    if (cst_streq(seg_c, "pau")) {
       /* for pause */
@@ -235,7 +234,6 @@ static void Flite_HTS_Engine_create_label(cst_item * item, char *label, size_t l
    if (labelretlen > labellen -1) {
       cst_errmsg("Flite_HTS_Engine_create_label: Buffer overflow");
    }
-   cst_free(endtone);
 }
 
 static void Flite_HTS_Engine_create_label_new(cst_item * item, char *label, size_t labellen)
