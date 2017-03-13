@@ -280,9 +280,11 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
    long frame_long;         // Long frame count for using with shift
    long total_frame_long;   // Long of total_frame for comparison with 'frame_long + shift'
    size_t frame, msd_frame, state;
+   size_t state_duration;
 
    HTS_PStream *pst;
    HTS_Boolean not_bound;
+   size_t total_state = HTS_SStreamSet_get_total_state(sss);
 
    if (pss->nstream != 0) {
       cst_errmsg("HTS_PstreamSet_create: HTS_PStreamSet should be clear.\n");
@@ -313,20 +315,21 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
       pst = &pss->pstream[i];
       if (HTS_SStreamSet_is_msd(sss, i)) {      /* for MSD */
          pst->length = 0;
-         for (state = 0; state < HTS_SStreamSet_get_total_state(sss); state++) {
+         for (state = 0; state < total_state; state++) {
             if (HTS_SStreamSet_get_msd(sss, i, state) > msd_threshold[i]) {
                pst->length += HTS_SStreamSet_get_duration(sss, state);
             }
          }
          pst->msd_flag = cst_alloc(HTS_Boolean,pss->total_frame);
-         for (state = 0, frame = 0; state < HTS_SStreamSet_get_total_state(sss); state++) {
+         for (state = 0, frame = 0; state < total_state; state++) {
+            state_duration = HTS_SStreamSet_get_duration(sss, state);
             if (HTS_SStreamSet_get_msd(sss, i, state) > msd_threshold[i]) {
-               for (j = 0; j < HTS_SStreamSet_get_duration(sss, state); j++) {
+               for (j = 0; j < state_duration; j++) {
                   pst->msd_flag[frame] = TRUE;
                   frame++;
                }
             } else {
-               for (j = 0; j < HTS_SStreamSet_get_duration(sss, state); j++) {
+               for (j = 0; j < state_duration; j++) {
                   pst->msd_flag[frame] = FALSE;
                   frame++;
                }
@@ -368,16 +371,18 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
          pst->gv_vari = HTS_SStreamSet_abandon_gv_vari(sss, i);
          pst->gv_switch = cst_alloc(HTS_Boolean,pst->length);
          if (HTS_SStreamSet_is_msd(sss, i)) {   /* for MSD */
-            for (state = 0, frame = 0, msd_frame = 0; state < HTS_SStreamSet_get_total_state(sss); state++) {
-               for (j = 0; j < HTS_SStreamSet_get_duration(sss, state); j++, frame++) {
+            for (state = 0, frame = 0, msd_frame = 0; state < total_state; state++) {
+               state_duration = HTS_SStreamSet_get_duration(sss, state);
+               for (j = 0; j < state_duration; j++, frame++) {
                   if (pst->msd_flag[frame]) {
                      pst->gv_switch[msd_frame++] = HTS_SStreamSet_get_gv_switch(sss, i, state);
                   }
                }
             }
          } else {               /* for non MSD */
-            for (state = 0, frame = 0; state < HTS_SStreamSet_get_total_state(sss); state++) {
-               for (j = 0; j < HTS_SStreamSet_get_duration(sss, state); j++) {
+            for (state = 0, frame = 0; state < total_state; state++) {
+               state_duration = HTS_SStreamSet_get_duration(sss, state);
+               for (j = 0; j < state_duration; j++) {
                   pst->gv_switch[frame++] = HTS_SStreamSet_get_gv_switch(sss, i, state);
                }
             }
@@ -394,8 +399,9 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
       /* copy pdfs */
       if (HTS_SStreamSet_is_msd(sss, i)) {      /* for MSD */
          for (m = 0; m < pst->vector_length; m++) {
-            for (state = 0, frame_long = 0, msd_frame = 0; state < HTS_SStreamSet_get_total_state(sss); state++) {
-               for (j = 0; j < HTS_SStreamSet_get_duration(sss, state); j++) {
+            for (state = 0, frame_long = 0, msd_frame = 0; state < total_state; state++) {
+               state_duration = HTS_SStreamSet_get_duration(sss, state);
+               for (j = 0; j < state_duration; j++) {
                   if (pst->msd_flag[frame_long]) {
                      /* check current frame is MSD boundary or not */
                      for (k = 0; k < pst->win_size; k++) {
@@ -424,8 +430,9 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
          }
       } else {                  /* for non MSD */
          for (m = 0; m < pst->vector_length; m++) {
-            for (state = 0, frame_long = 0; state < HTS_SStreamSet_get_total_state(sss); state++) {
-               for (j = 0; j < HTS_SStreamSet_get_duration(sss, state); j++) {
+            for (state = 0, frame_long = 0; state < total_state; state++) {
+               state_duration = HTS_SStreamSet_get_duration(sss, state);
+               for (j = 0; j < state_duration; j++) {
                   for (k = 0; k < pst->win_size; k++) {
                      not_bound = TRUE;
                      for (shift = pst->win_l_width[k]; shift <= pst->win_r_width[k]; shift++) {
