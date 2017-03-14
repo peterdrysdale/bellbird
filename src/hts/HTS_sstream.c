@@ -56,11 +56,10 @@
 #include "HTS_hidden.h"
 
 /* HTS_set_default_duration: set default duration from state duration probability distribution */
-static double HTS_set_default_duration(size_t * duration, double *mean, size_t size)
+static void HTS_set_default_duration(size_t * duration, double *mean, size_t size)
 {
    size_t i;
    double temp;
-   size_t sum = 0;
 
    for (i = 0; i < size; i++) {
       temp = mean[i] + 0.5;
@@ -68,10 +67,7 @@ static double HTS_set_default_duration(size_t * duration, double *mean, size_t s
          duration[i] = 1;
       else
          duration[i] = (size_t) temp;
-      sum += duration[i];
    }
-
-   return (double) sum;
 }
 
 /* HTS_set_specified_duration: set duration from state duration probability distribution and specified frame length */
