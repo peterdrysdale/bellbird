@@ -281,6 +281,7 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
    long total_frame_long;   // Long of total_frame for comparison with 'frame_long + shift'
    size_t frame, msd_frame, state;
    size_t state_duration;
+   HTS_Boolean temp_gv_switch;
 
    HTS_PStream *pst;
    HTS_Boolean not_bound;
@@ -373,17 +374,19 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
          if (HTS_SStreamSet_is_msd(sss, i)) {   /* for MSD */
             for (state = 0, frame = 0, msd_frame = 0; state < total_state; state++) {
                state_duration = HTS_SStreamSet_get_duration(sss, state);
+               temp_gv_switch = HTS_SStreamSet_get_gv_switch(sss, i, state);
                for (j = 0; j < state_duration; j++, frame++) {
                   if (pst->msd_flag[frame]) {
-                     pst->gv_switch[msd_frame++] = HTS_SStreamSet_get_gv_switch(sss, i, state);
+                     pst->gv_switch[msd_frame++] = temp_gv_switch;
                   }
                }
             }
          } else {               /* for non MSD */
             for (state = 0, frame = 0; state < total_state; state++) {
                state_duration = HTS_SStreamSet_get_duration(sss, state);
+               temp_gv_switch = HTS_SStreamSet_get_gv_switch(sss, i, state);
                for (j = 0; j < state_duration; j++) {
-                  pst->gv_switch[frame++] = HTS_SStreamSet_get_gv_switch(sss, i, state);
+                  pst->gv_switch[frame++] = temp_gv_switch;
                }
             }
          }
