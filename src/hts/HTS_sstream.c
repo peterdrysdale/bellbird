@@ -315,22 +315,34 @@ size_t HTS_SStreamSet_get_window_size(HTS_SStreamSet * sss, size_t stream_index)
    return sss->sstream[stream_index].win_size;
 }
 
-/* HTS_SStreamSet_get_window_left_width: get left width of dynamic window */
-int HTS_SStreamSet_get_window_left_width(HTS_SStreamSet * sss, size_t stream_index, size_t window_index)
+int *HTS_SStreamSet_abandon_window_left_width(HTS_SStreamSet * sss, size_t stream_index)
 {
-   return sss->sstream[stream_index].win_l_width[window_index];
+//  Transfer ownership of window left width to caller
+   int * retval;
+
+   retval = sss->sstream[stream_index].win_l_width;
+   sss->sstream[stream_index].win_l_width = NULL;
+   return retval;
 }
 
-/* HTS_SStreamSet_get_winodow_right_width: get right width of dynamic window */
-int HTS_SStreamSet_get_window_right_width(HTS_SStreamSet * sss, size_t stream_index, size_t window_index)
+int *HTS_SStreamSet_abandon_window_right_width(HTS_SStreamSet * sss, size_t stream_index)
 {
-   return sss->sstream[stream_index].win_r_width[window_index];
+//  Transfer ownership of window right width to caller
+   int * retval;
+
+   retval = sss->sstream[stream_index].win_r_width;
+   sss->sstream[stream_index].win_r_width = NULL;
+   return retval;
 }
 
-/* HTS_SStreamSet_get_window_coefficient: get coefficient of dynamic window */
-double HTS_SStreamSet_get_window_coefficient(HTS_SStreamSet * sss, size_t stream_index, size_t window_index, int coefficient_index)
+double **HTS_SStreamSet_abandon_window_coefficient(HTS_SStreamSet * sss, size_t stream_index)
 {
-   return sss->sstream[stream_index].win_coefficient[window_index][coefficient_index];
+//  Transfer ownership of window coefficient to caller
+   double ** retval;
+
+   retval = sss->sstream[stream_index].win_coefficient;
+   sss->sstream[stream_index].win_coefficient = NULL;
+   return retval;
 }
 
 /* HTS_SStreamSet_get_window_max_width: get max width of dynamic window */
@@ -408,13 +420,17 @@ void HTS_SStreamSet_clear(HTS_SStreamSet * sss)
          bell_free_dmatrix(sst->vari);
          if (sst->msd)
             cst_free(sst->msd);
-         for (j = 0; j < sst->win_size; j++) {
-            sst->win_coefficient[j] += sst->win_l_width[j];
-            cst_free(sst->win_coefficient[j]);
+         if (sst->win_coefficient) {
+            for (j = 0; j < sst->win_size; j++) {
+               sst->win_coefficient[j] += sst->win_l_width[j];
+               cst_free(sst->win_coefficient[j]);
+            }
+            cst_free(sst->win_coefficient);
          }
-         cst_free(sst->win_coefficient);
-         cst_free(sst->win_l_width);
-         cst_free(sst->win_r_width);
+         if (sst->win_l_width)
+            cst_free(sst->win_l_width);
+         if (sst->win_r_width)
+            cst_free(sst->win_r_width);
          if (sst->gv_mean)
             cst_free(sst->gv_mean);
          if (sst->gv_vari)

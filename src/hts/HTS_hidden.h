@@ -208,14 +208,14 @@ double HTS_SStreamSet_get_msd(HTS_SStreamSet * sss, size_t stream_index, size_t 
 /* HTS_SStreamSet_window_size: get dynamic window size */
 size_t HTS_SStreamSet_get_window_size(HTS_SStreamSet * sss, size_t stream_index);
 
-/* HTS_SStreamSet_get_window_left_width: get left width of dynamic window */
-int HTS_SStreamSet_get_window_left_width(HTS_SStreamSet * sss, size_t stream_index, size_t window_index);
+// Transfer ownership of window left width to caller
+int *HTS_SStreamSet_abandon_window_left_width(HTS_SStreamSet * sss, size_t stream_index);
 
-/* HTS_SStreamSet_get_window_right_width: get right width of dynamic window */
-int HTS_SStreamSet_get_window_right_width(HTS_SStreamSet * sss, size_t stream_index, size_t window_index);
+// Transfer ownership of window right width to caller
+int *HTS_SStreamSet_abandon_window_right_width(HTS_SStreamSet * sss, size_t stream_index);
 
-/* HTS_SStreamSet_get_window_coefficient: get coefficient of dynamic window */
-double HTS_SStreamSet_get_window_coefficient(HTS_SStreamSet * sss, size_t stream_index, size_t window_index, int coefficient_index);
+// Transfer ownership of window coefficient to caller
+double **HTS_SStreamSet_abandon_window_coefficient(HTS_SStreamSet * sss, size_t stream_index);
 
 /* HTS_SStreamSet_get_window_max_width: get max width of dynamic window */
 size_t HTS_SStreamSet_get_window_max_width(HTS_SStreamSet * sss, size_t stream_index);

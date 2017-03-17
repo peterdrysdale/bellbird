@@ -350,22 +350,9 @@ HTS_Boolean HTS_PStreamSet_create(HTS_PStreamSet * pss, HTS_SStreamSet * sss, do
       pst->sm.g = cst_alloc(double,pst->length);
       pst->par = bell_alloc_dmatrix(pst->length, pst->vector_length);
       /* copy dynamic window */
-      pst->win_l_width = cst_alloc(int,pst->win_size);
-      pst->win_r_width = cst_alloc(int,pst->win_size);
-      pst->win_coefficient = cst_alloc(double *,pst->win_size);
-      for (j = 0; j < pst->win_size; j++) {
-         pst->win_l_width[j] = HTS_SStreamSet_get_window_left_width(sss, i, j);
-         pst->win_r_width[j] = HTS_SStreamSet_get_window_right_width(sss, i, j);
-         if (pst->win_l_width[j] + pst->win_r_width[j] == 0) {
-            pst->win_coefficient[j] = cst_alloc(double,(-2 * pst->win_l_width[j] + 1));
-         } else {
-            pst->win_coefficient[j] = cst_alloc(double,(-2 * pst->win_l_width[j]));
-         }
-         pst->win_coefficient[j] -= pst->win_l_width[j];
-         for (shift = pst->win_l_width[j]; shift <= pst->win_r_width[j]; shift++) {
-            pst->win_coefficient[j][shift] = HTS_SStreamSet_get_window_coefficient(sss, i, j, shift);
-         }
-      }
+      pst->win_l_width = HTS_SStreamSet_abandon_window_left_width(sss, i);
+      pst->win_r_width = HTS_SStreamSet_abandon_window_right_width(sss, i);
+      pst->win_coefficient = HTS_SStreamSet_abandon_window_coefficient(sss, i);
       /* copy GV */
       if (HTS_SStreamSet_use_gv(sss, i)) {
          pst->gv_mean = HTS_SStreamSet_abandon_gv_mean(sss, i);
