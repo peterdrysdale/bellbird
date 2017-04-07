@@ -5,5 +5,5 @@ SET(CMAKE_SYSTEM_NAME Android)
 
 SET(CMAKE_SYSTEM_VERSION 1)
 
-SET(CMAKE_C_COMPILER arm-linux-androideabi-gcc)
+SET(CMAKE_C_COMPILER arm-linux-androideabi-clang)
 
