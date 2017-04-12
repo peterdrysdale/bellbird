@@ -53,10 +53,9 @@ const int cst_val_type_##NAME=NUM;                     \
 
 VAL_REG(relation,7)
 VAL_REG(item,9)
-VAL_REG(phoneset,11)
-VAL_REG(userdata,13)
+VAL_REG(userdata,11)
 CST_VAL_REGISTER_TYPE_NODEL(userdata,cst_userdata)   // This generic type has not been defined elsewhere
-VAL_REG(features,15)
+VAL_REG(features,13)
 
 // The val takes ownership and must provide delete for these types
 void val_delete_features(void *v);
@@ -70,7 +69,6 @@ const cst_val_def cst_val_defs[] = {
 /* These are indexed (type/2) at print and delete time */
     { "relation", NULL },                  /*  7 relation */
     { "item", NULL },                      /*  9 item */
-    { "phoneset", NULL },                  /* 11 phoneset */
-    { "userdata", NULL },                  /* 13 userdata */
-    { "features", val_delete_features },   /* 15 features */
+    { "userdata", NULL },                  /* 11 userdata */
+    { "features", val_delete_features },   /* 13 features */
 };

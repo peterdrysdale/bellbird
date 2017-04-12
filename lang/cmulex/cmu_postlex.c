@@ -50,10 +50,8 @@ static void apostrophe_s(cst_utterance *u)
 {
     cst_item *s;
     cst_item *schwa;
-    cst_phoneset *ps=0;
+    const cst_phoneset *ps = u->vox->phoneset;
     const char *pname, *word;
-
-    ps = val_phoneset(feat_val(u->features,"phoneset"));
 
     for (s=item_next(UTT_REL_HEAD(u,SEGMENT));
 	 s;

@@ -50,6 +50,7 @@
 #include "cst_cart.h"
 #include "cst_features.h"
 #include "cst_lexicon.h"
+#include "cst_phoneset.h"
 #include "cst_tokenstream.h"
 #include "cst_cg_db.h"
 
@@ -79,6 +80,7 @@ typedef struct bell_voice_struct {
     cst_uttfunc *synth_methods;
     cst_uttfunc post_synth_func;
     cst_lexicon *lexicon;
+    const cst_phoneset *phoneset;
     const char * text_whitespace;
     const char * text_postpunctuation;
     const char * text_prepunctuation;

@@ -238,11 +238,9 @@ cst_utterance *hts_phrasing(cst_utterance *u)
 cst_utterance *default_pause_insertion(cst_utterance *u)
 {
     /* Add initial silences and silence at each phrase break */
-    const char *silence;
+    const char *silence = u->vox->phoneset->silence;
     const cst_item *w;
     cst_item *p, *s;
-
-    silence = val_string(feat_val(u->features,"silence"));
 
     /* Insert initial silence */
     s = UTT_REL_HEAD(u,SEGMENT);

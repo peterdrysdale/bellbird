@@ -62,6 +62,7 @@ bell_voice *new_voice()
     v->synth_methods = NULL;
     v->post_synth_func = NULL;
     v->lexicon = NULL;
+    v->phoneset = NULL;
     v->cg_db = NULL;
 
     return v;

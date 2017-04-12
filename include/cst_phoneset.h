@@ -70,6 +70,4 @@ const char *phone_feature_string(const cst_phoneset *ps,
 
 const cst_phoneset *item_phoneset(const cst_item *i);
 
-CST_VAL_USER_TYPE_DCLS(phoneset,cst_phoneset)
-
 #endif

@@ -62,8 +62,7 @@ void usenglish_init(bell_voice *v)
     v->utt_break = &default_utt_break;
 
     /* Phoneset */
-    feat_set(v->features,"phoneset",phoneset_val(&us_phoneset));
-    feat_set_string(v->features,"silence",us_phoneset.silence);
+    v->phoneset = &us_phoneset;
 
     /* Text analyser */
     v->text_whitespace = us_english_whitespace;

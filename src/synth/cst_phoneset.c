@@ -1,4 +1,10 @@
 /*************************************************************************/
+/*                This code has been modified for Bellbird.              */
+/*                See COPYING for more copyright details.                */
+/*                The unmodified source code copyright notice            */
+/*                is included below.                                     */
+/*************************************************************************/
+/*************************************************************************/
 /*                                                                       */
 /*                  Language Technologies Institute                      */
 /*                     Carnegie Mellon University                        */
@@ -34,15 +40,13 @@
 /*               Date:  December 2000                                    */
 /*************************************************************************/
 /*                                                                       */
-/*    Voice definition                                                   */
+/*    Phone data lookup functions                                        */
 /*                                                                       */
 /*************************************************************************/
 #include "cst_val.h"
 #include "cst_utterance.h"
 #include "cst_item.h"
 #include "cst_phoneset.h"
-
-CST_VAL_REGISTER_TYPE_NODEL(phoneset,cst_phoneset)
 
 static int phone_id(const cst_phoneset *ps,const char* phonename)
 {
@@ -86,7 +90,5 @@ const char *phone_feature_string(const cst_phoneset *ps,
 
 const cst_phoneset *item_phoneset(const cst_item *p)
 {
-    return val_phoneset(feat_val(item_utt(p)->features,"phoneset"));
+    return item_utt(p)->vox->phoneset;
 }
-
-
