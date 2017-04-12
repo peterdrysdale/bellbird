@@ -54,11 +54,6 @@ extern const int cst_val_type_##NAME;                  \
 TYPE *val_##NAME(const cst_val *v);           \
 cst_val *NAME##_val(const TYPE *v);
 
-#define CST_VAL_USER_FUNCPTR_DCLS(NAME,TYPE)           \
-extern const int cst_val_type_##NAME;                  \
-TYPE val_##NAME(const cst_val *v);            \
-cst_val *NAME##_val(const TYPE v);
-
 #define CST_VAL_REGISTER_TYPE(NAME,TYPE)               \
 TYPE *val_##NAME(const cst_val *v)                     \
 {                                                      \
@@ -83,18 +78,6 @@ TYPE *val_##NAME(const cst_val *v)                     \
 }                                                      \
                                                        \
 cst_val *NAME##_val(const TYPE *v)                     \
-{                                                      \
-    return val_new_typed(cst_val_type_##NAME,          \
- 		         (void *)v);                   \
-}                                                      \
-
-#define CST_VAL_REGISTER_FUNCPTR(NAME,TYPE)            \
-TYPE val_##NAME(const cst_val *v)                      \
-{                                                      \
-    return (TYPE)val_generic(v,cst_val_type_##NAME,#NAME);  \
-}                                                      \
-                                                       \
-cst_val *NAME##_val(const TYPE v)                      \
 {                                                      \
     return val_new_typed(cst_val_type_##NAME,          \
  		         (void *)v);                   \
