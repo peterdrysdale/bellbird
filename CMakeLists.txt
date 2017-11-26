@@ -22,6 +22,8 @@ endif( _FILE_OFFSET_BITS)
 
 option( ENABLE_ALSA "Build with ALSA support" ON )
 option( ENABLE_WIN32 "Build with Win32 audio support" OFF )
+# PulseAudio support should be used with ENABLE_ALSA OFF
+option( ENABLE_PULSE "Build with Pulseaudio support" OFF)
 option( ENABLE_O2 "Build with -O2 optimization" ON )
 option( ENABLE_WALL "Build with -Wall warnings" ON )
 option( ENABLE_CLANG "Build using clang compiler" OFF)
@@ -35,9 +37,13 @@ if( ENABLE_WIN32)
     ADD_DEFINITIONS (-DBELL_AUDIO_WIN32)
 endif( ENABLE_WIN32)
 
-if ( NOT ENABLE_ALSA AND NOT ENABLE_WIN32 )
+if( ENABLE_PULSE )
+    ADD_DEFINITIONS (-DBELL_AUDIO_PULSE)
+endif( ENABLE_PULSE )
+
+if ( NOT ENABLE_ALSA AND NOT ENABLE_WIN32 AND NOT ENABLE_PULSE)
     ADD_DEFINITIONS (-DCST_AUDIO_NONE)
-endif (NOT ENABLE_ALSA AND NOT ENABLE_WIN32 )
+endif (NOT ENABLE_ALSA AND NOT ENABLE_WIN32 AND NOT ENABLE_PULSE)
 
 if( ENABLE_O2 )
     SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
@@ -67,6 +73,7 @@ INCLUDE_DIRECTORIES( include )
 SET(SRC_LIBBELLBIRD
     src/audio/au_alsa.c
     src/audio/au_android.c
+    src/audio/au_pulse.c
     src/audio/au_win32.c
     src/audio/au_none.c
     src/audio/bell_audio.c
@@ -153,6 +160,12 @@ elseif ( ENABLE_ANDROID )
 TARGET_LINK_LIBRARIES (
     libbellbird
     OpenSLES
+)
+elseif ( ENABLE_PULSE )
+TARGET_LINK_LIBRARIES (
+    libbellbird
+    pulse-simple
+    pulse
 )
 else ( ENABLE_ALSA )
 TARGET_LINK_LIBRARIES (
