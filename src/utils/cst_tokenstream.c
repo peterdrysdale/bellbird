@@ -68,10 +68,16 @@ static void set_charclass_table(cst_tokenstream *ts)
 	ts->charclass[(unsigned char)ts->p_whitespacesymbols[i]] |= TS_CHARCLASS_WHITESPACE;
     for (i=0; ts->p_singlecharsymbols[i]; i++)
 	ts->charclass[(unsigned char)ts->p_singlecharsymbols[i]] |= TS_CHARCLASS_SINGLECHAR;
-    for (i=0; ts->p_prepunctuationsymbols[i]; i++)
-	ts->charclass[(unsigned char)ts->p_prepunctuationsymbols[i]] |= TS_CHARCLASS_PREPUNCT;
-    for (i=0; ts->p_postpunctuationsymbols[i]; i++)
-	ts->charclass[(unsigned char)ts->p_postpunctuationsymbols[i]]|=TS_CHARCLASS_POSTPUNCT;
+    if (ts->p_prepunctuationsymbols != NULL)
+    {
+        for (i=0; ts->p_prepunctuationsymbols[i]; i++)
+	    ts->charclass[(unsigned char)ts->p_prepunctuationsymbols[i]] |= TS_CHARCLASS_PREPUNCT;
+    }
+    if (ts->p_postpunctuationsymbols != NULL)
+    {
+        for (i=0; ts->p_postpunctuationsymbols[i]; i++)
+	    ts->charclass[(unsigned char)ts->p_postpunctuationsymbols[i]]|=TS_CHARCLASS_POSTPUNCT;
+    }
     return;
 }
 
