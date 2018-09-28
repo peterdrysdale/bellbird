@@ -56,7 +56,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <assert.h>
 #include <errno.h>
 
 #include "cst_alloc.h"
@@ -136,7 +135,6 @@ cst_audiodev *audio_open_alsa(unsigned int sps, int channels)
   }
 
   /* Set number of channels */
-  assert(channels >0);
   err = snd_pcm_hw_params_set_channels(pcm_handle, hwparams, channels);
   if (err < 0) 
   {
@@ -157,11 +155,16 @@ cst_audiodev *audio_open_alsa(unsigned int sps, int channels)
   }
 
   /* Make sure the device is ready to accept data */
-  assert(snd_pcm_state(pcm_handle) == SND_PCM_STATE_PREPARED);
+  if (snd_pcm_state(pcm_handle) != SND_PCM_STATE_PREPARED)
+  {
+        snd_pcm_close(pcm_handle);
+        snd_config_update_free_global();
+        cst_errmsg("audio_open_alsa: audio device not ready.\n");
+        return NULL;
+  }
 
   /* Write hardware parameters to audio device data structure */
   ad = cst_alloc(cst_audiodev, 1);
-  assert(ad != NULL);
   ad->sps = sps;
   ad->channels = channels;
   ad->platform_data = (void *) pcm_handle;
